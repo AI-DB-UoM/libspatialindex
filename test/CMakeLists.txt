@@ -1,5 +1,12 @@
 include_directories(../include)
 
+# --------------------------------
+#this is what I added to link the installed spatialindex lib
+link_directories(/home/liuguanli/usr/lib)
+# --------------------------------
+
+
+
 set(DIR geometry)
 set(SOURCES
         Intersection

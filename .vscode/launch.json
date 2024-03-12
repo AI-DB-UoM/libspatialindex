@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug test-rtree-RTreeBulkLoad",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/test-rtree-RTreeBulkLoad",
+            "args": [
+                "../data/gen_10000.txt",
+                "../tree/bulkload/test_10000",
+                "100",
+                "0.9"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/test",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        }
+    ]
+}
