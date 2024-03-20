@@ -282,6 +282,11 @@ void ExternalSorter::sort()
 	m_bInsertionPhase = false;
 }
 
+void ExternalSorter::finishLoad()
+{
+	m_bInsertionPhase = false;
+}
+
 ExternalSorter::Record* ExternalSorter::getNextRecord()
 {
 	if (m_bInsertionPhase == true)
@@ -327,7 +332,7 @@ void BulkLoader::bulkLoadUsingSTR(
 ) {
 	if (! stream.hasNext())
 		throw Tools::IllegalArgumentException(
-			"RTree::BulkLoader::bulkLoadUsingSTR: Empty data stream given."
+			"RTree::BulkLoader::bulkLoadUsingSFC: Empty data stream given."
 		);
 
 	NodePtr n = pTree->readNode(pTree->m_rootID);
@@ -344,7 +349,7 @@ void BulkLoader::bulkLoadUsingSTR(
 		Data* d = reinterpret_cast<Data*>(stream.getNext());
 		if (d == nullptr)
 			throw Tools::IllegalArgumentException(
-				"bulkLoadUsingSTR: RTree bulk load expects SpatialIndex::RTree::Data entries."
+				"bulkLoadUsingSFC: RTree bulk load expects SpatialIndex::RTree::Data entries."
 			);
 
 		es->insert(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));
@@ -372,6 +377,72 @@ void BulkLoader::bulkLoadUsingSTR(
 
 		if (es->getTotalEntries() == 1) break;
 		es->sort();
+	}
+
+	pTree->m_stats.m_u32TreeHeight = level;
+	pTree->storeHeader();
+}
+
+//
+// BulkLoader
+//
+void BulkLoader::bulkLoadUsingSFC(
+	SpatialIndex::RTree::RTree* pTree,
+	IDataStream& stream,
+	uint32_t bindex,
+	uint32_t bleaf,
+	uint32_t pageSize,
+	uint32_t numberOfPages
+) {
+	if (! stream.hasNext())
+		throw Tools::IllegalArgumentException(
+			"RTree::BulkLoader::bulkLoadUsingSFC: Empty data stream given."
+		);
+
+	NodePtr n = pTree->readNode(pTree->m_rootID);
+	pTree->deleteNode(n.get());
+
+	#ifndef NDEBUG
+	std::cerr << "RTree::BulkLoader: Sorting data." << std::endl;
+	#endif
+
+    std::shared_ptr<ExternalSorter> es = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+
+	while (stream.hasNext())
+	{
+		Data* d = reinterpret_cast<Data*>(stream.getNext());
+		if (d == nullptr)
+			throw Tools::IllegalArgumentException(
+				"bulkLoadUsingSFC: RTree bulk load expects SpatialIndex::RTree::Data entries."
+			);
+
+		es->insert(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));
+		d->m_pData = nullptr;
+		delete d;
+	}
+	// es->sort();
+	es->finishLoad();
+
+	pTree->m_stats.m_u64Data = es->getTotalEntries();
+
+	// create index levels.
+	uint32_t level = 0;
+
+	while (true)
+	{
+		#ifndef NDEBUG
+		std::cerr << "RTree::BulkLoader: Building level " << level << std::endl;
+		#endif
+
+		pTree->m_stats.m_nodesInLevel.push_back(0);
+
+        std::shared_ptr<ExternalSorter> es2 = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+		createLevelSFC(pTree, es, 0, bleaf, bindex, level++, es2, pageSize, numberOfPages);
+		es = es2;
+
+		if (es->getTotalEntries() == 1) break;
+		// es->sort();
+		es->finishLoad();
 	}
 
 	pTree->m_stats.m_u32TreeHeight = level;
@@ -442,6 +513,74 @@ void BulkLoader::createLevel(
 			}
 			es3->sort();
 			createLevel(pTree, es3, dimension + 1, bleaf, bindex, level, es2, pageSize, numberOfPages);
+		}
+	}
+}
+
+void BulkLoader::createLevelSFC(
+	SpatialIndex::RTree::RTree* pTree,
+	std::shared_ptr<ExternalSorter> es,
+	uint32_t dimension,
+	uint32_t bleaf,
+	uint32_t bindex,
+	uint32_t level,
+	std::shared_ptr<ExternalSorter> es2,
+	uint32_t pageSize,
+	uint32_t numberOfPages
+) {
+	uint64_t b = (level == 0) ? bleaf : bindex;
+	uint64_t P = static_cast<uint64_t>(std::ceil(static_cast<double>(es->getTotalEntries()) / static_cast<double>(b)));
+	uint64_t S = static_cast<uint64_t>(std::ceil(std::sqrt(static_cast<double>(P))));
+
+	if (S == 1 || dimension == pTree->m_dimension - 1 || S * b == es->getTotalEntries())
+	{
+		std::vector<ExternalSorter::Record*> node;
+		ExternalSorter::Record* r;
+
+		while (true)
+		{
+			try { r = es->getNextRecord(); } catch (Tools::EndOfStreamException&) { break; }
+			node.push_back(r);
+
+			if (node.size() == b)
+			{
+				Node* n = createNode(pTree, node, level);
+				node.clear();
+				pTree->writeNode(n);
+				es2->insert(new ExternalSorter::Record(n->m_nodeMBR, n->m_identifier, 0, nullptr, 0));
+				pTree->m_rootID = n->m_identifier;
+					// special case when the root has exactly bindex entries.
+				delete n;
+			}
+		}
+
+		if (! node.empty())
+		{
+			Node* n = createNode(pTree, node, level);
+			pTree->writeNode(n);
+			es2->insert(new ExternalSorter::Record(n->m_nodeMBR, n->m_identifier, 0, nullptr, 0));
+			pTree->m_rootID = n->m_identifier;
+			delete n;
+		}
+	}
+	else
+	{
+		bool bMore = true;
+
+		while (bMore)
+		{
+			ExternalSorter::Record* pR;
+            std::shared_ptr<ExternalSorter> es3 = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+
+			for (uint64_t i = 0; i < S * b; ++i)
+			{
+				try { pR = es->getNextRecord(); }
+				catch (Tools::EndOfStreamException&) { bMore = false; break; }
+				pR->m_s = dimension + 1;
+				es3->insert(pR);
+			}
+			es3->finishLoad();
+			createLevelSFC(pTree, es3, dimension + 1, bleaf, bindex, level, es2, pageSize, numberOfPages);
 		}
 	}
 }

@@ -54,78 +54,39 @@ int main(int argc, char** argv)
 {
 	if (argc != 3)
 	{
-		std::cerr << "Usage: " << argv[0] << " number_of_data time_instants." << std::endl;
+		std::cerr << "Usage: " << argv[0] << " number_of_data skewness." << std::endl;
 		return -1;
 	}
 
-	size_t simulationLength = atol(argv[2]);
+	size_t skewness = atol(argv[2]);
 	size_t numberOfObjects = atol(argv[1]);
-	std::map<size_t, Region> data;
+	// std::map<size_t, Region> data;
 	Tools::Random rnd;
 
 	for (size_t i = 0; i < numberOfObjects; i++)
 	{
 		double x = rnd.nextUniformDouble();
 		double y = rnd.nextUniformDouble();
-		double dx = rnd.nextUniformDouble(0.0001, 0.1);
-		double dy = rnd.nextUniformDouble(0.0001, 0.1);
-		Region r = Region(x, y, x + dx, y + dy);
+		double y_ = std::pow(y, skewness); 
 
-		data.insert(std::pair<size_t, Region>(i, r));
 
-		std::cout << INSERT << " " << i << " " << r.m_xmin << " " << r.m_ymin << " "
-			<< r.m_xmax << " " << r.m_ymax << std::endl;
+
+		// double dx = rnd.nextUniformDouble(0.0001, 0.1);
+		// double dy = rnd.nextUniformDouble(0.0001, 0.1);
+		// Region r = Region(x, y, x + dx, y + dy);
+
+		// Region r = Region(x, y, x, y );
+
+
+		// data.insert(std::pair<size_t, Region>(i, r));
+
+		std::cout << INSERT << " " << i << " " << x << " " << y_ << " "
+			<< x << " " << y_ << std::endl;
 	}
 
-	if (simulationLength == 0)
+
+	for (size_t i = 0; i < 1000; i++)
 	{
-		for (size_t i = 0; i < 1000; i++)
-		{
-			double stx = rnd.nextUniformDouble();
-			double sty = rnd.nextUniformDouble();
-			std::cout << QUERY << " 9999999 " << stx << " " << sty << " " << (stx + 0.01) << " " << (sty + 0.01) << std::endl;
-		}
-	}
-
-	size_t A = static_cast<size_t>(std::floor(static_cast<double>(numberOfObjects) * 0.05));
-
-	for (size_t T = 1; T <= simulationLength; T++)
-	{
-		std::cerr << (simulationLength + 1 - T) << std::endl;
-		std::set<size_t> examined;
-
-		for (size_t a = 0; a < A; a++)
-		{
-			// find an id that is not yet examined.
-			size_t id = static_cast<size_t>(rnd.nextUniformLong(0, (int32_t)numberOfObjects));
-			std::set<size_t>::iterator itSet = examined.find(id);
-
-			while (itSet != examined.end())
-			{
-				id = static_cast<size_t>(rnd.nextUniformLong(0, (int32_t)numberOfObjects));
-				itSet = examined.find(id);
-			}
-			examined.insert(id);
-
-			std::map<size_t, Region>::iterator itMap = data.find(id);
-			assert(itMap != data.end());
-
-			std::cout << DELETE << " " << id << " " << (*itMap).second.m_xmin << " " << (*itMap).second.m_ymin << " "
-				<< (*itMap).second.m_xmax << " " << (*itMap).second.m_ymax << std::endl;
-
-			double x = rnd.nextUniformDouble();
-			double dx = rnd.nextUniformDouble(0.0001, 0.1);
-			(*itMap).second.m_xmin = x;
-			(*itMap).second.m_xmax = x + dx;
-			double y = rnd.nextUniformDouble();
-			double dy = rnd.nextUniformDouble(0.0001, 0.1);
-			(*itMap).second.m_ymin = y;
-			(*itMap).second.m_ymax = y + dy;
-
-			std::cout << INSERT << " " << id << " " << (*itMap).second.m_xmin << " " << (*itMap).second.m_ymin << " "
-				<< (*itMap).second.m_xmax << " " << (*itMap).second.m_ymax << std::endl;
-		}
-
 		double stx = rnd.nextUniformDouble();
 		double sty = rnd.nextUniformDouble();
 		std::cout << QUERY << " 9999999 " << stx << " " << sty << " " << (stx + 0.01) << " " << (sty + 0.01) << std::endl;

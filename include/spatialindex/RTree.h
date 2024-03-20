@@ -40,7 +40,8 @@ namespace SpatialIndex
 
 		enum BulkLoadMethod
 		{
-			BLM_STR = 0x0
+			BLM_STR = 0x0,
+			BLM_SFC = 0x1
 		};
 
 		enum PersistenObjectIdentifier

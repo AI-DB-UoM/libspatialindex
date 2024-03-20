@@ -58,25 +58,33 @@ int main(int argc, char** argv)
 {
 	try
 	{
+		// if (argc != 5)
+		// {
+		// 	std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity query_type [intersection | 10NN | selfjoin | contains]." << std::endl;
+		// 	return -1;
+		// }
+
 		if (argc != 5)
 		{
-			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity query_type [intersection | 10NN | selfjoin | contains]." << std::endl;
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor" << std::endl;
 			return -1;
 		}
 
-		uint32_t queryType = 0;
+		// uint32_t queryType = 0;
 
-		if (strcmp(argv[4], "intersection") == 0) queryType = 0;
-		else if (strcmp(argv[4], "10NN") == 0) queryType = 1;
-		else if (strcmp(argv[4], "selfjoin") == 0) queryType = 2;
-		else if (strcmp(argv[4], "contains") == 0) queryType = 3;
-		else
-		{
-			std::cerr << "Unknown query type." << std::endl;
-			return -1;
-		}
+		// if (strcmp(argv[4], "intersection") == 0) queryType = 0;
+		// else if (strcmp(argv[4], "10NN") == 0) queryType = 1;
+		// else if (strcmp(argv[4], "selfjoin") == 0) queryType = 2;
+		// else if (strcmp(argv[4], "contains") == 0) queryType = 3;
+		// else
+		// {
+		// 	std::cerr << "Unknown query type." << std::endl;
+		// 	return -1;
+		// }
 
 		std::ifstream fin(argv[1]);
+		double fillFactor = atof(argv[4]);
+
 		if (! fin)
 		{
 			std::cerr << "Cannot open data file " << argv[1] << "." << std::endl;
@@ -94,7 +102,7 @@ int main(int argc, char** argv)
 		// Create a new, empty, RTree with dimensionality 2, minimum load 70%, using "file" as
 		// the StorageManager and the RSTAR splitting policy.
 		id_type indexIdentifier;
-		ISpatialIndex* tree = RTree::createNewRTree(*file, 0.7, atoi(argv[3]), atoi(argv[3]), 2, SpatialIndex::RTree::RV_RSTAR, indexIdentifier);
+		ISpatialIndex* tree = RTree::createNewRTree(*file, fillFactor, atoi(argv[3]), atoi(argv[3]), 2, SpatialIndex::RTree::RV_RSTAR, indexIdentifier);
 
 		size_t count = 0;
 		id_type id;
@@ -150,37 +158,37 @@ int main(int argc, char** argv)
 					return -1;
 				}
 			}
-			else if (op == QUERY)
-			{
-				plow[0] = x1; plow[1] = y1;
-				phigh[0] = x2; phigh[1] = y2;
+			// else if (op == QUERY)
+			// {
+			// 	plow[0] = x1; plow[1] = y1;
+			// 	phigh[0] = x2; phigh[1] = y2;
 
-				MyVisitor vis;
+			// 	MyVisitor vis;
 
-				if (queryType == 0)
-				{
-					Region r = Region(plow, phigh, 2);
-					tree->intersectsWithQuery(r, vis);
-						// this will find all data that intersect with the query range.
-				}
-				else if (queryType == 1)
-				{
-					Point p = Point(plow, 2);
-					tree->nearestNeighborQuery(10, p, vis);
-						// this will find the 10 nearest neighbors.
-				}
-				else if(queryType == 2)
-				{
-					Region r = Region(plow, phigh, 2);
-					tree->selfJoinQuery(r, vis);
-				}
-				else
-				{
-					Region r = Region(plow, phigh, 2);
-					tree->containsWhatQuery(r, vis);
-						// this will find all data that is contained by the query range.
-				}
-			}
+			// 	if (queryType == 0)
+			// 	{
+			// 		Region r = Region(plow, phigh, 2);
+			// 		tree->intersectsWithQuery(r, vis);
+			// 			// this will find all data that intersect with the query range.
+			// 	}
+			// 	else if (queryType == 1)
+			// 	{
+			// 		Point p = Point(plow, 2);
+			// 		tree->nearestNeighborQuery(10, p, vis);
+			// 			// this will find the 10 nearest neighbors.
+			// 	}
+			// 	else if(queryType == 2)
+			// 	{
+			// 		Region r = Region(plow, phigh, 2);
+			// 		tree->selfJoinQuery(r, vis);
+			// 	}
+			// 	else
+			// 	{
+			// 		Region r = Region(plow, phigh, 2);
+			// 		tree->containsWhatQuery(r, vis);
+			// 			// this will find all data that is contained by the query range.
+			// 	}
+			// }
 
 			if ((count % 1000) == 0)
 				std::cerr << count << std::endl;

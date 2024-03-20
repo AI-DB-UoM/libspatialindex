@@ -90,13 +90,26 @@ int main(int argc, char** argv)
 {
 	if (argc != 3)
 	{
-		std::cerr << "Usage: " << argv[0] << " data_file query_type [intersection | 10NN | selfjoin]." << std::endl;
+		std::cerr << "Usage: " << argv[0] << " data_file query_type [intersection | kNN | selfjoin]." << std::endl;
 		return -1;
 	}
+
 	uint32_t queryType = 0;
 
+	int k = 0; // To store the value of k for kNN queries
+	int len = strlen(argv[2]);
+
 	if (strcmp(argv[2], "intersection") == 0) queryType = 0;
-	else if (strcmp(argv[2], "10NN") == 0) queryType = 1;
+	else if (len >= 3 && strcmp(&argv[2][len - 2], "NN") == 0) 
+	{
+		queryType = 1; // Assuming kNN query type is represented by 1
+		char kStr[10];
+		strncpy(kStr, argv[2], len - 2);
+		kStr[len - 2] = '\0'; 
+		k = atoi(kStr); 
+		std::cerr << "knn query: k =" << k << std::endl;
+
+	}
 	else if (strcmp(argv[2], "selfjoin") == 0) queryType = 2;
 	else
 	{
@@ -160,7 +173,7 @@ int main(int argc, char** argv)
 				{
 					NNEntry* e = queue.top(); queue.pop();
 
-					if (count >= 10 && e->m_dist > knearest) break;
+					if (count >= k && e->m_dist > knearest) break;
 
 					//std::cout << e->m_id << " " << e->m_dist << std::endl;
 					std::cout << e->m_id << std::endl;

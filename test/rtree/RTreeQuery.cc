@@ -157,14 +157,25 @@ int main(int argc, char** argv)
 	{
 		if (argc != 4)
 		{
-			cerr << "Usage: " << argv[0] << " query_file tree_file query_type [intersection | 10NN | selfjoin]." << endl;
+			cerr << "Usage: " << argv[0] << " query_file tree_file query_type [intersection | kNN | selfjoin]." << endl;
 			return -1;
 		}
 
 		uint32_t queryType = 0;
+		int k = 0; // To store the value of k for kNN queries
+		int len = strlen(argv[3]);
 
 		if (strcmp(argv[3], "intersection") == 0) queryType = 0;
-		else if (strcmp(argv[3], "10NN") == 0) queryType = 1;
+		else if (len >= 3 && strcmp(&argv[3][len - 2], "NN") == 0) 
+        {
+            queryType = 1; // Assuming kNN query type is represented by 1
+            char kStr[10];
+			strncpy(kStr, argv[3], len - 2);
+			kStr[len - 2] = '\0'; 
+			k = atoi(kStr); 
+			cerr << "knn query: k =" << k << endl;
+
+        }
 		else if (strcmp(argv[3], "selfjoin") == 0) queryType = 2;
 		else
 		{
@@ -220,7 +231,7 @@ int main(int argc, char** argv)
 				else if (queryType == 1)
 				{
 					Point p = Point(plow, 2);
-					tree->nearestNeighborQuery(10, p, vis);
+					tree->nearestNeighborQuery(k, p, vis);
 						// this will find the 10 nearest neighbors.
 				}
 				else

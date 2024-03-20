@@ -22,6 +22,7 @@ set(SOURCES
         Exhaustive
         Generator
         RTreeBulkLoad
+        SFCRTreeBulkLoad
         RTreeLoad
         RTreeQuery)
 
