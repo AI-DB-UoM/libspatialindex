@@ -7,7 +7,7 @@ awk '{if ($1 == 2) print $0}' < d > queries
 rm -rf d
 
 echo Creating new R-Tree
-test-rtree-RTreeLoad data tree 100 0.9
+test-rtree-RTreeLoad data tree 100 0.4 rstar
 
 echo Querying R-Tree
 test-rtree-RTreeQuery queries tree 10NN > res

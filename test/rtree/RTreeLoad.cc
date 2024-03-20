@@ -64,9 +64,9 @@ int main(int argc, char** argv)
 		// 	return -1;
 		// }
 
-		if (argc != 5)
+		if (argc != 6)
 		{
-			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor" << std::endl;
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type" << std::endl;
 			return -1;
 		}
 
@@ -84,6 +84,15 @@ int main(int argc, char** argv)
 
 		std::ifstream fin(argv[1]);
 		double fillFactor = atof(argv[4]);
+		SpatialIndex::RTree::RTreeVariant myVariant = SpatialIndex::RTree::RV_RSTAR;
+		if (strcmp(argv[5], "linear") == 0)
+		{
+			myVariant = SpatialIndex::RTree::RV_LINEAR;
+		}
+		if (strcmp(argv[5], "quadratic") == 0)
+		{
+			myVariant = SpatialIndex::RTree::RV_QUADRATIC;
+		}
 
 		if (! fin)
 		{
@@ -102,7 +111,7 @@ int main(int argc, char** argv)
 		// Create a new, empty, RTree with dimensionality 2, minimum load 70%, using "file" as
 		// the StorageManager and the RSTAR splitting policy.
 		id_type indexIdentifier;
-		ISpatialIndex* tree = RTree::createNewRTree(*file, fillFactor, atoi(argv[3]), atoi(argv[3]), 2, SpatialIndex::RTree::RV_RSTAR, indexIdentifier);
+		ISpatialIndex* tree = RTree::createNewRTree(*file, fillFactor, atoi(argv[3]), atoi(argv[3]), 2, myVariant, indexIdentifier);
 
 		size_t count = 0;
 		id_type id;
@@ -190,8 +199,8 @@ int main(int argc, char** argv)
 			// 	}
 			// }
 
-			if ((count % 1000) == 0)
-				std::cerr << count << std::endl;
+			// if ((count % 1000) == 0)
+			// 	std::cerr << count << std::endl;
 
 			count++;
 		}
