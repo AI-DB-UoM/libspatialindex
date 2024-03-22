@@ -82,5 +82,6 @@
         "thread": "cpp",
         "typeindex": "cpp",
         "bit": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "enabled"
 }
