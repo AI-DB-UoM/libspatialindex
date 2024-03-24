@@ -15,6 +15,18 @@ popd
 pushd test/rtree/test4
 ./run
 popd
+pushd test/kdtree/test1
+./run
+popd
+pushd test/kdtree/test2
+./run
+popd
+pushd test/kdtree/test3
+./run
+popd
+pushd test/kdtree/test4
+./run
+popd
 pushd test/tprtree/test1
 ./run
 popd

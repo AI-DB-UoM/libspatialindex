@@ -26,6 +26,14 @@ set(SOURCES
         RTreeLoad
         RTreeQuery)
 
+set(DIR kdtree)
+set(SOURCES
+        Exhaustive
+        Generator
+        KDTreeBulkLoad
+        KDTreeLoad
+        KDTreeQuery)
+
 
 foreach(test ${SOURCES})
     add_executable(test-${DIR}-${test} ${DIR}/${test}.cc)

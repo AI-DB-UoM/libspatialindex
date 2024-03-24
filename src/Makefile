@@ -538,6 +538,168 @@ capi/sidx_api.cc.s:
 	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/capi/sidx_api.cc.s
 .PHONY : capi/sidx_api.cc.s
 
+kdtree/BulkLoader.o: kdtree/BulkLoader.cc.o
+
+.PHONY : kdtree/BulkLoader.o
+
+# target to build an object file
+kdtree/BulkLoader.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/BulkLoader.cc.o
+.PHONY : kdtree/BulkLoader.cc.o
+
+kdtree/BulkLoader.i: kdtree/BulkLoader.cc.i
+
+.PHONY : kdtree/BulkLoader.i
+
+# target to preprocess a source file
+kdtree/BulkLoader.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/BulkLoader.cc.i
+.PHONY : kdtree/BulkLoader.cc.i
+
+kdtree/BulkLoader.s: kdtree/BulkLoader.cc.s
+
+.PHONY : kdtree/BulkLoader.s
+
+# target to generate assembly for a file
+kdtree/BulkLoader.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/BulkLoader.cc.s
+.PHONY : kdtree/BulkLoader.cc.s
+
+kdtree/Index.o: kdtree/Index.cc.o
+
+.PHONY : kdtree/Index.o
+
+# target to build an object file
+kdtree/Index.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Index.cc.o
+.PHONY : kdtree/Index.cc.o
+
+kdtree/Index.i: kdtree/Index.cc.i
+
+.PHONY : kdtree/Index.i
+
+# target to preprocess a source file
+kdtree/Index.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Index.cc.i
+.PHONY : kdtree/Index.cc.i
+
+kdtree/Index.s: kdtree/Index.cc.s
+
+.PHONY : kdtree/Index.s
+
+# target to generate assembly for a file
+kdtree/Index.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Index.cc.s
+.PHONY : kdtree/Index.cc.s
+
+kdtree/KDTree.o: kdtree/KDTree.cc.o
+
+.PHONY : kdtree/KDTree.o
+
+# target to build an object file
+kdtree/KDTree.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/KDTree.cc.o
+.PHONY : kdtree/KDTree.cc.o
+
+kdtree/KDTree.i: kdtree/KDTree.cc.i
+
+.PHONY : kdtree/KDTree.i
+
+# target to preprocess a source file
+kdtree/KDTree.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/KDTree.cc.i
+.PHONY : kdtree/KDTree.cc.i
+
+kdtree/KDTree.s: kdtree/KDTree.cc.s
+
+.PHONY : kdtree/KDTree.s
+
+# target to generate assembly for a file
+kdtree/KDTree.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/KDTree.cc.s
+.PHONY : kdtree/KDTree.cc.s
+
+kdtree/Leaf.o: kdtree/Leaf.cc.o
+
+.PHONY : kdtree/Leaf.o
+
+# target to build an object file
+kdtree/Leaf.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Leaf.cc.o
+.PHONY : kdtree/Leaf.cc.o
+
+kdtree/Leaf.i: kdtree/Leaf.cc.i
+
+.PHONY : kdtree/Leaf.i
+
+# target to preprocess a source file
+kdtree/Leaf.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Leaf.cc.i
+.PHONY : kdtree/Leaf.cc.i
+
+kdtree/Leaf.s: kdtree/Leaf.cc.s
+
+.PHONY : kdtree/Leaf.s
+
+# target to generate assembly for a file
+kdtree/Leaf.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Leaf.cc.s
+.PHONY : kdtree/Leaf.cc.s
+
+kdtree/Node.o: kdtree/Node.cc.o
+
+.PHONY : kdtree/Node.o
+
+# target to build an object file
+kdtree/Node.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Node.cc.o
+.PHONY : kdtree/Node.cc.o
+
+kdtree/Node.i: kdtree/Node.cc.i
+
+.PHONY : kdtree/Node.i
+
+# target to preprocess a source file
+kdtree/Node.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Node.cc.i
+.PHONY : kdtree/Node.cc.i
+
+kdtree/Node.s: kdtree/Node.cc.s
+
+.PHONY : kdtree/Node.s
+
+# target to generate assembly for a file
+kdtree/Node.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Node.cc.s
+.PHONY : kdtree/Node.cc.s
+
+kdtree/Statistics.o: kdtree/Statistics.cc.o
+
+.PHONY : kdtree/Statistics.o
+
+# target to build an object file
+kdtree/Statistics.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Statistics.cc.o
+.PHONY : kdtree/Statistics.cc.o
+
+kdtree/Statistics.i: kdtree/Statistics.cc.i
+
+.PHONY : kdtree/Statistics.i
+
+# target to preprocess a source file
+kdtree/Statistics.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Statistics.cc.i
+.PHONY : kdtree/Statistics.cc.i
+
+kdtree/Statistics.s: kdtree/Statistics.cc.s
+
+.PHONY : kdtree/Statistics.s
+
+# target to generate assembly for a file
+kdtree/Statistics.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Statistics.cc.s
+.PHONY : kdtree/Statistics.cc.s
+
 mvrtree/Index.o: mvrtree/Index.cc.o
 
 .PHONY : mvrtree/Index.o
@@ -1397,6 +1559,24 @@ help:
 	@echo "... capi/sidx_api.o"
 	@echo "... capi/sidx_api.i"
 	@echo "... capi/sidx_api.s"
+	@echo "... kdtree/BulkLoader.o"
+	@echo "... kdtree/BulkLoader.i"
+	@echo "... kdtree/BulkLoader.s"
+	@echo "... kdtree/Index.o"
+	@echo "... kdtree/Index.i"
+	@echo "... kdtree/Index.s"
+	@echo "... kdtree/KDTree.o"
+	@echo "... kdtree/KDTree.i"
+	@echo "... kdtree/KDTree.s"
+	@echo "... kdtree/Leaf.o"
+	@echo "... kdtree/Leaf.i"
+	@echo "... kdtree/Leaf.s"
+	@echo "... kdtree/Node.o"
+	@echo "... kdtree/Node.i"
+	@echo "... kdtree/Node.s"
+	@echo "... kdtree/Statistics.o"
+	@echo "... kdtree/Statistics.i"
+	@echo "... kdtree/Statistics.s"
 	@echo "... mvrtree/Index.o"
 	@echo "... mvrtree/Index.i"
 	@echo "... mvrtree/Index.s"

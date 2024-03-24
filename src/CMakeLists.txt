@@ -34,6 +34,7 @@ set(SIDX_BASE_HPP
   "${SIDX_HEADERS_DIR}/Point.h"
   "${SIDX_HEADERS_DIR}/Region.h"
   "${SIDX_HEADERS_DIR}/RTree.h"
+  "${SIDX_HEADERS_DIR}/KDTree.h"
   "${SIDX_HEADERS_DIR}/SpatialIndex.h"
   "${SIDX_HEADERS_DIR}/TimePoint.h"
   "${SIDX_HEADERS_DIR}/TimeRegion.h"
@@ -118,6 +119,23 @@ set(SIDX_RTREE_CPP
   "${SIDX_SRC_DIR}/rtree/Statistics.h"
 )
 list(APPEND SIDX_CPP ${SIDX_RTREE_CPP})
+
+set(SIDX_KDTREE_CPP
+  "${SIDX_SRC_DIR}/kdtree/BulkLoader.cc"
+  "${SIDX_SRC_DIR}/kdtree/BulkLoader.h"
+  "${SIDX_SRC_DIR}/kdtree/Index.cc"
+  "${SIDX_SRC_DIR}/kdtree/Index.h"
+  "${SIDX_SRC_DIR}/kdtree/Leaf.cc"
+  "${SIDX_SRC_DIR}/kdtree/Leaf.h"
+  "${SIDX_SRC_DIR}/kdtree/Node.cc"
+  "${SIDX_SRC_DIR}/kdtree/Node.h"
+  "${SIDX_SRC_DIR}/kdtree/PointerPoolNode.h"
+  "${SIDX_SRC_DIR}/kdtree/KDTree.cc"
+  "${SIDX_SRC_DIR}/kdtree/KDTree.h"
+  "${SIDX_SRC_DIR}/kdtree/Statistics.cc"
+  "${SIDX_SRC_DIR}/kdtree/Statistics.h"
+)
+list(APPEND SIDX_CPP ${SIDX_KDTREE_CPP})
 
 set(SIDX_STORAGEMANAGER_CPP
   "${SIDX_SRC_DIR}/storagemanager/Buffer.cc"

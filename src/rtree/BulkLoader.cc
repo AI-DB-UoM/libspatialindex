@@ -332,7 +332,7 @@ void BulkLoader::bulkLoadUsingSTR(
 ) {
 	if (! stream.hasNext())
 		throw Tools::IllegalArgumentException(
-			"RTree::BulkLoader::bulkLoadUsingSFC: Empty data stream given."
+			"RTree::BulkLoader::bulkLoadUsingSTR: Empty data stream given."
 		);
 
 	NodePtr n = pTree->readNode(pTree->m_rootID);
@@ -349,7 +349,7 @@ void BulkLoader::bulkLoadUsingSTR(
 		Data* d = reinterpret_cast<Data*>(stream.getNext());
 		if (d == nullptr)
 			throw Tools::IllegalArgumentException(
-				"bulkLoadUsingSFC: RTree bulk load expects SpatialIndex::RTree::Data entries."
+				"bulkLoadUsingSTR: RTree bulk load expects SpatialIndex::RTree::Data entries."
 			);
 
 		es->insert(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));

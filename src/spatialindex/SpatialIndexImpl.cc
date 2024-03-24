@@ -27,6 +27,7 @@
 #include <spatialindex/SpatialIndex.h>
 
 #include "../rtree/RTree.h"
+#include "../kdtree/KDTree.h"
 #include "../mvrtree/MVRTree.h"
 #include "../tprtree/TPRTree.h"
 
@@ -48,6 +49,13 @@ std::ostream& SpatialIndex::operator<<(std::ostream& os, const ISpatialIndex& i)
 	if (pRTree != nullptr)
 	{
 		os << *pRTree;
+		return os;
+	}
+
+	const SpatialIndex::KDTree::KDTree* pKDTree = dynamic_cast<const SpatialIndex::KDTree::KDTree*>(&i);
+	if (pKDTree != nullptr)
+	{
+		os << *pKDTree;
 		return os;
 	}
 
@@ -75,6 +83,13 @@ std::ostream& SpatialIndex::operator<<(std::ostream& os, const IStatistics& s)
 	if (pRTreeStats != nullptr)
 	{
 		os << *pRTreeStats;
+		return os;
+	}
+
+	const SpatialIndex::KDTree::Statistics* pKDTreeStats = dynamic_cast<const SpatialIndex::KDTree::Statistics*>(&s);
+	if (pKDTreeStats != nullptr)
+	{
+		os << *pKDTreeStats;
 		return os;
 	}
 

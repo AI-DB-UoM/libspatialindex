@@ -69,6 +69,17 @@ SpatialIndex::ISpatialIndex* Index::CreateIndex()
 		}
 	}
 
+	else if (GetIndexType() == RT_KDTree) {
+
+		try {
+			index = KDTree::returnKDTree(	 *m_buffer,m_properties);
+		} catch (Tools::Exception& e) {
+			std::ostringstream os;
+			os << "Spatial Index Error: " << e.what();
+			throw std::runtime_error(os.str());
+		}
+	}
+
 	return index;
 }
 
@@ -370,6 +381,9 @@ void Index::SetIndexVariant(RTIndexVariant v)
 		m_properties.setProperty("TreeVariant", var);
 	} else if (GetIndexType() == RT_TPRTree) {
 		var.m_val.ulVal = static_cast<TPRTree::TPRTreeVariant>(v);
+		m_properties.setProperty("TreeVariant", var);
+	} else if (GetIndexType() == RT_KDTree) {
+		var.m_val.ulVal = static_cast<KDTree::KDTreeVariant>(v);
 		m_properties.setProperty("TreeVariant", var);
 	}
 }

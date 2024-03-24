@@ -124,17 +124,17 @@ test-tprtree-TPRTreeQuery/fast:
 .PHONY : test-tprtree-TPRTreeQuery/fast
 
 #=============================================================================
-# Target rules for targets named test-tprtree-Generator
+# Target rules for targets named test-kdtree-Exhaustive
 
 # Build rule for target.
-test-tprtree-Generator: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-tprtree-Generator
-.PHONY : test-tprtree-Generator
+test-kdtree-Exhaustive: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-Exhaustive
+.PHONY : test-kdtree-Exhaustive
 
 # fast build rule for target.
-test-tprtree-Generator/fast:
-	$(MAKE) -f CMakeFiles/test-tprtree-Generator.dir/build.make CMakeFiles/test-tprtree-Generator.dir/build
-.PHONY : test-tprtree-Generator/fast
+test-kdtree-Exhaustive/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-Exhaustive.dir/build.make CMakeFiles/test-kdtree-Exhaustive.dir/build
+.PHONY : test-kdtree-Exhaustive/fast
 
 #=============================================================================
 # Target rules for targets named test-geometry-Intersection
@@ -150,56 +150,95 @@ test-geometry-Intersection/fast:
 .PHONY : test-geometry-Intersection/fast
 
 #=============================================================================
-# Target rules for targets named test-rtree-Exhaustive
+# Target rules for targets named test-kdtree-Generator
 
 # Build rule for target.
-test-rtree-Exhaustive: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-Exhaustive
-.PHONY : test-rtree-Exhaustive
+test-kdtree-Generator: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-Generator
+.PHONY : test-kdtree-Generator
 
 # fast build rule for target.
-test-rtree-Exhaustive/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-Exhaustive.dir/build.make CMakeFiles/test-rtree-Exhaustive.dir/build
-.PHONY : test-rtree-Exhaustive/fast
+test-kdtree-Generator/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-Generator.dir/build.make CMakeFiles/test-kdtree-Generator.dir/build
+.PHONY : test-kdtree-Generator/fast
 
 #=============================================================================
-# Target rules for targets named test-rtree-Generator
+# Target rules for targets named test-kdtree-KDTreeQuery
 
 # Build rule for target.
-test-rtree-Generator: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-Generator
-.PHONY : test-rtree-Generator
+test-kdtree-KDTreeQuery: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeQuery
+.PHONY : test-kdtree-KDTreeQuery
 
 # fast build rule for target.
-test-rtree-Generator/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-Generator.dir/build.make CMakeFiles/test-rtree-Generator.dir/build
-.PHONY : test-rtree-Generator/fast
+test-kdtree-KDTreeQuery/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery.dir/build
+.PHONY : test-kdtree-KDTreeQuery/fast
 
 #=============================================================================
-# Target rules for targets named test-rtree-RTreeBulkLoad
+# Target rules for targets named test-kdtree-KDTreeBulkLoad
 
 # Build rule for target.
-test-rtree-RTreeBulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeBulkLoad
-.PHONY : test-rtree-RTreeBulkLoad
+test-kdtree-KDTreeBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeBulkLoad
+.PHONY : test-kdtree-KDTreeBulkLoad
 
 # fast build rule for target.
-test-rtree-RTreeBulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/build
-.PHONY : test-rtree-RTreeBulkLoad/fast
+test-kdtree-KDTreeBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeBulkLoad.dir/build
+.PHONY : test-kdtree-KDTreeBulkLoad/fast
 
 #=============================================================================
-# Target rules for targets named test-rtree-SFCRTreeBulkLoad
+# Target rules for targets named test-kdtree-KDTreeLoad
 
 # Build rule for target.
-test-rtree-SFCRTreeBulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-SFCRTreeBulkLoad
-.PHONY : test-rtree-SFCRTreeBulkLoad
+test-kdtree-KDTreeLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeLoad
+.PHONY : test-kdtree-KDTreeLoad
 
 # fast build rule for target.
-test-rtree-SFCRTreeBulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build
-.PHONY : test-rtree-SFCRTreeBulkLoad/fast
+test-kdtree-KDTreeLoad/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad.dir/build
+.PHONY : test-kdtree-KDTreeLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-mvrtree-MVRTreeLoad
+
+# Build rule for target.
+test-mvrtree-MVRTreeLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-mvrtree-MVRTreeLoad
+.PHONY : test-mvrtree-MVRTreeLoad
+
+# fast build rule for target.
+test-mvrtree-MVRTreeLoad/fast:
+	$(MAKE) -f CMakeFiles/test-mvrtree-MVRTreeLoad.dir/build.make CMakeFiles/test-mvrtree-MVRTreeLoad.dir/build
+.PHONY : test-mvrtree-MVRTreeLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-mvrtree-Exhaustive
+
+# Build rule for target.
+test-mvrtree-Exhaustive: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-mvrtree-Exhaustive
+.PHONY : test-mvrtree-Exhaustive
+
+# fast build rule for target.
+test-mvrtree-Exhaustive/fast:
+	$(MAKE) -f CMakeFiles/test-mvrtree-Exhaustive.dir/build.make CMakeFiles/test-mvrtree-Exhaustive.dir/build
+.PHONY : test-mvrtree-Exhaustive/fast
+
+#=============================================================================
+# Target rules for targets named test-mvrtree-MVRTreeQuery
+
+# Build rule for target.
+test-mvrtree-MVRTreeQuery: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-mvrtree-MVRTreeQuery
+.PHONY : test-mvrtree-MVRTreeQuery
+
+# fast build rule for target.
+test-mvrtree-MVRTreeQuery/fast:
+	$(MAKE) -f CMakeFiles/test-mvrtree-MVRTreeQuery.dir/build.make CMakeFiles/test-mvrtree-MVRTreeQuery.dir/build
+.PHONY : test-mvrtree-MVRTreeQuery/fast
 
 #=============================================================================
 # Target rules for targets named test-mvrtree-Generator
@@ -228,69 +267,17 @@ test-tprtree-Exhaustive/fast:
 .PHONY : test-tprtree-Exhaustive/fast
 
 #=============================================================================
-# Target rules for targets named test-rtree-RTreeLoad
+# Target rules for targets named test-tprtree-Generator
 
 # Build rule for target.
-test-rtree-RTreeLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeLoad
-.PHONY : test-rtree-RTreeLoad
+test-tprtree-Generator: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-tprtree-Generator
+.PHONY : test-tprtree-Generator
 
 # fast build rule for target.
-test-rtree-RTreeLoad/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad.dir/build.make CMakeFiles/test-rtree-RTreeLoad.dir/build
-.PHONY : test-rtree-RTreeLoad/fast
-
-#=============================================================================
-# Target rules for targets named test-mvrtree-MVRTreeQuery
-
-# Build rule for target.
-test-mvrtree-MVRTreeQuery: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-mvrtree-MVRTreeQuery
-.PHONY : test-mvrtree-MVRTreeQuery
-
-# fast build rule for target.
-test-mvrtree-MVRTreeQuery/fast:
-	$(MAKE) -f CMakeFiles/test-mvrtree-MVRTreeQuery.dir/build.make CMakeFiles/test-mvrtree-MVRTreeQuery.dir/build
-.PHONY : test-mvrtree-MVRTreeQuery/fast
-
-#=============================================================================
-# Target rules for targets named test-rtree-RTreeQuery
-
-# Build rule for target.
-test-rtree-RTreeQuery: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeQuery
-.PHONY : test-rtree-RTreeQuery
-
-# fast build rule for target.
-test-rtree-RTreeQuery/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery.dir/build.make CMakeFiles/test-rtree-RTreeQuery.dir/build
-.PHONY : test-rtree-RTreeQuery/fast
-
-#=============================================================================
-# Target rules for targets named test-mvrtree-Exhaustive
-
-# Build rule for target.
-test-mvrtree-Exhaustive: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-mvrtree-Exhaustive
-.PHONY : test-mvrtree-Exhaustive
-
-# fast build rule for target.
-test-mvrtree-Exhaustive/fast:
-	$(MAKE) -f CMakeFiles/test-mvrtree-Exhaustive.dir/build.make CMakeFiles/test-mvrtree-Exhaustive.dir/build
-.PHONY : test-mvrtree-Exhaustive/fast
-
-#=============================================================================
-# Target rules for targets named test-mvrtree-MVRTreeLoad
-
-# Build rule for target.
-test-mvrtree-MVRTreeLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-mvrtree-MVRTreeLoad
-.PHONY : test-mvrtree-MVRTreeLoad
-
-# fast build rule for target.
-test-mvrtree-MVRTreeLoad/fast:
-	$(MAKE) -f CMakeFiles/test-mvrtree-MVRTreeLoad.dir/build.make CMakeFiles/test-mvrtree-MVRTreeLoad.dir/build
-.PHONY : test-mvrtree-MVRTreeLoad/fast
+test-tprtree-Generator/fast:
+	$(MAKE) -f CMakeFiles/test-tprtree-Generator.dir/build.make CMakeFiles/test-tprtree-Generator.dir/build
+.PHONY : test-tprtree-Generator/fast
 
 #=============================================================================
 # Target rules for targets named test-tprtree-TPRTreeLoad
@@ -373,6 +360,81 @@ geometry/Intersection.s:
 .PHONY : geometry/Intersection.s
 
 # target to build an object file
+kdtree/Exhaustive.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-Exhaustive.dir/build.make CMakeFiles/test-kdtree-Exhaustive.dir/kdtree/Exhaustive.o
+.PHONY : kdtree/Exhaustive.o
+
+# target to preprocess a source file
+kdtree/Exhaustive.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-Exhaustive.dir/build.make CMakeFiles/test-kdtree-Exhaustive.dir/kdtree/Exhaustive.i
+.PHONY : kdtree/Exhaustive.i
+
+# target to generate assembly for a file
+kdtree/Exhaustive.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-Exhaustive.dir/build.make CMakeFiles/test-kdtree-Exhaustive.dir/kdtree/Exhaustive.s
+.PHONY : kdtree/Exhaustive.s
+
+# target to build an object file
+kdtree/Generator.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-Generator.dir/build.make CMakeFiles/test-kdtree-Generator.dir/kdtree/Generator.o
+.PHONY : kdtree/Generator.o
+
+# target to preprocess a source file
+kdtree/Generator.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-Generator.dir/build.make CMakeFiles/test-kdtree-Generator.dir/kdtree/Generator.i
+.PHONY : kdtree/Generator.i
+
+# target to generate assembly for a file
+kdtree/Generator.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-Generator.dir/build.make CMakeFiles/test-kdtree-Generator.dir/kdtree/Generator.s
+.PHONY : kdtree/Generator.s
+
+# target to build an object file
+kdtree/KDTreeBulkLoad.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeBulkLoad.dir/kdtree/KDTreeBulkLoad.o
+.PHONY : kdtree/KDTreeBulkLoad.o
+
+# target to preprocess a source file
+kdtree/KDTreeBulkLoad.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeBulkLoad.dir/kdtree/KDTreeBulkLoad.i
+.PHONY : kdtree/KDTreeBulkLoad.i
+
+# target to generate assembly for a file
+kdtree/KDTreeBulkLoad.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeBulkLoad.dir/kdtree/KDTreeBulkLoad.s
+.PHONY : kdtree/KDTreeBulkLoad.s
+
+# target to build an object file
+kdtree/KDTreeLoad.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad.dir/kdtree/KDTreeLoad.o
+.PHONY : kdtree/KDTreeLoad.o
+
+# target to preprocess a source file
+kdtree/KDTreeLoad.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad.dir/kdtree/KDTreeLoad.i
+.PHONY : kdtree/KDTreeLoad.i
+
+# target to generate assembly for a file
+kdtree/KDTreeLoad.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad.dir/kdtree/KDTreeLoad.s
+.PHONY : kdtree/KDTreeLoad.s
+
+# target to build an object file
+kdtree/KDTreeQuery.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery.dir/kdtree/KDTreeQuery.o
+.PHONY : kdtree/KDTreeQuery.o
+
+# target to preprocess a source file
+kdtree/KDTreeQuery.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery.dir/kdtree/KDTreeQuery.i
+.PHONY : kdtree/KDTreeQuery.i
+
+# target to generate assembly for a file
+kdtree/KDTreeQuery.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery.dir/kdtree/KDTreeQuery.s
+.PHONY : kdtree/KDTreeQuery.s
+
+# target to build an object file
 mvrtree/Exhaustive.o:
 	$(MAKE) -f CMakeFiles/test-mvrtree-Exhaustive.dir/build.make CMakeFiles/test-mvrtree-Exhaustive.dir/mvrtree/Exhaustive.o
 .PHONY : mvrtree/Exhaustive.o
@@ -433,96 +495,6 @@ mvrtree/MVRTreeQuery.s:
 .PHONY : mvrtree/MVRTreeQuery.s
 
 # target to build an object file
-rtree/Exhaustive.o:
-	$(MAKE) -f CMakeFiles/test-rtree-Exhaustive.dir/build.make CMakeFiles/test-rtree-Exhaustive.dir/rtree/Exhaustive.o
-.PHONY : rtree/Exhaustive.o
-
-# target to preprocess a source file
-rtree/Exhaustive.i:
-	$(MAKE) -f CMakeFiles/test-rtree-Exhaustive.dir/build.make CMakeFiles/test-rtree-Exhaustive.dir/rtree/Exhaustive.i
-.PHONY : rtree/Exhaustive.i
-
-# target to generate assembly for a file
-rtree/Exhaustive.s:
-	$(MAKE) -f CMakeFiles/test-rtree-Exhaustive.dir/build.make CMakeFiles/test-rtree-Exhaustive.dir/rtree/Exhaustive.s
-.PHONY : rtree/Exhaustive.s
-
-# target to build an object file
-rtree/Generator.o:
-	$(MAKE) -f CMakeFiles/test-rtree-Generator.dir/build.make CMakeFiles/test-rtree-Generator.dir/rtree/Generator.o
-.PHONY : rtree/Generator.o
-
-# target to preprocess a source file
-rtree/Generator.i:
-	$(MAKE) -f CMakeFiles/test-rtree-Generator.dir/build.make CMakeFiles/test-rtree-Generator.dir/rtree/Generator.i
-.PHONY : rtree/Generator.i
-
-# target to generate assembly for a file
-rtree/Generator.s:
-	$(MAKE) -f CMakeFiles/test-rtree-Generator.dir/build.make CMakeFiles/test-rtree-Generator.dir/rtree/Generator.s
-.PHONY : rtree/Generator.s
-
-# target to build an object file
-rtree/RTreeBulkLoad.o:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/rtree/RTreeBulkLoad.o
-.PHONY : rtree/RTreeBulkLoad.o
-
-# target to preprocess a source file
-rtree/RTreeBulkLoad.i:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/rtree/RTreeBulkLoad.i
-.PHONY : rtree/RTreeBulkLoad.i
-
-# target to generate assembly for a file
-rtree/RTreeBulkLoad.s:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/rtree/RTreeBulkLoad.s
-.PHONY : rtree/RTreeBulkLoad.s
-
-# target to build an object file
-rtree/RTreeLoad.o:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad.dir/build.make CMakeFiles/test-rtree-RTreeLoad.dir/rtree/RTreeLoad.o
-.PHONY : rtree/RTreeLoad.o
-
-# target to preprocess a source file
-rtree/RTreeLoad.i:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad.dir/build.make CMakeFiles/test-rtree-RTreeLoad.dir/rtree/RTreeLoad.i
-.PHONY : rtree/RTreeLoad.i
-
-# target to generate assembly for a file
-rtree/RTreeLoad.s:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad.dir/build.make CMakeFiles/test-rtree-RTreeLoad.dir/rtree/RTreeLoad.s
-.PHONY : rtree/RTreeLoad.s
-
-# target to build an object file
-rtree/RTreeQuery.o:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery.dir/build.make CMakeFiles/test-rtree-RTreeQuery.dir/rtree/RTreeQuery.o
-.PHONY : rtree/RTreeQuery.o
-
-# target to preprocess a source file
-rtree/RTreeQuery.i:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery.dir/build.make CMakeFiles/test-rtree-RTreeQuery.dir/rtree/RTreeQuery.i
-.PHONY : rtree/RTreeQuery.i
-
-# target to generate assembly for a file
-rtree/RTreeQuery.s:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery.dir/build.make CMakeFiles/test-rtree-RTreeQuery.dir/rtree/RTreeQuery.s
-.PHONY : rtree/RTreeQuery.s
-
-# target to build an object file
-rtree/SFCRTreeBulkLoad.o:
-	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/rtree/SFCRTreeBulkLoad.o
-.PHONY : rtree/SFCRTreeBulkLoad.o
-
-# target to preprocess a source file
-rtree/SFCRTreeBulkLoad.i:
-	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/rtree/SFCRTreeBulkLoad.i
-.PHONY : rtree/SFCRTreeBulkLoad.i
-
-# target to generate assembly for a file
-rtree/SFCRTreeBulkLoad.s:
-	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/rtree/SFCRTreeBulkLoad.s
-.PHONY : rtree/SFCRTreeBulkLoad.s
-
-# target to build an object file
 tools/TemporaryFile.o:
 	$(MAKE) -f CMakeFiles/test-tools-TemporaryFile.dir/build.make CMakeFiles/test-tools-TemporaryFile.dir/tools/TemporaryFile.o
 .PHONY : tools/TemporaryFile.o
@@ -570,24 +542,24 @@ tprtree/Generator.s:
 # target to build an object file
 tprtree/RandomGenerator.o:
 	$(MAKE) -f CMakeFiles/test-tprtree-TPRTreeQuery.dir/build.make CMakeFiles/test-tprtree-TPRTreeQuery.dir/tprtree/RandomGenerator.o
-	$(MAKE) -f CMakeFiles/test-tprtree-Generator.dir/build.make CMakeFiles/test-tprtree-Generator.dir/tprtree/RandomGenerator.o
 	$(MAKE) -f CMakeFiles/test-tprtree-Exhaustive.dir/build.make CMakeFiles/test-tprtree-Exhaustive.dir/tprtree/RandomGenerator.o
+	$(MAKE) -f CMakeFiles/test-tprtree-Generator.dir/build.make CMakeFiles/test-tprtree-Generator.dir/tprtree/RandomGenerator.o
 	$(MAKE) -f CMakeFiles/test-tprtree-TPRTreeLoad.dir/build.make CMakeFiles/test-tprtree-TPRTreeLoad.dir/tprtree/RandomGenerator.o
 .PHONY : tprtree/RandomGenerator.o
 
 # target to preprocess a source file
 tprtree/RandomGenerator.i:
 	$(MAKE) -f CMakeFiles/test-tprtree-TPRTreeQuery.dir/build.make CMakeFiles/test-tprtree-TPRTreeQuery.dir/tprtree/RandomGenerator.i
-	$(MAKE) -f CMakeFiles/test-tprtree-Generator.dir/build.make CMakeFiles/test-tprtree-Generator.dir/tprtree/RandomGenerator.i
 	$(MAKE) -f CMakeFiles/test-tprtree-Exhaustive.dir/build.make CMakeFiles/test-tprtree-Exhaustive.dir/tprtree/RandomGenerator.i
+	$(MAKE) -f CMakeFiles/test-tprtree-Generator.dir/build.make CMakeFiles/test-tprtree-Generator.dir/tprtree/RandomGenerator.i
 	$(MAKE) -f CMakeFiles/test-tprtree-TPRTreeLoad.dir/build.make CMakeFiles/test-tprtree-TPRTreeLoad.dir/tprtree/RandomGenerator.i
 .PHONY : tprtree/RandomGenerator.i
 
 # target to generate assembly for a file
 tprtree/RandomGenerator.s:
 	$(MAKE) -f CMakeFiles/test-tprtree-TPRTreeQuery.dir/build.make CMakeFiles/test-tprtree-TPRTreeQuery.dir/tprtree/RandomGenerator.s
-	$(MAKE) -f CMakeFiles/test-tprtree-Generator.dir/build.make CMakeFiles/test-tprtree-Generator.dir/tprtree/RandomGenerator.s
 	$(MAKE) -f CMakeFiles/test-tprtree-Exhaustive.dir/build.make CMakeFiles/test-tprtree-Exhaustive.dir/tprtree/RandomGenerator.s
+	$(MAKE) -f CMakeFiles/test-tprtree-Generator.dir/build.make CMakeFiles/test-tprtree-Generator.dir/tprtree/RandomGenerator.s
 	$(MAKE) -f CMakeFiles/test-tprtree-TPRTreeLoad.dir/build.make CMakeFiles/test-tprtree-TPRTreeLoad.dir/tprtree/RandomGenerator.s
 .PHONY : tprtree/RandomGenerator.s
 
@@ -630,19 +602,18 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... test-tprtree-TPRTreeQuery"
-	@echo "... test-tprtree-Generator"
+	@echo "... test-kdtree-Exhaustive"
 	@echo "... test-geometry-Intersection"
-	@echo "... test-rtree-Exhaustive"
-	@echo "... test-rtree-Generator"
-	@echo "... test-rtree-RTreeBulkLoad"
-	@echo "... test-rtree-SFCRTreeBulkLoad"
+	@echo "... test-kdtree-Generator"
+	@echo "... test-kdtree-KDTreeQuery"
+	@echo "... test-kdtree-KDTreeBulkLoad"
+	@echo "... test-kdtree-KDTreeLoad"
+	@echo "... test-mvrtree-MVRTreeLoad"
+	@echo "... test-mvrtree-Exhaustive"
+	@echo "... test-mvrtree-MVRTreeQuery"
 	@echo "... test-mvrtree-Generator"
 	@echo "... test-tprtree-Exhaustive"
-	@echo "... test-rtree-RTreeLoad"
-	@echo "... test-mvrtree-MVRTreeQuery"
-	@echo "... test-rtree-RTreeQuery"
-	@echo "... test-mvrtree-Exhaustive"
-	@echo "... test-mvrtree-MVRTreeLoad"
+	@echo "... test-tprtree-Generator"
 	@echo "... test-tprtree-TPRTreeLoad"
 	@echo "... test-tools-TemporaryFile"
 	@echo "... libsidxtest"
@@ -651,6 +622,21 @@ help:
 	@echo "... geometry/Intersection.o"
 	@echo "... geometry/Intersection.i"
 	@echo "... geometry/Intersection.s"
+	@echo "... kdtree/Exhaustive.o"
+	@echo "... kdtree/Exhaustive.i"
+	@echo "... kdtree/Exhaustive.s"
+	@echo "... kdtree/Generator.o"
+	@echo "... kdtree/Generator.i"
+	@echo "... kdtree/Generator.s"
+	@echo "... kdtree/KDTreeBulkLoad.o"
+	@echo "... kdtree/KDTreeBulkLoad.i"
+	@echo "... kdtree/KDTreeBulkLoad.s"
+	@echo "... kdtree/KDTreeLoad.o"
+	@echo "... kdtree/KDTreeLoad.i"
+	@echo "... kdtree/KDTreeLoad.s"
+	@echo "... kdtree/KDTreeQuery.o"
+	@echo "... kdtree/KDTreeQuery.i"
+	@echo "... kdtree/KDTreeQuery.s"
 	@echo "... mvrtree/Exhaustive.o"
 	@echo "... mvrtree/Exhaustive.i"
 	@echo "... mvrtree/Exhaustive.s"
@@ -663,24 +649,6 @@ help:
 	@echo "... mvrtree/MVRTreeQuery.o"
 	@echo "... mvrtree/MVRTreeQuery.i"
 	@echo "... mvrtree/MVRTreeQuery.s"
-	@echo "... rtree/Exhaustive.o"
-	@echo "... rtree/Exhaustive.i"
-	@echo "... rtree/Exhaustive.s"
-	@echo "... rtree/Generator.o"
-	@echo "... rtree/Generator.i"
-	@echo "... rtree/Generator.s"
-	@echo "... rtree/RTreeBulkLoad.o"
-	@echo "... rtree/RTreeBulkLoad.i"
-	@echo "... rtree/RTreeBulkLoad.s"
-	@echo "... rtree/RTreeLoad.o"
-	@echo "... rtree/RTreeLoad.i"
-	@echo "... rtree/RTreeLoad.s"
-	@echo "... rtree/RTreeQuery.o"
-	@echo "... rtree/RTreeQuery.i"
-	@echo "... rtree/RTreeQuery.s"
-	@echo "... rtree/SFCRTreeBulkLoad.o"
-	@echo "... rtree/SFCRTreeBulkLoad.i"
-	@echo "... rtree/SFCRTreeBulkLoad.s"
 	@echo "... tools/TemporaryFile.o"
 	@echo "... tools/TemporaryFile.i"
 	@echo "... tools/TemporaryFile.s"

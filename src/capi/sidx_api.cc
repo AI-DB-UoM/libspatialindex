@@ -2097,7 +2097,7 @@ SIDX_C_DLL RTError IndexProperty_SetIndexType(IndexPropertyH hProp,
 
 	try
 	{
-		if (!(value == RT_RTree || value == RT_MVRTree || value == RT_TPRTree)) {
+		if (!(value == RT_RTree || value == RT_MVRTree || value == RT_TPRTree || value == RT_KDTree)) {
 			throw std::runtime_error("Inputted value is not a valid index type");
 		}
 		Tools::Variant var;
@@ -2245,6 +2245,9 @@ SIDX_C_DLL RTError IndexProperty_SetIndexVariant( IndexPropertyH hProp,
 			prop->setProperty("TreeVariant", var);
 		} else if (type == RT_TPRTree) {
 			var.m_val.lVal = static_cast<TPRTree::TPRTreeVariant>(value);
+			prop->setProperty("TreeVariant", var);
+		} else if (type == RT_KDTree) {
+			var.m_val.lVal = static_cast<KDTree::KDTreeVariant>(value);
 			prop->setProperty("TreeVariant", var);
 		}
 
