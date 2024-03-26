@@ -694,7 +694,7 @@ void Node::rtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type 
 						m = d;
 						md1 = d1; md2 = d2;
 						sel = u32Child;
-						if (m_pTree->m_treeVariant== RV_LINEAR || m_pTree->m_treeVariant == RV_RSTAR) break;
+						if (m_pTree->m_treeVariant== KDV_NORMAL || m_pTree->m_treeVariant == RV_RSTAR) break;
 					}
 				}
 			}
@@ -935,7 +935,7 @@ void Node::pickSeeds(uint32_t& index1, uint32_t& index2)
 
 	switch (m_pTree->m_treeVariant)
 	{
-		case RV_LINEAR:
+		case KDV_NORMAL:
 		case RV_RSTAR:
 			for (cDim = 0; cDim < m_pTree->m_dimension; ++cDim)
 			{

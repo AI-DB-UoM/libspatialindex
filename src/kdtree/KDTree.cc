@@ -200,19 +200,16 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 {
 	SpatialIndex::ISpatialIndex* tree = createNewKDTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier);
 
-	uint32_t bindex = static_cast<uint32_t>(std::floor(static_cast<double>(indexCapacity * fillFactor)));
-	uint32_t bleaf = static_cast<uint32_t>(std::floor(static_cast<double>(leafCapacity * fillFactor)));
+	uint32_t bindex = static_cast<uint32_t>(std::floor(static_cast<double>(indexCapacity))); // for KDTree, index has 2 children
+	uint32_t bleaf = static_cast<uint32_t>(std::floor(static_cast<double>(leafCapacity)));
 
 	SpatialIndex::KDTree::BulkLoader bl;
 
 	switch (m)
 	{
-	case BLM_STR:
-		bl.bulkLoadUsingSTR(static_cast<KDTree*>(tree), stream, bindex, bleaf, 10000, 100);
+	case LOAD_KD:
+		bl.topDownPartitioning(static_cast<KDTree*>(tree), stream, bindex, bleaf, 10000, 100);
 		break;
-	// case BLM_SFC:
-	// 	bl.bulkLoadUsingSFC(static_cast<KDTree*>(tree), stream, bindex, bleaf, 10000, 10000);
-	// 	break;
 	default:
 		throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Unknown bulk load method.");
 		break;
@@ -229,7 +226,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	id_type& indexIdentifier)
 {
 	Tools::Variant var;
-	KDTreeVariant rv(RV_LINEAR);
+	KDTreeVariant rv(KDV_NORMAL);
 	double fillFactor(0.0);
 	uint32_t indexCapacity(0);
 	uint32_t leafCapacity(0);
@@ -243,7 +240,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
-			(var.m_val.lVal != RV_LINEAR &&
+			(var.m_val.lVal != KDV_NORMAL &&
 			var.m_val.lVal != RV_QUADRATIC &&
 			var.m_val.lVal != RV_RSTAR))
 			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property TreeVariant must be Tools::VT_LONG and of KDTreeVariant type");
@@ -263,10 +260,10 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
         if (var.m_val.dblVal <= 0.0)
             throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property FillFactor was less than 0.0");
 
-        if (((rv == RV_LINEAR || rv == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
+        if (((rv == KDV_NORMAL || rv == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
             throw Tools::IllegalArgumentException( "createAndBulkLoadNewKDTree: Property FillFactor must be in range (0.0, 0.5) for LINEAR or QUADRATIC index types");
-        if ( var.m_val.dblVal >= 1.0)
-            throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property FillFactor must be in range (0.0, 1.0) for RSTAR index type");
+        if ( var.m_val.dblVal > 1.0)
+            throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property FillFactor must be in range (0.0, 1.0]");
 		fillFactor = var.m_val.dblVal;
 	}
 
@@ -274,8 +271,8 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	var = ps.getProperty("IndexCapacity");
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
-		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 4)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property IndexCapacity must be Tools::VT_ULONG and >= 4");
+		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 2)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property IndexCapacity must be Tools::VT_ULONG and >= 2");
 
 		indexCapacity = var.m_val.ulVal;
 	}
@@ -284,8 +281,8 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	var = ps.getProperty("LeafCapacity");
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
-		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 4)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property LeafCapacity must be Tools::VT_ULONG and >= 4");
+		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 2)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property LeafCapacity must be Tools::VT_ULONG and >= 2");
 
 		leafCapacity = var.m_val.ulVal;
 	}
@@ -335,12 +332,9 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 
 	switch (m)
 	{
-	case BLM_STR:
-		bl.bulkLoadUsingSTR(static_cast<KDTree*>(tree), stream, bindex, bleaf, pageSize, numberOfPages);
+	case LOAD_KD:
+		bl.topDownPartitioning(static_cast<KDTree*>(tree), stream, bindex, bleaf, pageSize, numberOfPages);
 		break;
-	// case BLM_SFC:
-	// 	bl.bulkLoadUsingSFC(static_cast<KDTree*>(tree), stream, bindex, bleaf, 10000, 100);
-	// 	break;
 	default:
 		throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Unknown bulk load method.");
 		break;
@@ -761,6 +755,7 @@ bool SpatialIndex::KDTree::KDTree::isIndexValid()
 	if (root->m_level != m_stats.m_u32TreeHeight - 1)
 	{
 		std::cerr << "Invalid tree height." << std::endl;
+		std::cerr << "root->m_level: " << root->m_level << " m_stats.m_u32TreeHeight - 1: " << m_stats.m_u32TreeHeight - 1 << std::endl;
 		return false;
 	}
 
@@ -829,6 +824,7 @@ bool SpatialIndex::KDTree::KDTree::isIndexValid()
 		if (nodesInLevel[cLevel] != m_stats.m_nodesInLevel[cLevel])
 		{
 			std::cerr << "Invalid nodesInLevel information." << std::endl;
+			std::cerr << "cLevel: " << cLevel << " nodesInLevel[cLevel]: " << nodesInLevel[cLevel] << " m_stats.m_nodesInLevel[cLevel]: " << m_stats.m_nodesInLevel[cLevel] << std::endl;
 			ret = false;
 		}
 
@@ -838,6 +834,7 @@ bool SpatialIndex::KDTree::KDTree::isIndexValid()
 	if (nodes != m_stats.m_u32Nodes)
 	{
 		std::cerr << "Invalid number of nodes information." << std::endl;
+		std::cerr << "nodes: " << nodes << " m_stats.m_u32Nodes: " << m_stats.m_u32Nodes << std::endl;
 		ret = false;
 	}
 
@@ -864,7 +861,7 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
-			(var.m_val.lVal != RV_LINEAR &&
+			(var.m_val.lVal != KDV_NORMAL &&
 			var.m_val.lVal != RV_QUADRATIC &&
 			var.m_val.lVal != RV_RSTAR))
 			throw Tools::IllegalArgumentException("initNew: Property TreeVariant must be Tools::VT_LONG and of KDTreeVariant type");
@@ -884,12 +881,12 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
         if (var.m_val.dblVal <= 0.0)
             throw Tools::IllegalArgumentException("initNew: Property FillFactor was less than 0.0");
 
-        if (((m_treeVariant == RV_LINEAR || m_treeVariant == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
+        if (((m_treeVariant == KDV_NORMAL || m_treeVariant == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
             throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
                                                     "(0.0, 0.5) for LINEAR or QUADRATIC index types");
-        if ( var.m_val.dblVal >= 1.0)
+        if ( var.m_val.dblVal > 1.0)
             throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
-                                                    "(0.0, 1.0) for RSTAR index type");
+                                                    "(0.0, 1.0]");
 		m_fillFactor = var.m_val.dblVal;
 	}
 
@@ -897,8 +894,8 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
 	var = ps.getProperty("IndexCapacity");
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
-		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 4)
-			throw Tools::IllegalArgumentException("initNew: Property IndexCapacity must be Tools::VT_ULONG and >= 4");
+		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 2)
+			throw Tools::IllegalArgumentException("initNew: Property IndexCapacity must be Tools::VT_ULONG and >= 2");
 
 		m_indexCapacity = var.m_val.ulVal;
 	}
@@ -907,8 +904,8 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
 	var = ps.getProperty("LeafCapacity");
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
-		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 4)
-			throw Tools::IllegalArgumentException("initNew: Property LeafCapacity must be Tools::VT_ULONG and >= 4");
+		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 2)
+			throw Tools::IllegalArgumentException("initNew: Property LeafCapacity must be Tools::VT_ULONG and >= 2");
 
 		m_leafCapacity = var.m_val.ulVal;
 	}
@@ -1041,7 +1038,7 @@ void SpatialIndex::KDTree::KDTree::initOld(Tools::PropertySet& ps)
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
-			(var.m_val.lVal != RV_LINEAR &&
+			(var.m_val.lVal != KDV_NORMAL &&
 			 var.m_val.lVal != RV_QUADRATIC &&
 			 var.m_val.lVal != RV_RSTAR))
 			throw Tools::IllegalArgumentException("initOld: Property TreeVariant must be Tools::VT_LONG and of KDTreeVariant type");
@@ -1466,6 +1463,7 @@ void SpatialIndex::KDTree::KDTree::rangeQuery(RangeQueryType type, const IShape&
 					++(m_stats.m_u64QueryResults);
 				}
 			}
+
 		}
 		else
 		{

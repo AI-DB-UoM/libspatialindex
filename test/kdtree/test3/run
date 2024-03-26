@@ -3,15 +3,16 @@
 
 #echo Generating 10 million entries. This might take a while
 #echo Generating dataset
-test-kdtree-Generator 100000 0 > d
+test-kdtree-Generator 1000 1 > d
 awk '{if ($1 == 1) print $0}' < d > data
 awk '{if ($1 == 2) print $0}' < d > queries
 rm -rf d
 
-echo Creating new R-Tree
-time test-kdtree-KDTreeBulkLoad data tree 100 0.9
+echo Creating new KDtree
+test-kdtree-KDTreeBulkLoad data tree 10
+# test-kdtree-KDTreeBulkLoad kdtree_data tree 100
 
-echo Querying R-Tree
+echo Querying KDtree
 time test-kdtree-KDTreeQuery queries tree intersection > res
 cat data queries > .t
 

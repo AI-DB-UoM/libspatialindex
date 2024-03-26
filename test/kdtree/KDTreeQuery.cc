@@ -73,7 +73,9 @@ public:
 		//cout << s << endl;
 		delete[] pData;
 
-		cout << d.getIdentifier() << endl;
+		// TODO Uncomment the following code if you want to see the query result
+		// cout << d.getIdentifier() << endl;
+
 			// the ID of this data entry is an answer to the query. I will just print it to stdout.
 	}
 
@@ -250,7 +252,7 @@ int main(int argc, char** argv)
 				cerr << "This is not a query operation." << endl;
 			}
 
-			if ((count % 1000) == 0) cerr << count << endl;
+			// if ((count % 1000) == 0) cerr << count << endl;
 
 			count++;
 		}

@@ -33,15 +33,14 @@ namespace SpatialIndex
 	{
 		enum KDTreeVariant
 		{
-			RV_LINEAR = 0x0,
+			KDV_NORMAL = 0x0,
 			RV_QUADRATIC,
 			RV_RSTAR
 		};
 
 		enum BulkLoadMethod
 		{
-			BLM_STR = 0x0,
-			BLM_SFC = 0x1
+			LOAD_KD = 0x0,
 		};
 
 		enum PersistenObjectIdentifier

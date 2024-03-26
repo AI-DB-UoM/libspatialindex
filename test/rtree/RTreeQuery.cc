@@ -73,7 +73,8 @@ public:
 		//cout << s << endl;
 		delete[] pData;
 
-		cout << d.getIdentifier() << endl;
+		// TODO Uncomment the following code if you want to see the query result
+		// cout << d.getIdentifier() << endl;
 			// the ID of this data entry is an answer to the query. I will just print it to stdout.
 	}
 

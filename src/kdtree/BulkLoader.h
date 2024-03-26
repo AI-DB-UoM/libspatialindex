@@ -62,7 +62,7 @@ namespace SpatialIndex
 				id_type m_id;
 				uint32_t m_len;
 				uint8_t* m_pData{nullptr};
-				uint32_t m_s;
+				uint32_t m_s; // sort index
 			};
 
 		public:
@@ -108,7 +108,7 @@ namespace SpatialIndex
 		class BulkLoader
 		{
 		public:
-			void bulkLoadUsingSTR(
+			void topDownPartitioning(
 				KDTree* pTree,
 				IDataStream& stream,
 				uint32_t bindex,
@@ -117,35 +117,16 @@ namespace SpatialIndex
 				uint32_t numberOfPages // The total number of pages to use.
 			);
 
-			// void bulkLoadUsingSFC(
-			// 	KDTree* pTree,
-			// 	IDataStream& stream,
-			// 	uint32_t bindex,
-			// 	uint32_t bleaf,
-			// 	uint32_t pageSize, // The number of node entries per page.
-			// 	uint32_t numberOfPages // The total number of pages to use.
-			// );
 
 		protected:
-			void createLevel(
+			void partition(
 				KDTree* pTree,
 				std::shared_ptr<ExternalSorter> es,
 				uint32_t dimension,
 				uint32_t indexSize,
 				uint32_t leafSize,
 				uint32_t level,
-				std::shared_ptr<ExternalSorter> es2,
-				uint32_t pageSize,
-				uint32_t numberOfPages
-			);
-
-			void createLevelSFC(
-				KDTree* pTree,
-				std::shared_ptr<ExternalSorter> es,
-				uint32_t dimension,
-				uint32_t indexSize,
-				uint32_t leafSize,
-				uint32_t level,
+				// uint32_t depth,
 				std::shared_ptr<ExternalSorter> es2,
 				uint32_t pageSize,
 				uint32_t numberOfPages

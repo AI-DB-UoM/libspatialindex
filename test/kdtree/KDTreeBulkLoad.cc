@@ -118,14 +118,18 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		if (argc != 5)
+		if (argc != 4 && argc != 5)
 		{
-			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity utilization." << std::endl;
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity [utilization]." << std::endl;
 			return -1;
 		}
 
 		std::string baseName = argv[2];
-		double utilization = atof(argv[4]);
+		double utilization = 1.0;
+		if (argc == 5)
+		{
+			utilization = atof(argv[4]);
+		}
 
 		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, 4096);
 			// Create a new storage manager with the provided base name and a 4K page size.
@@ -140,7 +144,7 @@ int main(int argc, char** argv)
 		// the StorageManager and the RSTAR splitting policy.
 		id_type indexIdentifier;
 		ISpatialIndex* tree = KDTree::createAndBulkLoadNewKDTree(
-			KDTree::BLM_STR, stream, *file, utilization, atoi(argv[3]), atoi(argv[3]), 2, SpatialIndex::KDTree::RV_RSTAR, indexIdentifier);
+			KDTree::LOAD_KD, stream, *file, utilization, 2, atoi(argv[3]), 2, SpatialIndex::KDTree::RV_RSTAR, indexIdentifier);
 
 		std::cerr << *tree;
 		std::cerr << "Buffer hits: " << file->getHits() << std::endl;

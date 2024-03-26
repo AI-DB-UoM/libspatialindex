@@ -53,7 +53,7 @@ NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::st
 
 	switch (m_pTree->m_treeVariant)
 	{
-		case RV_LINEAR:
+		case KDV_NORMAL:
 		case RV_QUADRATIC:
 			child = findLeastEnlargement(mbr);
 			break;
@@ -109,7 +109,7 @@ void Index::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, 
 
 	switch (m_pTree->m_treeVariant)
 	{
-		case RV_LINEAR:
+		case KDV_NORMAL:
 		case RV_QUADRATIC:
 			rtreeSplit(dataLength, pData, mbr, id, g1, g2);
 			break;
