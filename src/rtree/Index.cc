@@ -67,6 +67,7 @@ NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::st
 			{
 				child = findLeastEnlargement(mbr);
 			}
+		case RV_RLRTREE:
 		break;
 		default:
 			throw Tools::NotSupportedException("Index::chooseSubtree: Tree variant not supported.");

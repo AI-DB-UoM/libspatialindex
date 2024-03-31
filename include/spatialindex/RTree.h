@@ -35,7 +35,8 @@ namespace SpatialIndex
 		{
 			RV_LINEAR = 0x0,
 			RV_QUADRATIC,
-			RV_RSTAR
+			RV_RSTAR,
+			RV_RLRTREE
 		};
 
 		enum BulkLoadMethod

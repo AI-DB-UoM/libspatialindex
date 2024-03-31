@@ -48,6 +48,18 @@ if(APPLE)
 endif()
 
 #------------------------------------------------------------------------------
+# LibTorch
+#------------------------------------------------------------------------------
+# set(Torch_DIR /home/liuguanli/Documents/libtorch/share/cmake/Torch)
+# find_package(Torch REQUIRED)
+# if (Torch_FOUND)
+#     message(STATUS "Torch library found!")
+#     message(STATUS "    include path: ${TORCH_INCLUDE_DIRS}" \n)
+# else ()
+#     message(FATAL_ERROR "Could not locate Torch" \n)
+# endif()
+
+#------------------------------------------------------------------------------
 # libspatialindex general cmake options
 #------------------------------------------------------------------------------
 
@@ -61,7 +73,7 @@ endif()
 include(CTest)
 
 # C++11 required, overridable by user
-set(CMAKE_CXX_STANDARD 11
+set(CMAKE_CXX_STANDARD 17
   CACHE STRING "C++ standard version to use (default is 11)")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -307,3 +319,8 @@ set(CPACK_SOURCE_IGNORE_FILES
 
 include(CPack)
 add_custom_target(dist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
+
+# target_link_libraries (
+#         ${CMAKE_PROJECT_NAME}
+#         ${TORCH_LIBRARIES}
+# )

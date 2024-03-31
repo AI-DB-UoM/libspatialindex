@@ -29,6 +29,8 @@
 #include <cmath>
 #include <limits>
 
+#include <torch/script.h>
+
 #include <spatialindex/SpatialIndex.h>
 #include <spatialindex/capi/IdVisitor.h>
 #include "Node.h"

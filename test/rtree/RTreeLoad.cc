@@ -31,6 +31,8 @@
 
 // include library header file.
 #include <spatialindex/SpatialIndex.h>
+#include <torch/script.h>
+
 
 using namespace SpatialIndex;
 
@@ -66,6 +68,10 @@ int main(int argc, char** argv)
 
 		if (argc != 6)
 		{
+			if (strcmp(argv[5], "rlrtree") && argc != 7)
+			{
+				std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type [RLRTree model path]" << std::endl;
+			}
 			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type" << std::endl;
 			return -1;
 		}
@@ -99,6 +105,21 @@ int main(int argc, char** argv)
 			std::cerr << "Cannot open data file " << argv[1] << "." << std::endl;
 			return -1;
 		}
+
+
+		// torch::Device device(torch::kCPU);
+		
+		// torch::jit::script::Module module;
+		// try {
+		// 	module = torch::jit::load("/home/research/Dropbox/PostDoc/topics/RLSpatial/benchmark/benchmark/libspatialindex/split.pth");
+		// 	module.to(device);
+		// }
+		// catch (const c10::Error& e) {
+		// 	std::cerr << "Error Message: " << e.what() << std::endl;
+		// 	return -1;
+		// }
+
+
 
 		// Create a new storage manager with the provided base name and a 4K page size.
 		std::string baseName = argv[2];

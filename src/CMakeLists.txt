@@ -15,6 +15,11 @@
 #   SIDX_<dirname>_CPP - all the .cpp files for the given subdir/namespace
 #   ...
 
+# set(CMAKE_CXX_STANDARD 14
+#   CACHE STRING "C++ standard version to use (default is 11)")
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(SIDX_HEADERS_DIR "${PROJECT_SOURCE_DIR}/include/spatialindex/")
 set(SIDX_HEADERS_CAPI_DIR "${PROJECT_SOURCE_DIR}/include/spatialindex/capi")
 set(SIDX_HPP "")
@@ -22,6 +27,21 @@ set(SIDX_CPP "")
 
 set(SIDX_SRC_DIR "${PROJECT_SOURCE_DIR}/src")
 set(SIDX_CAPI_DIR "${PROJECT_SOURCE_DIR}/src/capi")
+
+#------------------------------------------------------------------------------
+# LibTorch
+#------------------------------------------------------------------------------
+set(Torch_DIR /home/liuguanli/Documents/libtorch/share/cmake/Torch)
+
+list(APPEND CMAKE_PREFIX_PATH "/home/liuguanli/Documents/libtorch/share/cmake/Torch")
+find_package(Torch REQUIRED)
+if (Torch_FOUND)
+    message(STATUS "Torch library found!")
+    message(STATUS "    include path: ${TORCH_INCLUDE_DIRS}" \n)
+else ()
+    message(FATAL_ERROR "Could not locate Torch" \n)
+endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 #
 # base
@@ -201,6 +221,8 @@ set(SIDX_SOURCES
 add_library(spatialindex ${SIDX_SOURCES})
 add_library(spatialindex_c ${SIDX_CAPI_CPP})
 
+# link LibTorch for spatialindex
+target_link_libraries(spatialindex PRIVATE "/home/liuguanli/Documents/libtorch/lib/libtorch_cpu.so")
 target_link_libraries(spatialindex_c spatialindex)
 
 set_property(TARGET spatialindex PROPERTY OUTPUT_NAME ${SIDX_LIB_NAME})
@@ -294,8 +316,9 @@ target_include_directories(spatialindex
     INTERFACE
         $<INSTALL_INTERFACE:include>)
 
+target_include_directories(spatialindex PRIVATE ${TORCH_INCLUDE_DIRS}) 
+
+
 install(DIRECTORY ${SIDX_HEADERS_DIR}
   DESTINATION include/spatialindex
   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-
-
