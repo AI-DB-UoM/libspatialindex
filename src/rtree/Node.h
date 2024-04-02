@@ -41,6 +41,16 @@ namespace SpatialIndex
 
 		typedef Tools::PoolPointer<Node> NodePtr;
 
+		struct SplitLocation{
+			double perimeter1;
+			double perimeter2;
+			double area1;
+			double area2;
+			double overlap;
+			int location;
+			int dimension; //0 x-low, 1, y-low, 2, x-high, 3, y-high
+		};
+
 		class Node : public SpatialIndex::INode
 		{
 		public:
@@ -88,6 +98,7 @@ namespace SpatialIndex
 			virtual void reinsertData(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::vector<uint32_t>& reinsert, std::vector<uint32_t>& keep);
 
 			virtual void rtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::vector<uint32_t>& group1, std::vector<uint32_t>& group2);
+			virtual void rlrtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::vector<uint32_t>& group1, std::vector<uint32_t>& group2);
 			virtual void rstarSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::vector<uint32_t>& group1, std::vector<uint32_t>& group2);
 
 			virtual void pickSeeds(uint32_t& index1, uint32_t& index2);

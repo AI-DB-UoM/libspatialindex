@@ -35,6 +35,8 @@
 #include "Node.h"
 #include "Index.h"
 
+// #include <torch/script.h>
+
 using namespace SpatialIndex;
 using namespace SpatialIndex::RTree;
 
@@ -601,6 +603,7 @@ void Node::reinsertData(uint32_t dataLength, uint8_t* pData, Region& mbr, id_typ
 
 void Node::rtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::vector<uint32_t>& group1, std::vector<uint32_t>& group2)
 {
+	
 	uint32_t u32Child;
 	uint32_t minimumLoad = static_cast<uint32_t>(std::floor(m_capacity * m_pTree->m_fillFactor));
 
@@ -751,6 +754,211 @@ void Node::rtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type 
 	}
 
 	delete[] mask;
+}
+
+void Node::rlrtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::vector<uint32_t>& group1, std::vector<uint32_t>& group2)
+{
+	uint32_t minimumLoad = static_cast<uint32_t>(std::floor(m_capacity * m_pTree->m_fillFactor));
+
+	RstarSplitEntry** dataLeft = nullptr;
+	RstarSplitEntry** dataBottom = nullptr;
+
+	try
+	{
+		dataLeft = new RstarSplitEntry*[m_capacity + 1];
+		dataBottom = new RstarSplitEntry*[m_capacity + 1];
+	}
+	catch (...)
+	{
+		delete[] dataLeft;
+		throw;
+	}
+
+
+	// // 1. Init
+	// uint32_t u32Child;
+	// uint32_t minimumLoad = static_cast<uint32_t>(std::floor(m_capacity * m_pTree->m_fillFactor));
+
+	// // use this mask array for marking visited entries.
+	// uint8_t* mask = new uint8_t[m_capacity + 1];
+	// memset(mask, 0, m_capacity + 1);
+
+	// insert new data in the node for easier manipulation. Data arrays are always
+	// by one larger than node capacity.
+	m_pDataLength[m_capacity] = dataLength;
+	m_pData[m_capacity] = pData;
+	m_ptrMBR[m_capacity] = m_pTree->m_regionPool.acquire();
+	*(m_ptrMBR[m_capacity]) = mbr;
+	m_pIdentifier[m_capacity] = id;
+	// m_totalDataLength does not need to be increased here.
+	uint32_t u32Child = 0, cDim, cIndex;
+	for (u32Child = 0; u32Child <= m_capacity; ++u32Child)
+	{
+		try
+		{
+			dataLeft[u32Child] = new RstarSplitEntry(m_ptrMBR[u32Child].get(), u32Child, 0);
+			dataBottom[u32Child] = new RstarSplitEntry(m_ptrMBR[u32Child].get(), u32Child, 1);
+		}
+		catch (...)
+		{
+			for (uint32_t i = 0; i < u32Child; ++i) delete dataLeft[i];
+			delete[] dataLeft;
+			delete[] dataBottom;
+			throw;
+		}
+
+	}
+
+	// 2. PrepareSplitLocations
+	std::vector<SplitLocation> split_locations((m_capacity - 2 * minimumLoad + 2) * 2);
+	::qsort(dataLeft, m_capacity + 1, sizeof(RstarSplitEntry*), RstarSplitEntry::compareLow);
+	Region prefix, suffix;
+	prefix = *(dataLeft[0]->m_pRegion);
+	suffix = *(dataLeft[m_capacity - minimumLoad + 1]->m_pRegion);
+	int loc = 0;
+	for (u32Child = 1; u32Child < minimumLoad - 1; ++u32Child)
+	{
+		prefix.combineRegion(*(dataLeft[u32Child]->m_pRegion));
+	}
+
+	for (u32Child = m_capacity - minimumLoad + 2; u32Child <= m_capacity; ++u32Child)
+	{
+		suffix.combineRegion(*(dataLeft[u32Child]->m_pRegion));
+	}
+
+	for(u32Child = minimumLoad - 1; u32Child < m_capacity - minimumLoad + 1; ++u32Child)
+	{
+		prefix.combineRegion(*(dataLeft[u32Child]->m_pRegion));
+		Region remaining(suffix);
+		for(int j = u32Child + 1; j < m_capacity - minimumLoad + 1; j++){
+			remaining.combineRegion(*(dataLeft[j]->m_pRegion));
+		}
+		split_locations[loc].perimeter1 = std::max(prefix.getMargin(), remaining.getMargin());
+		split_locations[loc].perimeter2 = std::min(prefix.getMargin(), remaining.getMargin());
+		split_locations[loc].area1 = std::max(prefix.getArea(), remaining.getArea());
+		split_locations[loc].area2 = std::min(prefix.getArea(), remaining.getArea());
+		split_locations[loc].overlap = prefix.getIntersectingArea(remaining);
+		split_locations[loc].location = u32Child;
+		split_locations[loc].dimension = 0;
+		loc += 1;
+	}
+
+	::qsort(dataBottom, m_capacity + 1, sizeof(RstarSplitEntry*), RstarSplitEntry::compareLow);
+	prefix = *(dataBottom[0]->m_pRegion);
+	suffix = *(dataBottom[m_capacity - minimumLoad + 1]->m_pRegion);
+	
+	for (u32Child = 1; u32Child < minimumLoad - 1; ++u32Child)
+	{
+		prefix.combineRegion(*(dataBottom[u32Child]->m_pRegion));
+	}
+
+	for (u32Child = m_capacity - minimumLoad + 2; u32Child <= m_capacity; ++u32Child)
+	{
+		suffix.combineRegion(*(dataBottom[u32Child]->m_pRegion));
+	}
+
+	for(u32Child = minimumLoad - 1; u32Child < m_capacity - minimumLoad + 1; ++u32Child)
+	{
+		prefix.combineRegion(*(dataBottom[u32Child]->m_pRegion));
+		Region remaining(suffix);
+		for(int j = u32Child + 1; j < m_capacity - minimumLoad + 1; j++){
+			remaining.combineRegion(*(dataBottom[j]->m_pRegion));
+		}
+		split_locations[loc].perimeter1 = std::max(prefix.getMargin(), remaining.getMargin());
+		split_locations[loc].perimeter2 = std::min(prefix.getMargin(), remaining.getMargin());
+		split_locations[loc].area1 = std::max(prefix.getArea(), remaining.getArea());
+		split_locations[loc].area2 = std::min(prefix.getArea(), remaining.getArea());
+		split_locations[loc].overlap = prefix.getIntersectingArea(remaining);
+		split_locations[loc].location = u32Child;
+		split_locations[loc].dimension = 1;
+		loc += 1;
+	}
+	int non_overlap_split_num = 0;
+	for (int i = 0; i < split_locations.size(); i++)
+	{
+		if (split_locations[i].overlap == 0)
+		{
+			non_overlap_split_num += 1;
+		}
+	}
+	if (non_overlap_split_num <= 1)
+	{
+		rtreeSplit(dataLength, pData, mbr, id, group1, group2);
+	}
+	else
+	{
+		std::vector<uint32_t> candidate_split_action(m_pTree->m_rlr_action_space_size);
+
+		std::vector<std::pair<double, int> > zero_ovlp_splits;
+		for (int i = 0; i < split_locations.size(); i++)
+		{
+			if (split_locations[i].overlap == 0)
+			{
+				double perimeter = std::max(split_locations[i].perimeter1, split_locations[i].perimeter2);
+				zero_ovlp_splits.emplace_back(perimeter, i);
+			}
+		}
+		sort(zero_ovlp_splits.begin(), zero_ovlp_splits.end());
+		double maxArea = std::numeric_limits<double>::min();
+		double minArea = std::numeric_limits<double>::max();
+		double maxPerimeter = std::numeric_limits<double>::min();
+		double minPerimeter = std::numeric_limits<double>::max();
+
+		// Init states
+		std::vector<double> states(m_pTree->m_rlr_action_space_size * m_pTree->m_rlr_scale);
+
+		for (int i = 0; i < m_pTree->m_rlr_action_space_size; i++)
+		{
+			int idx = zero_ovlp_splits[i].second;
+			candidate_split_action[i] = idx;
+			states[i * 4 + 0] = split_locations[idx].area1;
+			states[i * 4 + 1] = split_locations[idx].area2;
+			states[i * 4 + 2] = split_locations[idx].perimeter1;
+			states[i * 4 + 3] = split_locations[idx].perimeter2;
+			maxArea = std::max(maxArea, states[i * 4 + 0]);
+			minArea = std::min(minArea, states[i * 4 + 1]);
+			maxPerimeter = std::max(maxPerimeter, states[i * 4 + 2]);
+			minPerimeter = std::min(minPerimeter, states[i * 4 + 3]);
+		}
+		for (int i = 0; i < 2; i++)
+		{
+			states[i * 4 + 0] = (states[i * 4 + 0] - minArea) / (maxArea - minArea + 0.1);
+			states[i * 4 + 1] = (states[i * 4 + 1] - minArea) / (maxArea - minArea + 0.1);
+			states[i * 4 + 2] = (states[i * 4 + 2] - minPerimeter) / (maxPerimeter - minPerimeter + 0.1);
+			states[i * 4 + 3] = (states[i * 4 + 3] - minPerimeter) / (maxPerimeter - minPerimeter + 0.1);
+		}
+
+		// Invoke the libtorch model
+		uint32_t best = m_pTree->splitModelForward(states); 
+		best = std::min(m_children - 1, best);
+		// Do split
+		int dim = split_locations[candidate_split_action[best]].dimension;
+		int split_loc = split_locations[candidate_split_action[best]].location;
+
+		if (dim == 0) 
+		{
+			for (u32Child = 0; u32Child <= split_loc; ++u32Child)
+			{
+				group1.push_back(dataLeft[u32Child]->m_index);
+			}
+			for (u32Child = split_loc + 1; u32Child <= m_capacity; ++u32Child)
+			{
+				group2.push_back(dataLeft[u32Child]->m_index);
+			}
+		}
+		else
+		{
+			for (u32Child = 0; u32Child <= split_loc; ++u32Child)
+			{
+				group1.push_back(dataBottom[u32Child]->m_index);
+			}
+			for (u32Child = split_loc + 1; u32Child <= m_capacity; ++u32Child)
+			{
+				group2.push_back(dataBottom[u32Child]->m_index);
+			}
+		}
+	}
+
 }
 
 void Node::rstarSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::vector<uint32_t>& group1, std::vector<uint32_t>& group2)
@@ -936,6 +1144,7 @@ void Node::pickSeeds(uint32_t& index1, uint32_t& index2)
 	switch (m_pTree->m_treeVariant)
 	{
 		case RV_LINEAR:
+		case RV_RLRTREE:
 		case RV_RSTAR:
 			for (cDim = 0; cDim < m_pTree->m_dimension; ++cDim)
 			{

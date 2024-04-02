@@ -34,9 +34,9 @@ namespace SpatialIndex
 		enum RTreeVariant
 		{
 			RV_LINEAR = 0x0,
-			RV_QUADRATIC,
-			RV_RSTAR,
-			RV_RLRTREE
+			RV_QUADRATIC = 0x1,
+			RV_RSTAR = 0x2,
+			RV_RLRTREE = 0x3
 		};
 
 		enum BulkLoadMethod
@@ -85,7 +85,8 @@ namespace SpatialIndex
 			uint32_t leafCapacity,
 			uint32_t dimension,
 			RTreeVariant rv,
-			id_type& indexIdentifier
+			id_type& indexIdentifier,
+			const std::string& modelPath
 		);
 		SIDX_DLL ISpatialIndex* createAndBulkLoadNewRTree(
 			BulkLoadMethod m,

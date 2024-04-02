@@ -32,6 +32,8 @@
 #include "PointerPoolNode.h"
 #include <memory>
 
+#include <torch/script.h>
+
 namespace SpatialIndex
 {
 	namespace RTree
@@ -102,6 +104,10 @@ namespace SpatialIndex
 			void selfJoinQuery(id_type id1, id_type id2, const Region& r, IVisitor& vis);
 			void visitSubTree(NodePtr subTree, IVisitor& v);
 
+			uint32_t splitModelForward(std::vector<double>& states);
+
+			uint32_t chooseSubtreeModelForward(std::vector<double>& states);
+
 			IStorageManager* m_pStorageManager;
 
 			id_type m_rootID, m_headerID;
@@ -145,6 +151,11 @@ namespace SpatialIndex
 			std::vector<std::shared_ptr<ICommand> > m_writeNodeCommands;
 			std::vector<std::shared_ptr<ICommand> > m_readNodeCommands;
 			std::vector<std::shared_ptr<ICommand> > m_deleteNodeCommands;
+
+			torch::jit::script::Module m_splitModel;
+			torch::jit::script::Module m_chooseSubtreeModel;
+			uint32_t m_rlr_action_space_size = 2;
+			uint32_t m_rlr_scale = 4;
 
 			class NNEntry
 			{

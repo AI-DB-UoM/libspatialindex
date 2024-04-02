@@ -29,7 +29,7 @@
 #include <cmath>
 #include <limits>
 
-#include <torch/script.h>
+// #include <torch/script.h>
 
 #include <spatialindex/SpatialIndex.h>
 #include <spatialindex/capi/IdVisitor.h>
@@ -155,7 +155,8 @@ SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createNewRTree(
 	uint32_t leafCapacity,
 	uint32_t dimension,
 	RTreeVariant rv,
-	id_type& indexIdentifier)
+	id_type& indexIdentifier,
+	const std::string& modelPath)
 {
 	Tools::Variant var;
 	Tools::PropertySet ps;
@@ -180,6 +181,11 @@ SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createNewRTree(
 	var.m_val.lVal = rv;
 	ps.setProperty("TreeVariant", var);
 
+	var.m_varType = Tools::VT_PCHAR;
+	var.m_val.pcVal = const_cast<char*>(modelPath.c_str());
+	ps.setProperty("RLRModelPath", var);
+	// filename = std::string(var.m_val.pcVal);
+
 	ISpatialIndex* ret = returnRTree(sm, ps);
 
 	var.m_varType = Tools::VT_LONGLONG;
@@ -200,7 +206,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createAndBulkLoadNewRTree(
 	SpatialIndex::RTree::RTreeVariant rv,
 	id_type& indexIdentifier)
 {
-	SpatialIndex::ISpatialIndex* tree = createNewRTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier);
+	SpatialIndex::ISpatialIndex* tree = createNewRTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier, "");
 
 	uint32_t bindex = static_cast<uint32_t>(std::floor(static_cast<double>(indexCapacity * fillFactor)));
 	uint32_t bleaf = static_cast<uint32_t>(std::floor(static_cast<double>(leafCapacity * fillFactor)));
@@ -247,6 +253,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createAndBulkLoadNewRTree(
 			var.m_varType != Tools::VT_LONG ||
 			(var.m_val.lVal != RV_LINEAR &&
 			var.m_val.lVal != RV_QUADRATIC &&
+			var.m_val.lVal != RV_RLRTREE &&
 			var.m_val.lVal != RV_RSTAR))
 			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property TreeVariant must be Tools::VT_LONG and of RTreeVariant type");
 
@@ -265,7 +272,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createAndBulkLoadNewRTree(
         if (var.m_val.dblVal <= 0.0)
             throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property FillFactor was less than 0.0");
 
-        if (((rv == RV_LINEAR || rv == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
+        if (((rv == RV_LINEAR || rv == RV_RLRTREE ||rv == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
             throw Tools::IllegalArgumentException( "createAndBulkLoadNewRTree: Property FillFactor must be in range (0.0, 0.5) for LINEAR or QUADRATIC index types");
         if ( var.m_val.dblVal >= 1.0)
             throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property FillFactor must be in range (0.0, 1.0) for RSTAR index type");
@@ -328,7 +335,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createAndBulkLoadNewRTree(
 		numberOfPages = var.m_val.ulVal;
 	}
 
-	SpatialIndex::ISpatialIndex* tree = createNewRTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier);
+	SpatialIndex::ISpatialIndex* tree = createNewRTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier, "");
 
 	uint32_t bindex = static_cast<uint32_t>(std::floor(static_cast<double>(indexCapacity * fillFactor)));
 	uint32_t bleaf = static_cast<uint32_t>(std::floor(static_cast<double>(leafCapacity * fillFactor)));
@@ -411,6 +418,7 @@ SpatialIndex::RTree::RTree::~RTree()
 
 void SpatialIndex::RTree::RTree::insertData(uint32_t len, const uint8_t* pData, const IShape& shape, id_type id)
 {
+
 	if (shape.getDimension() != m_dimension) throw Tools::IllegalArgumentException("insertData: Shape has the wrong number of dimensions.");
 
 	// convert the shape into a Region (R-Trees index regions only; i.e., approximations of the shapes).
@@ -856,6 +864,38 @@ void SpatialIndex::RTree::RTree::flush()
 	storeHeader();
 }
 
+uint32_t SpatialIndex::RTree::RTree::chooseSubtreeModelForward(std::vector<double>& states)
+{
+	torch::Device device(torch::kCPU);
+	torch::Tensor statesTensor = torch::tensor(states, torch::dtype(torch::kFloat64)).to(device);
+	statesTensor = statesTensor.view({1, -1}).to(torch::kFloat32);
+	std::vector<torch::jit::IValue> inputs;
+	inputs.push_back(statesTensor);
+
+	at::Tensor output = m_chooseSubtreeModel.forward(inputs).toTensor();
+	auto max_index = torch::argmax(output, /*dim=*/1);
+	int best_int = max_index.item<int>(); 
+	best_int = std::max(best_int, 0);
+    uint32_t best = static_cast<uint32_t>(best_int); 
+	return best;
+}
+
+uint32_t SpatialIndex::RTree::RTree::splitModelForward(std::vector<double>& states)
+{
+	torch::Device device(torch::kCPU);
+	torch::Tensor statesTensor = torch::tensor(states, torch::dtype(torch::kFloat64)).to(device);
+	statesTensor = statesTensor.view({1, -1}).to(torch::kFloat32);
+	std::vector<torch::jit::IValue> inputs;
+	inputs.push_back(statesTensor);
+
+	at::Tensor output = m_splitModel.forward(inputs).toTensor();
+	auto max_index = torch::argmax(output, /*dim=*/1);
+	int best_int = max_index.item<int>(); 
+	best_int = std::max(best_int, 0);
+    uint32_t best = static_cast<uint32_t>(best_int); 
+	return best;
+}
+
 void SpatialIndex::RTree::RTree::initNew(Tools::PropertySet& ps)
 {
 	Tools::Variant var;
@@ -867,11 +907,45 @@ void SpatialIndex::RTree::RTree::initNew(Tools::PropertySet& ps)
 		if (
 			var.m_varType != Tools::VT_LONG ||
 			(var.m_val.lVal != RV_LINEAR &&
+			var.m_val.lVal != RV_RLRTREE &&
 			var.m_val.lVal != RV_QUADRATIC &&
 			var.m_val.lVal != RV_RSTAR))
 			throw Tools::IllegalArgumentException("initNew: Property TreeVariant must be Tools::VT_LONG and of RTreeVariant type");
-
 		m_treeVariant = static_cast<RTreeVariant>(var.m_val.lVal);
+		if (var.m_val.lVal == RV_RLRTREE)
+		{
+			var = ps.getProperty("RLRModelPath");
+			std::string modelPath("");
+			modelPath = std::string(var.m_val.pcVal);
+
+			if (modelPath.empty())
+			{
+				throw Tools::IllegalArgumentException("Model path is empty, exiting.");
+			}
+			torch::Device device(torch::kCPU);
+
+			try
+			{
+				m_splitModel = torch::jit::load(modelPath + "/split.pth");
+				m_splitModel.to(device);
+			}
+			catch(const std::exception& e)
+			{
+				throw Tools::IllegalArgumentException("Split Model path is empty, exiting.");
+			}
+			try
+			{
+				m_chooseSubtreeModel = torch::jit::load(modelPath + "/choose_subtree.pth");
+				m_chooseSubtreeModel.to(device);
+			}
+			catch(const std::exception& e)
+			{
+				throw Tools::IllegalArgumentException("ChooseSubtree Model path is empty, exiting.");
+			}
+
+		}
+
+		
 	}
 
 	// fill factor
@@ -886,7 +960,7 @@ void SpatialIndex::RTree::RTree::initNew(Tools::PropertySet& ps)
         if (var.m_val.dblVal <= 0.0)
             throw Tools::IllegalArgumentException("initNew: Property FillFactor was less than 0.0");
 
-        if (((m_treeVariant == RV_LINEAR || m_treeVariant == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
+        if (((m_treeVariant == RV_LINEAR || m_treeVariant == RV_RLRTREE ||m_treeVariant == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
             throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
                                                     "(0.0, 0.5) for LINEAR or QUADRATIC index types");
         if ( var.m_val.dblVal >= 1.0)
@@ -1039,16 +1113,51 @@ void SpatialIndex::RTree::RTree::initOld(Tools::PropertySet& ps)
 
 	// tree variant
 	var = ps.getProperty("TreeVariant");
+	std::cerr << "RTree::initOld TreeVariant: " << var.m_val.lVal << std::endl;
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
 			(var.m_val.lVal != RV_LINEAR &&
+			 var.m_val.lVal != RV_RLRTREE &&
 			 var.m_val.lVal != RV_QUADRATIC &&
 			 var.m_val.lVal != RV_RSTAR))
 			throw Tools::IllegalArgumentException("initOld: Property TreeVariant must be Tools::VT_LONG and of RTreeVariant type");
-
 		m_treeVariant = static_cast<RTreeVariant>(var.m_val.lVal);
+
+		if (var.m_val.lVal == RV_RLRTREE)
+		{
+			var = ps.getProperty("RLRModelPath");
+			std::string modelPath("");
+			modelPath = std::string(var.m_val.pcVal);
+			if (modelPath.empty())
+			{
+				throw Tools::IllegalArgumentException("Model path is empty, exiting.");
+			}
+			torch::Device device(torch::kCPU);
+
+			try
+			{
+				m_splitModel = torch::jit::load(modelPath + "/split.pth");
+				m_splitModel.to(device);
+			}
+			catch(const std::exception& e)
+			{
+				throw Tools::IllegalArgumentException("Split Model path is empty, exiting.");
+			}
+
+			try
+			{
+				m_chooseSubtreeModel = torch::jit::load(modelPath + "/choose_subtree.pth");
+				m_chooseSubtreeModel.to(device);
+			}
+			catch(const std::exception& e)
+			{
+				throw Tools::IllegalArgumentException("ChooseSubtree Model path is empty, exiting.");
+			}
+
+		}
+
 	}
 
 	// near minimum overlap factor

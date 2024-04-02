@@ -31,7 +31,6 @@
 
 // include library header file.
 #include <spatialindex/SpatialIndex.h>
-#include <torch/script.h>
 
 
 using namespace SpatialIndex;
@@ -66,13 +65,15 @@ int main(int argc, char** argv)
 		// 	return -1;
 		// }
 
-		if (argc != 6)
+		if (argc != 6 && strcmp(argv[5], "rlrtree"))
 		{
-			if (strcmp(argv[5], "rlrtree") && argc != 7)
-			{
-				std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type [RLRTree model path]" << std::endl;
-			}
 			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type" << std::endl;
+			return -1;
+		}
+
+		if (!strcmp(argv[5], "rlrtree") && argc != 7)
+		{
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type [RLRTree model path]" << std::endl;
 			return -1;
 		}
 
@@ -91,6 +92,9 @@ int main(int argc, char** argv)
 		std::ifstream fin(argv[1]);
 		double fillFactor = atof(argv[4]);
 		SpatialIndex::RTree::RTreeVariant myVariant = SpatialIndex::RTree::RV_RSTAR;
+		std::string modelPath = "";
+		std::string chooseSubtreeModelPath = "";
+		std::string splitModelPath = "";
 		if (strcmp(argv[5], "linear") == 0)
 		{
 			myVariant = SpatialIndex::RTree::RV_LINEAR;
@@ -98,6 +102,14 @@ int main(int argc, char** argv)
 		if (strcmp(argv[5], "quadratic") == 0)
 		{
 			myVariant = SpatialIndex::RTree::RV_QUADRATIC;
+		}
+		if (strcmp(argv[5], "rlrtree") == 0)
+		{
+			myVariant = SpatialIndex::RTree::RV_RLRTREE;
+			modelPath = argv[6];
+			chooseSubtreeModelPath = modelPath + "/choose_subtree.pth";
+			splitModelPath = modelPath + "/split.pth";
+			std::cerr << "modelPath " << modelPath << std::endl;
 		}
 
 		if (! fin)
@@ -107,21 +119,7 @@ int main(int argc, char** argv)
 		}
 
 
-		// torch::Device device(torch::kCPU);
-		
-		// torch::jit::script::Module module;
-		// try {
-		// 	module = torch::jit::load("/home/research/Dropbox/PostDoc/topics/RLSpatial/benchmark/benchmark/libspatialindex/split.pth");
-		// 	module.to(device);
-		// }
-		// catch (const c10::Error& e) {
-		// 	std::cerr << "Error Message: " << e.what() << std::endl;
-		// 	return -1;
-		// }
-
-
-
-		// Create a new storage manager with the provided base name and a 4K page size.
+		// // Create a new storage manager with the provided base name and a 4K page size.
 		std::string baseName = argv[2];
 		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, 4096);
 
@@ -132,7 +130,7 @@ int main(int argc, char** argv)
 		// Create a new, empty, RTree with dimensionality 2, minimum load 70%, using "file" as
 		// the StorageManager and the RSTAR splitting policy.
 		id_type indexIdentifier;
-		ISpatialIndex* tree = RTree::createNewRTree(*file, fillFactor, atoi(argv[3]), atoi(argv[3]), 2, myVariant, indexIdentifier);
+		ISpatialIndex* tree = RTree::createNewRTree(*file, fillFactor, atoi(argv[3]), atoi(argv[3]), 2, myVariant, indexIdentifier, modelPath);
 
 		size_t count = 0;
 		id_type id;
@@ -154,24 +152,8 @@ int main(int argc, char** argv)
 				std::ostringstream os;
 				os << r;
 				std::string data = os.str();
-					// associate some data with this region. I will use a string that represents the
-					// region itself, as an example.
-					// NOTE: It is not necessary to associate any data here. A null pointer can be used. In that
-					// case you should store the data externally. The index will provide the data IDs of
-					// the answers to any query, which can be used to access the actual data from the external
-					// storage (e.g. a hash table or a database table, etc.).
-					// Storing the data in the index is convinient and in case a clustered storage manager is
-					// provided (one that stores any node in consecutive pages) performance will improve substantially,
-					// since disk accesses will be mostly sequential. On the other hand, the index will need to
-					// manipulate the data, resulting in larger overhead. If you use a main memory storage manager,
-					// storing the data externally is highly recommended (clustering has no effect).
-					// A clustered storage manager is NOT provided yet.
-					// Also you will have to take care of converting you data to and from binary format, since only
-					// array of bytes can be inserted in the index (see RTree::Node::load and RTree::Node::store for
-					// an example of how to do that).
 
 				tree->insertData((uint32_t)(data.size() + 1), reinterpret_cast<const uint8_t*>(data.c_str()), r, id);
-
 				//tree->insertData(0, 0, r, id);
 					// example of passing zero size and a null pointer as the associated data.
 			}

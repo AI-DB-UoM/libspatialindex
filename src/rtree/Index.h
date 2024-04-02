@@ -48,6 +48,7 @@ namespace SpatialIndex
 			void split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, NodePtr& left, NodePtr& right) override;
 
 			uint32_t findLeastEnlargement(const Region&) const;
+			uint32_t findRLRLeastEnlargement(const Region&) const;
 			uint32_t findLeastOverlap(const Region&) const;
 
 			void adjustTree(Node*, std::stack<id_type>&, bool force = false);

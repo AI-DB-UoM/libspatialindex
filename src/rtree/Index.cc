@@ -57,6 +57,9 @@ NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::st
 		case RV_QUADRATIC:
 			child = findLeastEnlargement(mbr);
 			break;
+		case RV_RLRTREE:
+			child = findRLRLeastEnlargement(mbr);
+			break;
 		case RV_RSTAR:
 			if (m_level == 1)
 			{
@@ -67,7 +70,6 @@ NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::st
 			{
 				child = findLeastEnlargement(mbr);
 			}
-		case RV_RLRTREE:
 		break;
 		default:
 			throw Tools::NotSupportedException("Index::chooseSubtree: Tree variant not supported.");
@@ -107,12 +109,14 @@ void Index::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, 
 	++(m_pTree->m_stats.m_u64Splits);
 
 	std::vector<uint32_t> g1, g2;
-
 	switch (m_pTree->m_treeVariant)
 	{
 		case RV_LINEAR:
 		case RV_QUADRATIC:
 			rtreeSplit(dataLength, pData, mbr, id, g1, g2);
+			break;
+		case RV_RLRTREE:
+			rlrtreeSplit(dataLength, pData, mbr, id, g1, g2);
 			break;
 		case RV_RSTAR:
 			rstarSplit(dataLength, pData, mbr, id, g1, g2);
@@ -171,6 +175,102 @@ uint32_t Index::findLeastEnlargement(const Region& r) const
 		}
 	}
 
+	return best;
+}
+
+	// states = tree.RetrieveSortedInsertStates(action_space_size, RL_method)
+	// TODO first sort m_children 
+	// 1: area, 2: getMargin, 3: getIntersectingRegion, 4: entry_num
+
+uint32_t Index::findRLRLeastEnlargement(const Region& r) const
+{
+
+	auto comp = [](const std::pair<double, uint32_t>& lhs, const std::pair<double, uint32_t>& rhs) {
+        return lhs.first > rhs.first;
+    };
+
+	std::priority_queue<std::pair<double, uint32_t>, std::vector<std::pair<double, uint32_t>>, decltype(comp)> pq(comp);
+
+
+	RegionPtr t = m_pTree->m_regionPool.acquire();
+
+	for (uint32_t cChild = 0; cChild < m_children; ++cChild)
+	{
+		m_ptrMBR[cChild]->getCombinedRegion(*t, r);
+
+		double a = m_ptrMBR[cChild]->getArea();
+		double enl = t->getArea() - a;
+
+		pq.push(std::make_pair(enl, cChild));
+
+		if (pq.size() > m_pTree->m_rlr_action_space_size) {
+            pq.pop();
+        }
+
+	}
+
+	std::vector<uint32_t> topKIndices;
+    while (!pq.empty()) {
+        topKIndices.push_back(pq.top().second);
+        pq.pop();
+    }
+
+    std::reverse(topKIndices.begin(), topKIndices.end());
+
+	// Construct the state for libtorch model
+	std::vector<double> states;
+
+	double areaNormalize = std::numeric_limits<double>::min();
+	double marginNormalize = std::numeric_limits<double>::min();
+	double overlapNormalize = std::numeric_limits<double>::min();
+	double occupancyNormalize = std::numeric_limits<double>::min();
+
+	for (uint32_t index : topKIndices) {
+
+		m_ptrMBR[index]->getCombinedRegion(*t, r);
+
+		double enl = t->getArea() - m_ptrMBR[index]->getArea();
+		areaNormalize = std::max(enl, areaNormalize);
+
+		double enm = t->getMargin() - m_ptrMBR[index]->getMargin();
+		marginNormalize = std::max(enm, marginNormalize);
+
+		double oldOverlap = 0, newOverlap = 0;
+		for (uint32_t cChild = 0; cChild < m_children; ++cChild) {
+			if (cChild == index) continue;
+			oldOverlap += m_ptrMBR[index]->getIntersectingArea(*m_ptrMBR[cChild]);
+			newOverlap += t->getIntersectingArea(*m_ptrMBR[cChild]);
+		}
+
+		double overlapDiff = newOverlap - oldOverlap;
+		overlapNormalize = std::max(overlapDiff, overlapNormalize);
+
+		double fillRatio = m_children * 1.0 / m_pTree->m_indexCapacity;
+		occupancyNormalize = std::max(fillRatio, occupancyNormalize);
+
+		states.push_back(enl);
+		states.push_back(enm);
+		states.push_back(overlapDiff);
+		states.push_back(fillRatio);
+	}
+
+	for (size_t i = 0; i < states.size(); i += 4) {
+		states[i + 0] = states[i + 0] / (areaNormalize + 0.001);
+		states[i + 1] = states[i + 1] / (marginNormalize + 0.001);
+		states[i + 2] = states[i + 2] / (overlapNormalize + 0.001);
+		states[i + 3] = states[i + 3] / (occupancyNormalize + 0.001);
+	}
+
+	while (states.size() < m_pTree->m_rlr_action_space_size * m_pTree->m_rlr_scale)
+	{
+		states.push_back(states[0]);
+		states.push_back(states[1]);
+		states.push_back(states[2]);
+		states.push_back(states[3]);
+	}
+
+	// Invoke the libtorch model
+	uint32_t best = m_pTree->chooseSubtreeModelForward(states);
 	return best;
 }
 

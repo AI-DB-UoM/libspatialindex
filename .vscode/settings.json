@@ -81,7 +81,14 @@
         "future": "cpp",
         "thread": "cpp",
         "typeindex": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "*.ipp": "cpp",
+        "regex": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "slist": "cpp",
+        "shared_mutex": "cpp",
+        "valarray": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

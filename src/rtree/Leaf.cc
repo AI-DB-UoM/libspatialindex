@@ -65,6 +65,7 @@ NodePtr Leaf::findLeaf(const Region& mbr, id_type id, std::stack<id_type>&)
 
 void Leaf::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, NodePtr& pLeft, NodePtr& pRight)
 {
+
 	++(m_pTree->m_stats.m_u64Splits);
 
 	std::vector<uint32_t> g1, g2;
@@ -78,8 +79,11 @@ void Leaf::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, N
 		case RV_RSTAR:
 			rstarSplit(dataLength, pData, mbr, id, g1, g2);
 			break;
+		case RV_RLRTREE:
+			rlrtreeSplit(dataLength, pData, mbr, id, g1, g2);
+			break;
 		default:
-			throw Tools::NotSupportedException("Leaf::split: Tree variant not supported.");
+			throw Tools::NotSupportedException("Leaf::split: Tree variant not supported: " + std::to_string(m_pTree->m_treeVariant));
 	}
 
 	pLeft = m_pTree->m_leafPool.acquire();
