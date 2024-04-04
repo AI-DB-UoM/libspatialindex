@@ -226,7 +226,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	id_type& indexIdentifier)
 {
 	Tools::Variant var;
-	KDTreeVariant rv(KDV_NORMAL);
+	KDTreeVariant rv(KD_NORMAL);
 	double fillFactor(0.0);
 	uint32_t indexCapacity(0);
 	uint32_t leafCapacity(0);
@@ -240,9 +240,9 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
-			(var.m_val.lVal != KDV_NORMAL &&
-			var.m_val.lVal != RV_QUADRATIC &&
-			var.m_val.lVal != RV_RSTAR))
+			(var.m_val.lVal != KD_NORMAL &&
+			var.m_val.lVal != QD_NORMAL &&
+			var.m_val.lVal != KD_GREEDY))
 			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property TreeVariant must be Tools::VT_LONG and of KDTreeVariant type");
 
 		rv = static_cast<KDTreeVariant>(var.m_val.lVal);
@@ -260,7 +260,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
         if (var.m_val.dblVal <= 0.0)
             throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property FillFactor was less than 0.0");
 
-        if (((rv == KDV_NORMAL || rv == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
+        if (((rv == KD_NORMAL || rv == QD_NORMAL || rv == KD_GREEDY) && var.m_val.dblVal > 0.5))
             throw Tools::IllegalArgumentException( "createAndBulkLoadNewKDTree: Property FillFactor must be in range (0.0, 0.5) for LINEAR or QUADRATIC index types");
         if ( var.m_val.dblVal > 1.0)
             throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property FillFactor must be in range (0.0, 1.0]");
@@ -359,7 +359,7 @@ SpatialIndex::KDTree::KDTree::KDTree(IStorageManager& sm, Tools::PropertySet& ps
 	m_pStorageManager(&sm),
 	m_rootID(StorageManager::NewPage),
 	m_headerID(StorageManager::NewPage),
-	m_treeVariant(RV_RSTAR),
+	m_treeVariant(KD_NORMAL),
 	m_fillFactor(0.7),
 	m_indexCapacity(100),
 	m_leafCapacity(100),
@@ -861,9 +861,9 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
-			(var.m_val.lVal != KDV_NORMAL &&
-			var.m_val.lVal != RV_QUADRATIC &&
-			var.m_val.lVal != RV_RSTAR))
+			(var.m_val.lVal != KD_NORMAL &&
+			var.m_val.lVal != QD_NORMAL &&
+			var.m_val.lVal != KD_GREEDY))
 			throw Tools::IllegalArgumentException("initNew: Property TreeVariant must be Tools::VT_LONG and of KDTreeVariant type");
 
 		m_treeVariant = static_cast<KDTreeVariant>(var.m_val.lVal);
@@ -881,7 +881,7 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
         if (var.m_val.dblVal <= 0.0)
             throw Tools::IllegalArgumentException("initNew: Property FillFactor was less than 0.0");
 
-        if (((m_treeVariant == KDV_NORMAL || m_treeVariant == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
+        if (((m_treeVariant == KD_NORMAL || m_treeVariant == QD_NORMAL || m_treeVariant == KD_GREEDY) && var.m_val.dblVal > 0.5))
             throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
                                                     "(0.0, 0.5) for LINEAR or QUADRATIC index types");
         if ( var.m_val.dblVal > 1.0)
@@ -1038,9 +1038,9 @@ void SpatialIndex::KDTree::KDTree::initOld(Tools::PropertySet& ps)
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
-			(var.m_val.lVal != KDV_NORMAL &&
-			 var.m_val.lVal != RV_QUADRATIC &&
-			 var.m_val.lVal != RV_RSTAR))
+			(var.m_val.lVal != KD_NORMAL &&
+			 var.m_val.lVal != QD_NORMAL &&
+			 var.m_val.lVal != KD_GREEDY))
 			throw Tools::IllegalArgumentException("initOld: Property TreeVariant must be Tools::VT_LONG and of KDTreeVariant type");
 
 		m_treeVariant = static_cast<KDTreeVariant>(var.m_val.lVal);
@@ -1556,12 +1556,12 @@ std::ostream& SpatialIndex::KDTree::operator<<(std::ostream& os, const KDTree& t
 		<< "Leaf capacity: " << t.m_leafCapacity << std::endl
 		<< "Tight MBRs: " << ((t.m_bTightMBRs) ? "enabled" : "disabled") << std::endl;
 
-	if (t.m_treeVariant == RV_RSTAR)
-	{
-		os	<< "Near minimum overlap factor: " << t.m_nearMinimumOverlapFactor << std::endl
-			<< "Reinsert factor: " << t.m_reinsertFactor << std::endl
-			<< "Split distribution factor: " << t.m_splitDistributionFactor << std::endl;
-	}
+	// if (t.m_treeVariant == RV_RSTAR)
+	// {
+	// 	os	<< "Near minimum overlap factor: " << t.m_nearMinimumOverlapFactor << std::endl
+	// 		<< "Reinsert factor: " << t.m_reinsertFactor << std::endl
+	// 		<< "Split distribution factor: " << t.m_splitDistributionFactor << std::endl;
+	// }
 
 	if (t.m_stats.getNumberOfNodesInLevel(0) > 0)
 		os	<< "Utilization: " << 100 * t.m_stats.getNumberOfData() / (t.m_stats.getNumberOfNodesInLevel(0) * t.m_leafCapacity) << "%" << std::endl

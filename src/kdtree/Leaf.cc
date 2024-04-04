@@ -71,13 +71,17 @@ void Leaf::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, N
 
 	switch (m_pTree->m_treeVariant)
 	{
-		case KDV_NORMAL:
-		case RV_QUADRATIC:
+		case KD_NORMAL:
+		case QD_NORMAL:
+		case KD_GREEDY:
 			rtreeSplit(dataLength, pData, mbr, id, g1, g2);
 			break;
-		case RV_RSTAR:
-			rstarSplit(dataLength, pData, mbr, id, g1, g2);
-			break;
+		// case RV_QUADRATIC:
+		// 	rtreeSplit(dataLength, pData, mbr, id, g1, g2);
+		// 	break;
+		// case RV_RSTAR:
+		// 	rstarSplit(dataLength, pData, mbr, id, g1, g2);
+		// 	break;
 		default:
 			throw Tools::NotSupportedException("Leaf::split: Tree variant not supported.");
 	}

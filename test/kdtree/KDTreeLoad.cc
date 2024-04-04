@@ -87,11 +87,11 @@ int main(int argc, char** argv)
 		SpatialIndex::KDTree::KDTreeVariant myVariant = SpatialIndex::KDTree::RV_RSTAR;
 		if (strcmp(argv[5], "linear") == 0)
 		{
-			myVariant = SpatialIndex::KDTree::KDV_NORMAL;
+			myVariant = SpatialIndex::KDTree::KD_NORMAL;
 		}
-		if (strcmp(argv[5], "quadratic") == 0)
+		if (strcmp(argv[5], "greedy") == 0)
 		{
-			myVariant = SpatialIndex::KDTree::RV_QUADRATIC;
+			myVariant = SpatialIndex::KDTree::KD_GREEDY;
 		}
 
 		if (! fin)

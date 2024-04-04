@@ -33,9 +33,9 @@ namespace SpatialIndex
 	{
 		enum KDTreeVariant
 		{
-			KDV_NORMAL = 0x0,
-			RV_QUADRATIC,
-			RV_RSTAR
+			KD_NORMAL = 0x0,
+			KD_GREEDY = 0x1,
+			QD_NORMAL = 0x2
 		};
 
 		enum BulkLoadMethod

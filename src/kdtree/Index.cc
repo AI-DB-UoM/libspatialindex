@@ -53,21 +53,25 @@ NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::st
 
 	switch (m_pTree->m_treeVariant)
 	{
-		case KDV_NORMAL:
-		case RV_QUADRATIC:
+		case KD_NORMAL:
+		case KD_GREEDY:
+		case QD_NORMAL:
 			child = findLeastEnlargement(mbr);
 			break;
-		case RV_RSTAR:
-			if (m_level == 1)
-			{
-				// if this node points to leaves...
-				child = findLeastOverlap(mbr);
-			}
-			else
-			{
-				child = findLeastEnlargement(mbr);
-			}
-		break;
+		// case RV_QUADRATIC:
+		// 	child = findLeastEnlargement(mbr);
+		// 	break;
+		// case RV_RSTAR:
+		// 	if (m_level == 1)
+		// 	{
+		// 		// if this node points to leaves...
+		// 		child = findLeastOverlap(mbr);
+		// 	}
+		// 	else
+		// 	{
+		// 		child = findLeastEnlargement(mbr);
+		// 	}
+			// break;
 		default:
 			throw Tools::NotSupportedException("Index::chooseSubtree: Tree variant not supported.");
 	}
@@ -109,13 +113,17 @@ void Index::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, 
 
 	switch (m_pTree->m_treeVariant)
 	{
-		case KDV_NORMAL:
-		case RV_QUADRATIC:
+		case KD_NORMAL:
+		case KD_GREEDY:
+		case QD_NORMAL:
 			rtreeSplit(dataLength, pData, mbr, id, g1, g2);
 			break;
-		case RV_RSTAR:
-			rstarSplit(dataLength, pData, mbr, id, g1, g2);
-			break;
+		// case RV_QUADRATIC:
+		// 	rtreeSplit(dataLength, pData, mbr, id, g1, g2);
+		// 	break;
+		// case RV_RSTAR:
+		// 	rstarSplit(dataLength, pData, mbr, id, g1, g2);
+		// 	break;
 		default:
 			throw Tools::NotSupportedException("Index::split: Tree variant not supported.");
 	}

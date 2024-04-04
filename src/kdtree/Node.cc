@@ -364,119 +364,119 @@ bool Node::insertData(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type 
 
 		return adjusted;
 	}
-	else if (m_pTree->m_treeVariant == RV_RSTAR && (! pathBuffer.empty()) && overflowTable[m_level] == 0)
-	{
-		overflowTable[m_level] = 1;
+	// else if (m_pTree->m_treeVariant == RV_RSTAR && (! pathBuffer.empty()) && overflowTable[m_level] == 0)
+	// {
+	// 	overflowTable[m_level] = 1;
 
-		std::vector<uint32_t> vReinsert, vKeep;
-		reinsertData(dataLength, pData, mbr, id, vReinsert, vKeep);
+	// 	std::vector<uint32_t> vReinsert, vKeep;
+	// 	reinsertData(dataLength, pData, mbr, id, vReinsert, vKeep);
 
-		uint32_t lReinsert = static_cast<uint32_t>(vReinsert.size());
-		uint32_t lKeep = static_cast<uint32_t>(vKeep.size());
+	// 	uint32_t lReinsert = static_cast<uint32_t>(vReinsert.size());
+	// 	uint32_t lKeep = static_cast<uint32_t>(vKeep.size());
 
-		uint8_t** reinsertdata = nullptr;
-		RegionPtr* reinsertmbr = nullptr;
-		id_type* reinsertid = nullptr;
-		uint32_t* reinsertlen = nullptr;
-		uint8_t** keepdata = nullptr;
-		RegionPtr* keepmbr = nullptr;
-		id_type* keepid = nullptr;
-		uint32_t* keeplen = nullptr;
+	// 	uint8_t** reinsertdata = nullptr;
+	// 	RegionPtr* reinsertmbr = nullptr;
+	// 	id_type* reinsertid = nullptr;
+	// 	uint32_t* reinsertlen = nullptr;
+	// 	uint8_t** keepdata = nullptr;
+	// 	RegionPtr* keepmbr = nullptr;
+	// 	id_type* keepid = nullptr;
+	// 	uint32_t* keeplen = nullptr;
 
-		try
-		{
-			reinsertdata = new uint8_t*[lReinsert];
-			reinsertmbr = new RegionPtr[lReinsert];
-			reinsertid = new id_type[lReinsert];
-			reinsertlen = new uint32_t[lReinsert];
+	// 	try
+	// 	{
+	// 		reinsertdata = new uint8_t*[lReinsert];
+	// 		reinsertmbr = new RegionPtr[lReinsert];
+	// 		reinsertid = new id_type[lReinsert];
+	// 		reinsertlen = new uint32_t[lReinsert];
 
-			keepdata = new uint8_t*[m_capacity + 1];
-			keepmbr = new RegionPtr[m_capacity + 1];
-			keepid = new id_type[m_capacity + 1];
-			keeplen = new uint32_t[m_capacity + 1];
-		}
-		catch (...)
-		{
-			delete[] reinsertdata;
-			delete[] reinsertmbr;
-			delete[] reinsertid;
-			delete[] reinsertlen;
-			delete[] keepdata;
-			delete[] keepmbr;
-			delete[] keepid;
-			delete[] keeplen;
-			throw;
-		}
+	// 		keepdata = new uint8_t*[m_capacity + 1];
+	// 		keepmbr = new RegionPtr[m_capacity + 1];
+	// 		keepid = new id_type[m_capacity + 1];
+	// 		keeplen = new uint32_t[m_capacity + 1];
+	// 	}
+	// 	catch (...)
+	// 	{
+	// 		delete[] reinsertdata;
+	// 		delete[] reinsertmbr;
+	// 		delete[] reinsertid;
+	// 		delete[] reinsertlen;
+	// 		delete[] keepdata;
+	// 		delete[] keepmbr;
+	// 		delete[] keepid;
+	// 		delete[] keeplen;
+	// 		throw;
+	// 	}
 
-		uint32_t cIndex;
+	// 	uint32_t cIndex;
 
-		for (cIndex = 0; cIndex < lReinsert; ++cIndex)
-		{
-			reinsertlen[cIndex] = m_pDataLength[vReinsert[cIndex]];
-			reinsertdata[cIndex] = m_pData[vReinsert[cIndex]];
-			reinsertmbr[cIndex] = m_ptrMBR[vReinsert[cIndex]];
-			reinsertid[cIndex] = m_pIdentifier[vReinsert[cIndex]];
-		}
+	// 	for (cIndex = 0; cIndex < lReinsert; ++cIndex)
+	// 	{
+	// 		reinsertlen[cIndex] = m_pDataLength[vReinsert[cIndex]];
+	// 		reinsertdata[cIndex] = m_pData[vReinsert[cIndex]];
+	// 		reinsertmbr[cIndex] = m_ptrMBR[vReinsert[cIndex]];
+	// 		reinsertid[cIndex] = m_pIdentifier[vReinsert[cIndex]];
+	// 	}
 
-		for (cIndex = 0; cIndex < lKeep; ++cIndex)
-		{
-			keeplen[cIndex] = m_pDataLength[vKeep[cIndex]];
-			keepdata[cIndex] = m_pData[vKeep[cIndex]];
-			keepmbr[cIndex] = m_ptrMBR[vKeep[cIndex]];
-			keepid[cIndex] = m_pIdentifier[vKeep[cIndex]];
-		}
+	// 	for (cIndex = 0; cIndex < lKeep; ++cIndex)
+	// 	{
+	// 		keeplen[cIndex] = m_pDataLength[vKeep[cIndex]];
+	// 		keepdata[cIndex] = m_pData[vKeep[cIndex]];
+	// 		keepmbr[cIndex] = m_ptrMBR[vKeep[cIndex]];
+	// 		keepid[cIndex] = m_pIdentifier[vKeep[cIndex]];
+	// 	}
 
-		delete[] m_pDataLength;
-		delete[] m_pData;
-		delete[] m_ptrMBR;
-		delete[] m_pIdentifier;
+	// 	delete[] m_pDataLength;
+	// 	delete[] m_pData;
+	// 	delete[] m_ptrMBR;
+	// 	delete[] m_pIdentifier;
 
-		m_pDataLength = keeplen;
-		m_pData = keepdata;
-		m_ptrMBR = keepmbr;
-		m_pIdentifier = keepid;
-		m_children = lKeep;
-		m_totalDataLength = 0;
+	// 	m_pDataLength = keeplen;
+	// 	m_pData = keepdata;
+	// 	m_ptrMBR = keepmbr;
+	// 	m_pIdentifier = keepid;
+	// 	m_children = lKeep;
+	// 	m_totalDataLength = 0;
 
-		for (uint32_t u32Child = 0; u32Child < m_children; ++u32Child) m_totalDataLength += m_pDataLength[u32Child];
+	// 	for (uint32_t u32Child = 0; u32Child < m_children; ++u32Child) m_totalDataLength += m_pDataLength[u32Child];
 
-		for (uint32_t cDim = 0; cDim < m_nodeMBR.m_dimension; ++cDim)
-		{
-			m_nodeMBR.m_pLow[cDim] = std::numeric_limits<double>::max();
-			m_nodeMBR.m_pHigh[cDim] = -std::numeric_limits<double>::max();
+	// 	for (uint32_t cDim = 0; cDim < m_nodeMBR.m_dimension; ++cDim)
+	// 	{
+	// 		m_nodeMBR.m_pLow[cDim] = std::numeric_limits<double>::max();
+	// 		m_nodeMBR.m_pHigh[cDim] = -std::numeric_limits<double>::max();
 
-			for (uint32_t u32Child = 0; u32Child < m_children; ++u32Child)
-			{
-				m_nodeMBR.m_pLow[cDim] = std::min(m_nodeMBR.m_pLow[cDim], m_ptrMBR[u32Child]->m_pLow[cDim]);
-				m_nodeMBR.m_pHigh[cDim] = std::max(m_nodeMBR.m_pHigh[cDim], m_ptrMBR[u32Child]->m_pHigh[cDim]);
-			}
-		}
+	// 		for (uint32_t u32Child = 0; u32Child < m_children; ++u32Child)
+	// 		{
+	// 			m_nodeMBR.m_pLow[cDim] = std::min(m_nodeMBR.m_pLow[cDim], m_ptrMBR[u32Child]->m_pLow[cDim]);
+	// 			m_nodeMBR.m_pHigh[cDim] = std::max(m_nodeMBR.m_pHigh[cDim], m_ptrMBR[u32Child]->m_pHigh[cDim]);
+	// 		}
+	// 	}
 
-		m_pTree->writeNode(this);
+	// 	m_pTree->writeNode(this);
 
-		// Divertion from R*-Tree algorithm here. First adjust
-		// the path to the root, then start reinserts, to avoid complicated handling
-		// of changes to the same node from multiple insertions.
-		id_type cParent = pathBuffer.top(); pathBuffer.pop();
-		NodePtr ptrN = m_pTree->readNode(cParent);
-		Index* p = static_cast<Index*>(ptrN.get());
-		p->adjustTree(this, pathBuffer, true);
+	// 	// Divertion from R*-Tree algorithm here. First adjust
+	// 	// the path to the root, then start reinserts, to avoid complicated handling
+	// 	// of changes to the same node from multiple insertions.
+	// 	id_type cParent = pathBuffer.top(); pathBuffer.pop();
+	// 	NodePtr ptrN = m_pTree->readNode(cParent);
+	// 	Index* p = static_cast<Index*>(ptrN.get());
+	// 	p->adjustTree(this, pathBuffer, true);
 
-		for (cIndex = 0; cIndex < lReinsert; ++cIndex)
-		{
-			m_pTree->insertData_impl(
-				reinsertlen[cIndex], reinsertdata[cIndex],
-				*(reinsertmbr[cIndex]), reinsertid[cIndex],
-				m_level, overflowTable);
-		}
+	// 	for (cIndex = 0; cIndex < lReinsert; ++cIndex)
+	// 	{
+	// 		m_pTree->insertData_impl(
+	// 			reinsertlen[cIndex], reinsertdata[cIndex],
+	// 			*(reinsertmbr[cIndex]), reinsertid[cIndex],
+	// 			m_level, overflowTable);
+	// 	}
 
-		delete[] reinsertdata;
-		delete[] reinsertmbr;
-		delete[] reinsertid;
-		delete[] reinsertlen;
+	// 	delete[] reinsertdata;
+	// 	delete[] reinsertmbr;
+	// 	delete[] reinsertid;
+	// 	delete[] reinsertlen;
 
-		return true;
-	}
+	// 	return true;
+	// }
 	else
 	{
 		NodePtr n;
@@ -694,7 +694,7 @@ void Node::rtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type 
 						m = d;
 						md1 = d1; md2 = d2;
 						sel = u32Child;
-						if (m_pTree->m_treeVariant== KDV_NORMAL || m_pTree->m_treeVariant == RV_RSTAR) break;
+						if (m_pTree->m_treeVariant== KD_NORMAL || m_pTree->m_treeVariant== QD_NORMAL || m_pTree->m_treeVariant == KD_GREEDY) break;
 					}
 				}
 			}
@@ -935,8 +935,10 @@ void Node::pickSeeds(uint32_t& index1, uint32_t& index2)
 
 	switch (m_pTree->m_treeVariant)
 	{
-		case KDV_NORMAL:
-		case RV_RSTAR:
+		case KD_NORMAL:
+		case QD_NORMAL:
+		case KD_GREEDY:
+		// case RV_RSTAR:
 			for (cDim = 0; cDim < m_pTree->m_dimension; ++cDim)
 			{
 				double leastLower = m_ptrMBR[0]->m_pLow[cDim];
@@ -974,31 +976,31 @@ void Node::pickSeeds(uint32_t& index1, uint32_t& index2)
 			}
 
 			break;
-		case RV_QUADRATIC:
-			// for each pair of Regions (account for overflow Region too!)
-			for (u32Child = 0; u32Child < m_capacity; ++u32Child)
-			{
-				double a = m_ptrMBR[u32Child]->getArea();
+		// case RV_QUADRATIC:
+		// 	// for each pair of Regions (account for overflow Region too!)
+		// 	for (u32Child = 0; u32Child < m_capacity; ++u32Child)
+		// 	{
+		// 		double a = m_ptrMBR[u32Child]->getArea();
 
-				for (cIndex = u32Child + 1; cIndex <= m_capacity; ++cIndex)
-				{
-					// get the combined MBR of those two entries.
-					Region r;
-					m_ptrMBR[u32Child]->getCombinedRegion(r, *(m_ptrMBR[cIndex]));
+		// 		for (cIndex = u32Child + 1; cIndex <= m_capacity; ++cIndex)
+		// 		{
+		// 			// get the combined MBR of those two entries.
+		// 			Region r;
+		// 			m_ptrMBR[u32Child]->getCombinedRegion(r, *(m_ptrMBR[cIndex]));
 
-					// find the inefficiency of grouping these entries together.
-					double d = r.getArea() - a - m_ptrMBR[cIndex]->getArea();
+		// 			// find the inefficiency of grouping these entries together.
+		// 			double d = r.getArea() - a - m_ptrMBR[cIndex]->getArea();
 
-					if (d > inefficiency)
-					{
-						inefficiency = d;
-						index1 = u32Child;
-						index2 = cIndex;
-					}
-				}  // for (cIndex)
-			} // for (u32Child)
+		// 			if (d > inefficiency)
+		// 			{
+		// 				inefficiency = d;
+		// 				index1 = u32Child;
+		// 				index2 = cIndex;
+		// 			}
+		// 		}  // for (cIndex)
+		// 	} // for (u32Child)
 
-			break;
+		// 	break;
 		default:
 			throw Tools::NotSupportedException("Node::pickSeeds: Tree variant not supported.");
 	}
