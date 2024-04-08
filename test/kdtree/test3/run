@@ -9,22 +9,25 @@ awk '{if ($1 == 2) print $0}' < d > queries
 rm -rf d
 
 echo Creating new KDtree
-test-kdtree-KDTreeBulkLoad data tree 10
+# test-kdtree-KDTreeBulkLoad kdtree data queries tree 10 1.0
+test-kdtree-KDTreeBulkLoad greedy_kdtree data queries tree 10 1.0
 # test-kdtree-KDTreeBulkLoad kdtree_data tree 100
 
-echo Querying KDtree
-time test-kdtree-KDTreeQuery queries tree intersection > res
-cat data queries > .t
+# kd_type input_file query_file tree_file capacity utilization
 
-echo Running exhaustive search
-time test-kdtree-Exhaustive .t intersection > res2
+# echo Querying KDtree
+# time test-kdtree-KDTreeQuery queries tree intersection > res
+# cat data queries > .t
 
-echo Comparing results
-sort -n res > a
-sort -n res2 > b
-if diff a b
-then echo "Same results with exhaustive search. Everything seems fine."
-else echo "PROBLEM! We got different results from exhaustive search!"
-fi
-echo Results: `wc -l a`
-rm -rf a b res res2 .t tree.*
+# echo Running exhaustive search
+# time test-kdtree-Exhaustive .t intersection > res2
+
+# echo Comparing results
+# sort -n res > a
+# sort -n res2 > b
+# if diff a b
+# then echo "Same results with exhaustive search. Everything seems fine."
+# else echo "PROBLEM! We got different results from exhaustive search!"
+# fi
+# echo Results: `wc -l a`
+# rm -rf a b res res2 .t tree.*

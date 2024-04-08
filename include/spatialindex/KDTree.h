@@ -38,9 +38,11 @@ namespace SpatialIndex
 			QD_NORMAL = 0x2
 		};
 
-		enum BulkLoadMethod
+		enum LoadMethod
 		{
 			LOAD_KD = 0x0,
+			LOAD_KD_GREEDY = 0x1,
+			LOAD_QD = 0x2
 		};
 
 		enum PersistenObjectIdentifier
@@ -85,8 +87,8 @@ namespace SpatialIndex
 			KDTreeVariant rv,
 			id_type& indexIdentifier
 		);
-		SIDX_DLL ISpatialIndex* createAndBulkLoadNewKDTree(
-			BulkLoadMethod m,
+		SIDX_DLL ISpatialIndex* createNewKDTree(
+			LoadMethod m,
 			IDataStream& stream,
 			IStorageManager& sm,
 			double fillFactor,
@@ -96,8 +98,20 @@ namespace SpatialIndex
 			KDTreeVariant rv,
 			id_type& indexIdentifier
 		);
-		SIDX_DLL ISpatialIndex* createAndBulkLoadNewKDTree(
-			BulkLoadMethod m,
+		SIDX_DLL ISpatialIndex* createNewKDTree(
+			LoadMethod m,
+			IDataStream& stream,
+			IStorageManager& sm,
+			double fillFactor,
+			uint32_t indexCapacity,
+			uint32_t leafCapacity,
+			uint32_t dimension,
+			KDTreeVariant rv,
+			id_type& indexIdentifier,
+			IDataStream& queryStream
+		);
+		SIDX_DLL ISpatialIndex* createNewKDTree(
+			LoadMethod m,
 			IDataStream& stream,
 			IStorageManager& sm,
 			Tools::PropertySet& ps,

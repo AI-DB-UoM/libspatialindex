@@ -2,6 +2,33 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "GreddyKDTreeLoad",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/test-kdtree-KDTreeBulkLoad",
+            "args": [
+                "kdtree",
+                "${workspaceFolder}/test/kdtree/test3/data",
+                "${workspaceFolder}/test/kdtree/test3/queries",
+                "${workspaceFolder}/test/kdtree/test3/tree",
+                "10",
+                "1.0"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/test",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
             "name": "RTreeBulkLoad",
             "type": "cppdbg",
             "request": "launch",

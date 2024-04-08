@@ -58,11 +58,6 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		// if (argc != 5)
-		// {
-		// 	std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity query_type [intersection | 10NN | selfjoin | contains]." << std::endl;
-		// 	return -1;
-		// }
 
 		if (argc != 6)
 		{
@@ -70,21 +65,9 @@ int main(int argc, char** argv)
 			return -1;
 		}
 
-		// uint32_t queryType = 0;
-
-		// if (strcmp(argv[4], "intersection") == 0) queryType = 0;
-		// else if (strcmp(argv[4], "10NN") == 0) queryType = 1;
-		// else if (strcmp(argv[4], "selfjoin") == 0) queryType = 2;
-		// else if (strcmp(argv[4], "contains") == 0) queryType = 3;
-		// else
-		// {
-		// 	std::cerr << "Unknown query type." << std::endl;
-		// 	return -1;
-		// }
-
 		std::ifstream fin(argv[1]);
 		double fillFactor = atof(argv[4]);
-		SpatialIndex::KDTree::KDTreeVariant myVariant = SpatialIndex::KDTree::RV_RSTAR;
+		SpatialIndex::KDTree::KDTreeVariant myVariant = SpatialIndex::KDTree::KD_NORMAL;
 		if (strcmp(argv[5], "linear") == 0)
 		{
 			myVariant = SpatialIndex::KDTree::KD_NORMAL;

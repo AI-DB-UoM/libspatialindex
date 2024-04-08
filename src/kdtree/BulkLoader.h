@@ -117,6 +117,26 @@ namespace SpatialIndex
 				uint32_t numberOfPages // The total number of pages to use.
 			);
 
+			void topDownGreedyPartitioning(
+				KDTree* pTree,
+				IDataStream& stream,
+				IDataStream& queryStream,
+				uint32_t bindex,
+				uint32_t bleaf,
+				uint32_t pageSize, // The number of node entries per page.
+				uint32_t numberOfPages // The total number of pages to use.
+			);
+
+			std::vector<std::pair<uint32_t, double>> generageCandidateCutPos(
+				std::vector<Region>& regions
+			);
+
+			uint64_t calculateSkip(
+				std::vector<std::pair<Region, uint64_t>>& candidateSplits, 
+				std::vector<Region>& regions,
+				uint32_t dimension,
+				double value
+			);
 
 		protected:
 			void partition(
@@ -130,6 +150,18 @@ namespace SpatialIndex
 				std::shared_ptr<ExternalSorter> es2,
 				uint32_t pageSize,
 				uint32_t numberOfPages
+			);
+
+			bool greedyPartition(
+				SpatialIndex::KDTree::KDTree* pTree,
+				std::vector<ExternalSorter::Record *> tupleSet,
+				uint32_t bleaf,
+				uint32_t bindex,
+				uint32_t level,
+				Region parentMBR,
+				std::vector<ExternalSorter::Record *>& tupleSet2,
+				std::vector<Region>& queryRegions,
+				std::vector<std::pair<uint32_t, double>>& candidateCutPos
 			);
 
 			Node* createNode(

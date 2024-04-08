@@ -26,6 +26,7 @@
 ******************************************************************************/
 
 // NOTE: Please read README.txt before browsing this code.
+#include <cstring>
 
 // include library header file.
 #include <spatialindex/SpatialIndex.h>
@@ -96,7 +97,7 @@ public:
 
 		if (m_fin.good())
 		{
-			if (op != INSERT)
+			if (op != INSERT && op != QUERY)
 				throw Tools::IllegalArgumentException(
 					"The data input should contain insertions only."
 				);
@@ -118,17 +119,32 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		if (argc != 4 && argc != 5)
+		if (argc != 7)
 		{
-			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity [utilization]." << std::endl;
+			std::cerr << "Usage: " << argv[0] << "kd_type input_file query_file tree_file capacity utilization." << std::endl;
 			return -1;
 		}
 
-		std::string baseName = argv[2];
+		std::string baseName = argv[4];
 		double utilization = 1.0;
-		if (argc == 5)
+		utilization = atof(argv[6]);
+		SpatialIndex::KDTree::KDTreeVariant myVariant = SpatialIndex::KDTree::KD_NORMAL;
+		SpatialIndex::KDTree::LoadMethod loadMethod = SpatialIndex::KDTree::LOAD_KD;
+
+		if (strcmp(argv[1], "kdtree") == 0)
 		{
-			utilization = atof(argv[4]);
+			myVariant = SpatialIndex::KDTree::KD_NORMAL;
+			loadMethod = SpatialIndex::KDTree::LOAD_KD;
+		}
+		if (strcmp(argv[1], "greedy_kdtree") == 0)
+		{
+			myVariant = SpatialIndex::KDTree::KD_GREEDY;
+			loadMethod = SpatialIndex::KDTree::LOAD_KD_GREEDY;
+		}
+		if (strcmp(argv[1], "qdtree") == 0)
+		{
+			myVariant = SpatialIndex::KDTree::QD_NORMAL;
+			loadMethod = SpatialIndex::KDTree::LOAD_QD;
 		}
 
 		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, 4096);
@@ -138,14 +154,24 @@ int main(int argc, char** argv)
 			// applies a main memory random buffer on top of the persistent storage manager
 			// (LRU buffer, etc can be created the same way).
 
-		MyDataStream stream(argv[1]);
-
-		// Create and bulk load a new KDTree with dimensionality 2, using "file" as
-		// the StorageManager and the RSTAR splitting policy.
+		MyDataStream stream(argv[2]);
 		id_type indexIdentifier;
-		ISpatialIndex* tree = KDTree::createAndBulkLoadNewKDTree(
-			KDTree::LOAD_KD, stream, *file, utilization, 2, atoi(argv[3]), 2, SpatialIndex::KDTree::RV_RSTAR, indexIdentifier);
-
+		ISpatialIndex* tree = nullptr;  
+		// Create and bulk load a new KDTree with dimensionality 2, using "file" as
+		// the StorageManager.
+		if (myVariant == SpatialIndex::KDTree::KD_NORMAL)
+		{
+			std::cerr << "myVariant: " << myVariant << std::endl;
+			tree = KDTree::createNewKDTree(
+				loadMethod, stream, *file, utilization, 2, atoi(argv[5]), 2, myVariant, indexIdentifier);
+		}
+		else if (myVariant == SpatialIndex::KDTree::KD_GREEDY || myVariant == SpatialIndex::KDTree::QD_NORMAL)
+		{
+			MyDataStream queryStream(argv[3]);
+			tree = KDTree::createNewKDTree(
+				loadMethod, stream, *file, utilization, 2, atoi(argv[5]), 2, myVariant, indexIdentifier, queryStream);
+		}
+		
 		std::cerr << *tree;
 		std::cerr << "Buffer hits: " << file->getHits() << std::endl;
 		std::cerr << "Index ID: " << indexIdentifier << std::endl;

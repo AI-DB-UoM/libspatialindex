@@ -187,8 +187,8 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createNewKDTree(
 	return ret;
 }
 
-SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
-	BulkLoadMethod m,
+SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createNewKDTree(
+	LoadMethod m,
 	IDataStream& stream,
 	SpatialIndex::IStorageManager& sm,
 	double fillFactor,
@@ -211,15 +211,51 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 		bl.topDownPartitioning(static_cast<KDTree*>(tree), stream, bindex, bleaf, 10000, 100);
 		break;
 	default:
-		throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Unknown bulk load method.");
+		throw Tools::IllegalArgumentException("createNewKDTree: Unknown bulk load method.");
 		break;
 	}
 
 	return tree;
 }
 
-SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
-	BulkLoadMethod m,
+SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createNewKDTree(
+	LoadMethod m,
+	IDataStream& stream,
+	SpatialIndex::IStorageManager& sm,
+	double fillFactor,
+	uint32_t indexCapacity,
+	uint32_t leafCapacity,
+	uint32_t dimension,
+	SpatialIndex::KDTree::KDTreeVariant rv,
+	id_type& indexIdentifier,
+	IDataStream& queryStream)
+{
+	SpatialIndex::ISpatialIndex* tree = createNewKDTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier);
+
+	uint32_t bindex = static_cast<uint32_t>(std::floor(static_cast<double>(indexCapacity))); // for KDTree, index has 2 children
+	uint32_t bleaf = static_cast<uint32_t>(std::floor(static_cast<double>(leafCapacity)));
+
+	SpatialIndex::KDTree::BulkLoader bl;
+
+	switch (m)
+	{
+	case LOAD_KD_GREEDY:
+		bl.topDownGreedyPartitioning(static_cast<KDTree*>(tree), stream, queryStream, bindex, bleaf, 10000, 100);
+		break;
+	case LOAD_QD:
+		bl.topDownPartitioning(static_cast<KDTree*>(tree), stream, bindex, bleaf, 10000, 100);
+		break;
+	default:
+		throw Tools::IllegalArgumentException("createNewKDTree: Unknown bulk load method.");
+		break;
+	}
+
+	return tree;
+}
+
+
+SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createNewKDTree(
+	LoadMethod m,
 	IDataStream& stream,
 	SpatialIndex::IStorageManager& sm,
 	Tools::PropertySet& ps,
@@ -243,7 +279,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 			(var.m_val.lVal != KD_NORMAL &&
 			var.m_val.lVal != QD_NORMAL &&
 			var.m_val.lVal != KD_GREEDY))
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property TreeVariant must be Tools::VT_LONG and of KDTreeVariant type");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property TreeVariant must be Tools::VT_LONG and of KDTreeVariant type");
 
 		rv = static_cast<KDTreeVariant>(var.m_val.lVal);
 	}
@@ -255,15 +291,15 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
 	    if (var.m_varType != Tools::VT_DOUBLE)
-            throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property FillFactor was not of type Tools::VT_DOUBLE");
+            throw Tools::IllegalArgumentException("createNewKDTree: Property FillFactor was not of type Tools::VT_DOUBLE");
 
         if (var.m_val.dblVal <= 0.0)
-            throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property FillFactor was less than 0.0");
+            throw Tools::IllegalArgumentException("createNewKDTree: Property FillFactor was less than 0.0");
 
-        if (((rv == KD_NORMAL || rv == QD_NORMAL || rv == KD_GREEDY) && var.m_val.dblVal > 0.5))
-            throw Tools::IllegalArgumentException( "createAndBulkLoadNewKDTree: Property FillFactor must be in range (0.0, 0.5) for LINEAR or QUADRATIC index types");
+        // if (((rv == KD_NORMAL || rv == QD_NORMAL || rv == KD_GREEDY) && var.m_val.dblVal > 0.5))
+        //     throw Tools::IllegalArgumentException( "createNewKDTree: Property FillFactor must be in range (0.0, 0.5) for LINEAR or QUADRATIC index types");
         if ( var.m_val.dblVal > 1.0)
-            throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property FillFactor must be in range (0.0, 1.0]");
+            throw Tools::IllegalArgumentException("createNewKDTree: Property FillFactor must be in range (0.0, 1.0]");
 		fillFactor = var.m_val.dblVal;
 	}
 
@@ -272,7 +308,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
 		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 2)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property IndexCapacity must be Tools::VT_ULONG and >= 2");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property IndexCapacity must be Tools::VT_ULONG and >= 2");
 
 		indexCapacity = var.m_val.ulVal;
 	}
@@ -282,7 +318,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
 		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 2)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property LeafCapacity must be Tools::VT_ULONG and >= 2");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property LeafCapacity must be Tools::VT_ULONG and >= 2");
 
 		leafCapacity = var.m_val.ulVal;
 	}
@@ -292,9 +328,9 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
 		if (var.m_varType != Tools::VT_ULONG)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property Dimension must be Tools::VT_ULONG");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property Dimension must be Tools::VT_ULONG");
 		if (var.m_val.ulVal <= 1)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property Dimension must be greater than 1");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property Dimension must be greater than 1");
 
 		dimension = var.m_val.ulVal;
 	}
@@ -304,9 +340,9 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
 		if (var.m_varType != Tools::VT_ULONG)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property ExternalSortBufferPageSize must be Tools::VT_ULONG");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property ExternalSortBufferPageSize must be Tools::VT_ULONG");
 		if (var.m_val.ulVal <= 1)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property ExternalSortBufferPageSize must be greater than 1");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property ExternalSortBufferPageSize must be greater than 1");
 
 		pageSize = var.m_val.ulVal;
 	}
@@ -316,9 +352,9 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
 		if (var.m_varType != Tools::VT_ULONG)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property ExternalSortBufferTotalPages must be Tools::VT_ULONG");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property ExternalSortBufferTotalPages must be Tools::VT_ULONG");
 		if (var.m_val.ulVal <= 1)
-			throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Property ExternalSortBufferTotalPages must be greater than 1");
+			throw Tools::IllegalArgumentException("createNewKDTree: Property ExternalSortBufferTotalPages must be greater than 1");
 
 		numberOfPages = var.m_val.ulVal;
 	}
@@ -336,7 +372,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createAndBulkLoadNewKDTree(
 		bl.topDownPartitioning(static_cast<KDTree*>(tree), stream, bindex, bleaf, pageSize, numberOfPages);
 		break;
 	default:
-		throw Tools::IllegalArgumentException("createAndBulkLoadNewKDTree: Unknown bulk load method.");
+		throw Tools::IllegalArgumentException("createNewKDTree: Unknown bulk load method.");
 		break;
 	}
 
@@ -881,9 +917,9 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
         if (var.m_val.dblVal <= 0.0)
             throw Tools::IllegalArgumentException("initNew: Property FillFactor was less than 0.0");
 
-        if (((m_treeVariant == KD_NORMAL || m_treeVariant == QD_NORMAL || m_treeVariant == KD_GREEDY) && var.m_val.dblVal > 0.5))
-            throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
-                                                    "(0.0, 0.5) for LINEAR or QUADRATIC index types");
+        // if (((m_treeVariant == KD_NORMAL || m_treeVariant == QD_NORMAL || m_treeVariant == KD_GREEDY) && var.m_val.dblVal > 0.5))
+        //     throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
+        //                                             "(0.0, 0.5) for LINEAR or QUADRATIC index types");
         if ( var.m_val.dblVal > 1.0)
             throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
                                                     "(0.0, 1.0]");
