@@ -87,6 +87,16 @@ namespace SpatialIndex
 			KDTreeVariant rv,
 			id_type& indexIdentifier
 		);
+		// SIDX_DLL ISpatialIndex* createNewQDTree(
+		// 	IStorageManager& sm,
+		// 	double fillFactor,
+		// 	uint32_t indexCapacity,
+		// 	uint32_t leafCapacity,
+		// 	uint32_t dimension,
+		// 	KDTreeVariant rv,
+		// 	id_type& indexIdentifier,
+		// 	const std::string& modelPath
+		// );
 		SIDX_DLL ISpatialIndex* createNewKDTree(
 			LoadMethod m,
 			IDataStream& stream,
@@ -109,6 +119,20 @@ namespace SpatialIndex
 			KDTreeVariant rv,
 			id_type& indexIdentifier,
 			IDataStream& queryStream
+		);
+		SIDX_DLL ISpatialIndex* createNewQDTree(
+			LoadMethod m,
+			IDataStream& stream,
+			IStorageManager& sm,
+			double fillFactor,
+			uint32_t indexCapacity,
+			uint32_t leafCapacity,
+			uint32_t dimension,
+			KDTreeVariant rv,
+			id_type& indexIdentifier,
+			IDataStream& queryStream,
+			const std::string& modelPath,
+			int action_space_sizes
 		);
 		SIDX_DLL ISpatialIndex* createNewKDTree(
 			LoadMethod m,

@@ -202,6 +202,19 @@ test-kdtree-Generator/fast:
 .PHONY : test-kdtree-Generator/fast
 
 #=============================================================================
+# Target rules for targets named test-kdtree-QDTreeBulkLoad
+
+# Build rule for target.
+test-kdtree-QDTreeBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-QDTreeBulkLoad
+.PHONY : test-kdtree-QDTreeBulkLoad
+
+# fast build rule for target.
+test-kdtree-QDTreeBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build
+.PHONY : test-kdtree-QDTreeBulkLoad/fast
+
+#=============================================================================
 # Target rules for targets named test-rtree-Generator
 
 # Build rule for target.
@@ -396,6 +409,21 @@ kdtree/KDTreeQuery.s:
 .PHONY : kdtree/KDTreeQuery.s
 
 # target to build an object file
+kdtree/QDTreeBulkLoad.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/kdtree/QDTreeBulkLoad.o
+.PHONY : kdtree/QDTreeBulkLoad.o
+
+# target to preprocess a source file
+kdtree/QDTreeBulkLoad.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/kdtree/QDTreeBulkLoad.i
+.PHONY : kdtree/QDTreeBulkLoad.i
+
+# target to generate assembly for a file
+kdtree/QDTreeBulkLoad.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/kdtree/QDTreeBulkLoad.s
+.PHONY : kdtree/QDTreeBulkLoad.s
+
+# target to build an object file
 rtree/Exhaustive.o:
 	$(MAKE) -f CMakeFiles/test-rtree-Exhaustive.dir/build.make CMakeFiles/test-rtree-Exhaustive.dir/rtree/Exhaustive.o
 .PHONY : rtree/Exhaustive.o
@@ -491,6 +519,8 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
+	@echo "... rebuild_cache"
+	@echo "... edit_cache"
 	@echo "... test-rtree-Exhaustive"
 	@echo "... test-kdtree-Exhaustive"
 	@echo "... test-rtree-SFCRTreeBulkLoad"
@@ -498,13 +528,12 @@ help:
 	@echo "... test-rtree-RTreeQuery"
 	@echo "... test-geometry-Intersection"
 	@echo "... test-kdtree-Generator"
+	@echo "... test-kdtree-QDTreeBulkLoad"
 	@echo "... test-rtree-Generator"
 	@echo "... test-rtree-RTreeBulkLoad"
 	@echo "... test-kdtree-KDTreeQuery"
 	@echo "... test-kdtree-KDTreeBulkLoad"
 	@echo "... test-kdtree-KDTreeLoad"
-	@echo "... rebuild_cache"
-	@echo "... edit_cache"
 	@echo "... libsidxtest"
 	@echo "... gtest_main"
 	@echo "... gtest"
@@ -526,6 +555,9 @@ help:
 	@echo "... kdtree/KDTreeQuery.o"
 	@echo "... kdtree/KDTreeQuery.i"
 	@echo "... kdtree/KDTreeQuery.s"
+	@echo "... kdtree/QDTreeBulkLoad.o"
+	@echo "... kdtree/QDTreeBulkLoad.i"
+	@echo "... kdtree/QDTreeBulkLoad.s"
 	@echo "... rtree/Exhaustive.o"
 	@echo "... rtree/Exhaustive.i"
 	@echo "... rtree/Exhaustive.s"

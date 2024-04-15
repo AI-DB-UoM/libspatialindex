@@ -61,6 +61,7 @@ set(SOURCES
         Generator
         KDTreeBulkLoad
         KDTreeLoad
+        QDTreeBulkLoad
         KDTreeQuery)
 
 

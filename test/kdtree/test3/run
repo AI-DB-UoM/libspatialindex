@@ -10,7 +10,8 @@ rm -rf d
 
 echo Creating new KDtree
 # test-kdtree-KDTreeBulkLoad kdtree data queries tree 10 1.0
-test-kdtree-KDTreeBulkLoad greedy_kdtree data queries tree 10 1.0
+# test-kdtree-KDTreeBulkLoad greedy_kdtree data queries tree 10 1.0
+test-kdtree-QDTreeBulkLoad qdtree data queries tree 10 1.0 /home/research/Dropbox/PostDoc/topics/RLSpatial/benchmark/benchmark/libspatialindex 200 
 # test-kdtree-KDTreeBulkLoad kdtree_data tree 100
 
 # kd_type input_file query_file tree_file capacity utilization

@@ -434,7 +434,6 @@ void BulkLoader::partition(
 		partition(pTree, left_node_es, dimension, bleaf, bindex, level+1, es2, pageSize, numberOfPages);
 		ExternalSorter::Record* r_left = es2->getNextRecord();
 
-
 		for (uint64_t i = 0; i < right_node_en; ++i)
 		{
 			try { pR_right = es->getNextRecord(); }
@@ -466,7 +465,6 @@ void BulkLoader::partition(
 
 std::vector<std::pair<uint32_t, double>> BulkLoader::generageCandidateCutPos(std::vector<Region>& regions)
 {
-
 	std::vector<std::pair<uint32_t, double>> candidateCutPos;
 	for (size_t i = 0; i < regions.size(); ++i)
 	{
@@ -475,6 +473,49 @@ std::vector<std::pair<uint32_t, double>> BulkLoader::generageCandidateCutPos(std
 			candidateCutPos.push_back(std::make_pair(j, regions[i].m_pLow[j]));
 			candidateCutPos.push_back(std::make_pair(j, regions[i].m_pHigh[j]));
 		}
+	}
+	return candidateCutPos;
+}
+
+std::vector<std::pair<uint32_t, double>> BulkLoader::generageModelCandidateCutPos(int dimension, std::vector<Region>& regions, int sample_size)
+{
+	assert(!regions.empty());
+    std::vector<std::vector<std::pair<uint32_t, double>>> actions(dimension);
+	for (int i = 0; i < dimension; ++i) {
+		std::vector<std::pair<uint32_t, double>> dim_actions;
+		for (const auto& region : regions) {
+			dim_actions.emplace_back(i, region.m_pLow[i]);
+			dim_actions.emplace_back(i, region.m_pHigh[i]);
+		}
+		// Sort actions based on the cut positions
+		std::sort(dim_actions.begin(), dim_actions.end(), [](const auto& a, const auto& b) {
+			return a.second < b.second;
+		});
+		actions[i] = std::move(dim_actions);
+	}
+
+	int sample_size_per_dim = sample_size / dimension;
+	sample_size_per_dim += 1;  // Adjust for the first entry removal
+
+	std::vector<std::vector<std::pair<uint32_t, double>>> sampled_actions(dimension);
+	for (int i = 0; i < dimension; ++i) {
+		int total_actions = actions[i].size();
+		int interval = total_actions / sample_size_per_dim;
+		assert(interval > 0);
+		for (int j = 0; j < sample_size_per_dim && j * interval < total_actions; ++j) {
+			sampled_actions[i].push_back(actions[i][j * interval]);
+		}
+		
+		if (!sampled_actions[i].empty()) {
+			sampled_actions[i].erase(sampled_actions[i].begin());  // Remove the first sampled element
+		}
+	}
+	actions = std::move(sampled_actions);
+
+	// Flatten the actions vector
+	std::vector<std::pair<uint32_t, double>> candidateCutPos;
+	for (const auto& action_list : actions) {
+		candidateCutPos.insert(candidateCutPos.end(), action_list.begin(), action_list.end());
 	}
 	return candidateCutPos;
 }
@@ -698,7 +739,6 @@ bool BulkLoader::greedyPartition(
 		bestRightMBR = rightMBR;
 	}
 
-
 	greedyPartition(pTree, bestLeftData, bleaf, bindex, level+1, bestLeftMBR, tupleSet2, queryRegions, candidateCutPos);
 	// ExternalSorter::Record* r_left = tupleSet2
 	ExternalSorter::Record* r_left = tupleSet2.back();
@@ -725,6 +765,242 @@ bool BulkLoader::greedyPartition(
 	delete n_parent;
 
 	return can_split;
+}
+
+void BulkLoader::topDownModelPartitioning(
+	SpatialIndex::KDTree::KDTree* pTree,
+	IDataStream& stream,
+	IDataStream& queryStream,
+	uint32_t bindex,
+	uint32_t bleaf,
+	uint32_t pageSize,
+	uint32_t numberOfPages,
+	const std::string& modelPath,
+	int action_space_sizes
+) 
+{
+	if (! stream.hasNext())
+		throw Tools::IllegalArgumentException(
+			"KDTree::BulkLoader::topDownGreedyPartitioning: Empty data stream given."
+		);
+
+	if (modelPath.empty())
+	{
+		throw Tools::IllegalArgumentException("Model path is empty, exiting.");
+	}
+	try
+	{
+		torch::Device device(torch::kCPU);
+		pTree->m_splitModel = torch::jit::load(modelPath + "/qdtree.pth");
+		pTree->m_splitModel.to(device);
+	}
+	catch(const std::exception& e)
+	{
+		throw Tools::IllegalArgumentException("Split Model path is empty, exiting.");
+	}
+
+	NodePtr n = pTree->readNode(pTree->m_rootID);
+	pTree->deleteNode(n.get());
+
+	#ifndef NDEBUG
+	std::cerr << "KDTree::BulkLoader: Sorting data." << std::endl;
+	#endif
+
+	Region parentMBR = pTree->m_infiniteRegion;
+	std::vector<ExternalSorter::Record*> tupleSet;
+	while (stream.hasNext())
+	{
+		Data* d = reinterpret_cast<Data*>(stream.getNext());
+		if (d == nullptr)
+			throw Tools::IllegalArgumentException(
+				"topDownGreedyPartitioning: KDTree bulk load expects SpatialIndex::KDTree::Data entries."
+			);
+		// es->insert(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));
+		tupleSet.push_back(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));
+		parentMBR.combineRegion(d->m_region);
+		d->m_pData = nullptr;
+		delete d;
+	}
+
+	std::vector<Region> queryRegions;
+	while (queryStream.hasNext())
+	{
+		Data* d = reinterpret_cast<Data*>(queryStream.getNext());
+		queryRegions.push_back(d->m_region);
+		delete d;
+	}
+
+	pTree->m_stats.m_u64Data = tupleSet.size();
+
+	pTree->m_stats.m_nodesInLevel.push_back(0);
+
+	std::vector<ExternalSorter::Record *> tupleSet2;
+	std::vector<std::pair<uint32_t, double>> candidateCutPos = generageModelCandidateCutPos(pTree->m_dimension, queryRegions, action_space_sizes);
+
+	modelPartition(pTree, tupleSet, bleaf, bindex, 1, parentMBR, tupleSet2, queryRegions, candidateCutPos);
+
+	pTree->storeHeader();
+}
+
+bool BulkLoader::modelPartition(
+	SpatialIndex::KDTree::KDTree* pTree,
+	std::vector<ExternalSorter::Record *> tupleSet,
+	uint32_t bleaf,
+	uint32_t bindex,
+	uint32_t level,
+	Region parentMBR,
+	std::vector<ExternalSorter::Record *>& tupleSet2,
+	std::vector<Region>& queryRegions,
+	std::vector<std::pair<uint32_t, double>>& candidateCutPos)
+{
+
+	bool can_split = false;
+	uint64_t total_entries = tupleSet.size();
+
+	if (pTree->m_stats.m_nodesInLevel.size() < level)
+	{
+		pTree->m_stats.m_nodesInLevel.push_back(0);
+	}
+
+	if (total_entries <= bleaf)
+	{
+		Node* n = createNode(pTree, tupleSet, 0);
+		tupleSet.clear();
+		pTree->writeNode(n);
+		tupleSet2.push_back(new ExternalSorter::Record(n->m_nodeMBR, n->m_identifier, 0, nullptr, 0));
+		pTree->m_rootID = n->m_identifier;
+		pTree->m_stats.m_u32TreeHeight = std::max(pTree->m_stats.m_u32TreeHeight, static_cast<uint32_t>(level));
+		delete n;
+		return can_split;
+	}
+	// std::cerr << "KDTree::modelPartition: ----node----" << " level: " << level << std::endl;
+
+	std::vector<ExternalSorter::Record *> bestLeftData;
+	std::vector<ExternalSorter::Record *> bestRightData;
+
+	Region bestLeftMBR = pTree->m_infiniteRegion;
+	Region bestRightMBR = pTree->m_infiniteRegion;
+
+	// generate states
+	std::vector<int> state;
+
+	for (uint32_t i = 0; i < pTree->m_dimension; ++i) {
+		std::vector<int> low_bits = float_to_bit_array(parentMBR.getLow(i));
+		std::vector<int> high_bits = float_to_bit_array(parentMBR.getHigh(i));
+		state.insert(state.end(), low_bits.begin(), low_bits.end());
+		state.insert(state.end(), high_bits.begin(), high_bits.end());
+	}
+	uint32_t action = pTree->splitModelForward(state);
+
+	uint32_t splitDimension = candidateCutPos[action].first;
+	double splitValue = candidateCutPos[action].second;
+	if (parentMBR.getLow(splitDimension) >= splitValue || parentMBR.getHigh(splitDimension) <= splitValue)
+		can_split = false;
+	// create two sub Regions.
+	double *low = new double[pTree->m_dimension];
+	double *high = new double[pTree->m_dimension];
+
+	std::copy(parentMBR.m_pLow, parentMBR.m_pLow + pTree->m_dimension, low);
+	std::copy(parentMBR.m_pHigh, parentMBR.m_pHigh + pTree->m_dimension, high);
+	high[splitDimension] = splitValue;
+	Region leftMBR(low, high, pTree->m_dimension);
+
+	std::copy(parentMBR.m_pLow, parentMBR.m_pLow + pTree->m_dimension, low);
+	std::copy(parentMBR.m_pHigh, parentMBR.m_pHigh + pTree->m_dimension, high);
+	low[splitDimension] = splitValue;
+	Region rightMBR(low, high, pTree->m_dimension);
+
+	std::vector<ExternalSorter::Record *> leftData;
+	std::vector<ExternalSorter::Record *> rightData;
+
+	for (uint64_t l = 0; l < total_entries; ++l)
+	{
+		ExternalSorter::Record *r = tupleSet[l];
+		if (leftMBR.intersectsRegion(r->m_r))
+		{
+			leftData.push_back(r);
+			continue;
+		}
+		if (rightMBR.intersectsRegion(r->m_r))
+		{
+			rightData.push_back(r);
+			continue;
+		}
+		throw Tools::IllegalStateException("BulkLoader::topDownModelPartitioning: data missing!");
+	}
+
+	delete[] low;
+	delete[] high;
+
+	//  chech if one of the candidlate split leads to super small split.
+	if (leftData.size() <= bleaf || rightData.size() <= bleaf)
+		can_split = false;
+
+	if (!can_split) 
+	{
+		uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
+		std::vector<ExternalSorter::Record *> leftData;
+		std::vector<ExternalSorter::Record *> rightData;
+		Region leftMBR = pTree->m_infiniteRegion;
+		Region rightMBR = pTree->m_infiniteRegion;
+
+		for (uint64_t l = 0; l < left_node_en; ++l)
+		{
+			ExternalSorter::Record *r = tupleSet[l];
+			leftData.push_back(r);
+			leftMBR.combineRegion(r->m_r);
+		}
+		for (uint64_t l = left_node_en; l < total_entries; ++l)
+		{
+			ExternalSorter::Record *r = tupleSet[l];
+			rightData.push_back(r);
+			rightMBR.combineRegion(r->m_r);
+		}
+		bestLeftData = std::move(leftData);
+		bestRightData = std::move(rightData);
+		bestLeftMBR = leftMBR;
+		bestRightMBR = rightMBR;
+	}
+
+	modelPartition(pTree, bestLeftData, bleaf, bindex, level+1, bestLeftMBR, tupleSet2, queryRegions, candidateCutPos);
+	ExternalSorter::Record* r_left = tupleSet2.back();
+	tupleSet2.pop_back();
+
+	modelPartition(pTree, bestRightData, bleaf, bindex, level+1, bestRightMBR, tupleSet2, queryRegions, candidateCutPos);
+	ExternalSorter::Record* r_right = tupleSet2.back();
+	tupleSet2.pop_back();
+
+	std::vector<ExternalSorter::Record*> parent;
+	parent.push_back(r_left);
+	parent.push_back(r_right);
+
+	Node* n_parent = createNode(pTree, parent, pTree->m_stats.m_u32TreeHeight - level);
+	parent.clear();
+	pTree->writeNode(n_parent);
+
+	tupleSet2.push_back(new ExternalSorter::Record(n_parent->m_nodeMBR, n_parent->m_identifier, 0, nullptr, 0));
+	pTree->m_rootID = n_parent->m_identifier;
+
+	delete n_parent;
+
+	return can_split;
+}
+
+std::vector<int> BulkLoader::float_to_bit_array(float f) 
+{
+	// Convert float to a 32-bit binary representation
+	uint32_t as_int;
+	std::memcpy(&as_int, &f, sizeof(float));  // Use memcpy to avoid breaking strict-aliasing rules
+
+	// Convert the integer to a 32-bit binary string
+	std::bitset<32> bits(as_int);
+
+	// Convert the binary string to a vector of integers (0s and 1s)
+	std::vector<int> bit_array;
+	for (int i = 31; i >= 0; --i) {
+		bit_array.push_back(bits[i]);
+	}
+	return bit_array;
 }
 
 

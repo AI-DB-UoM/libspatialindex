@@ -127,8 +127,26 @@ namespace SpatialIndex
 				uint32_t numberOfPages // The total number of pages to use.
 			);
 
+			void topDownModelPartitioning(
+				KDTree* pTree,
+				IDataStream& stream,
+				IDataStream& queryStream,
+				uint32_t bindex,
+				uint32_t bleaf,
+				uint32_t pageSize, // The number of node entries per page.
+				uint32_t numberOfPages, // The total number of pages to use.
+				const std::string& modelPath,
+				int action_space_sizes
+			);
+
 			std::vector<std::pair<uint32_t, double>> generageCandidateCutPos(
 				std::vector<Region>& regions
+			);
+
+			std::vector<std::pair<uint32_t, double>> generageModelCandidateCutPos(
+				int dimension, 
+				std::vector<Region>& regions,
+				int sample_size
 			);
 
 			uint64_t calculateSkip(
@@ -162,6 +180,22 @@ namespace SpatialIndex
 				std::vector<ExternalSorter::Record *>& tupleSet2,
 				std::vector<Region>& queryRegions,
 				std::vector<std::pair<uint32_t, double>>& candidateCutPos
+			);
+
+			bool modelPartition(
+				SpatialIndex::KDTree::KDTree* pTree,
+				std::vector<ExternalSorter::Record *> tupleSet,
+				uint32_t bleaf,
+				uint32_t bindex,
+				uint32_t level,
+				Region parentMBR,
+				std::vector<ExternalSorter::Record *>& tupleSet2,
+				std::vector<Region>& queryRegions,
+				std::vector<std::pair<uint32_t, double>>& candidateCutPos
+			);
+
+			std::vector<int> float_to_bit_array(
+				float f
 			);
 
 			Node* createNode(

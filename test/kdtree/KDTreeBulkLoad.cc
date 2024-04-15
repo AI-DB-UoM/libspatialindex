@@ -141,11 +141,11 @@ int main(int argc, char** argv)
 			myVariant = SpatialIndex::KDTree::KD_GREEDY;
 			loadMethod = SpatialIndex::KDTree::LOAD_KD_GREEDY;
 		}
-		if (strcmp(argv[1], "qdtree") == 0)
-		{
-			myVariant = SpatialIndex::KDTree::QD_NORMAL;
-			loadMethod = SpatialIndex::KDTree::LOAD_QD;
-		}
+		// if (strcmp(argv[1], "qdtree") == 0)
+		// {
+		// 	myVariant = SpatialIndex::KDTree::QD_NORMAL;
+		// 	loadMethod = SpatialIndex::KDTree::LOAD_QD;
+		// }
 
 		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, 4096);
 			// Create a new storage manager with the provided base name and a 4K page size.
@@ -171,6 +171,7 @@ int main(int argc, char** argv)
 			tree = KDTree::createNewKDTree(
 				loadMethod, stream, *file, utilization, 2, atoi(argv[5]), 2, myVariant, indexIdentifier, queryStream);
 		}
+		
 		
 		std::cerr << *tree;
 		std::cerr << "Buffer hits: " << file->getHits() << std::endl;

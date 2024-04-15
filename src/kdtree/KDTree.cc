@@ -146,6 +146,52 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::returnKDTree(SpatialIndex::IS
 	return si;
 }
 
+// SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createNewQDTree(
+// 	SpatialIndex::IStorageManager& sm,
+// 	double fillFactor,
+// 	uint32_t indexCapacity,
+// 	uint32_t leafCapacity,
+// 	uint32_t dimension,
+// 	KDTreeVariant rv,
+// 	id_type& indexIdentifier,
+// 	const std::string& modelPath)
+// {
+// 	Tools::Variant var;
+// 	Tools::PropertySet ps;
+
+// 	var.m_varType = Tools::VT_DOUBLE;
+// 	var.m_val.dblVal = fillFactor;
+// 	ps.setProperty("FillFactor", var);
+
+// 	var.m_varType = Tools::VT_ULONG;
+// 	var.m_val.ulVal = indexCapacity;
+// 	ps.setProperty("IndexCapacity", var);
+
+// 	var.m_varType = Tools::VT_ULONG;
+// 	var.m_val.ulVal = leafCapacity;
+// 	ps.setProperty("LeafCapacity", var);
+
+// 	var.m_varType = Tools::VT_ULONG;
+// 	var.m_val.ulVal = dimension;
+// 	ps.setProperty("Dimension", var);
+
+// 	var.m_varType = Tools::VT_LONG;
+// 	var.m_val.lVal = rv;
+// 	ps.setProperty("TreeVariant", var);
+
+// 	var.m_varType = Tools::VT_PCHAR;
+// 	var.m_val.pcVal = const_cast<char*>(modelPath.c_str());
+// 	ps.setProperty("QDTreeModelPath", var);
+
+// 	ISpatialIndex* ret = returnKDTree(sm, ps);
+
+// 	var.m_varType = Tools::VT_LONGLONG;
+// 	var = ps.getProperty("IndexIdentifier");
+// 	indexIdentifier = var.m_val.llVal;
+
+// 	return ret;
+// }
+
 SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createNewKDTree(
 	SpatialIndex::IStorageManager& sm,
 	double fillFactor,
@@ -242,11 +288,43 @@ SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createNewKDTree(
 	case LOAD_KD_GREEDY:
 		bl.topDownGreedyPartitioning(static_cast<KDTree*>(tree), stream, queryStream, bindex, bleaf, 10000, 100);
 		break;
-	case LOAD_QD:
-		bl.topDownPartitioning(static_cast<KDTree*>(tree), stream, bindex, bleaf, 10000, 100);
-		break;
 	default:
 		throw Tools::IllegalArgumentException("createNewKDTree: Unknown bulk load method.");
+		break;
+	}
+
+	return tree;
+}
+
+SpatialIndex::ISpatialIndex* SpatialIndex::KDTree::createNewQDTree(
+	LoadMethod m,
+	IDataStream& stream,
+	SpatialIndex::IStorageManager& sm,
+	double fillFactor,
+	uint32_t indexCapacity,
+	uint32_t leafCapacity,
+	uint32_t dimension,
+	SpatialIndex::KDTree::KDTreeVariant rv,
+	id_type& indexIdentifier,
+	IDataStream& queryStream,
+	const std::string& modelPath,
+	int action_space_sizes
+)
+{
+	SpatialIndex::ISpatialIndex* tree = createNewKDTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier);
+
+	uint32_t bindex = static_cast<uint32_t>(std::floor(static_cast<double>(indexCapacity))); // for KDTree, index has 2 children
+	uint32_t bleaf = static_cast<uint32_t>(std::floor(static_cast<double>(leafCapacity)));
+
+	SpatialIndex::KDTree::BulkLoader bl;
+
+	switch (m)
+	{
+	case LOAD_QD:
+		bl.topDownModelPartitioning(static_cast<KDTree*>(tree), stream, queryStream, bindex, bleaf, 10000, 100, modelPath, action_space_sizes);
+		break;
+	default:
+		throw Tools::IllegalArgumentException("createNewQDTree: Unknown bulk load method.");
 		break;
 	}
 
@@ -1162,6 +1240,29 @@ void SpatialIndex::KDTree::KDTree::initOld(Tools::PropertySet& ps)
 	}
 
 	m_infiniteRegion.makeInfinite(m_dimension);
+}
+
+uint32_t SpatialIndex::KDTree::KDTree::splitModelForward(std::vector<int>& states)
+{
+
+	torch::Device device(torch::kCPU);
+    torch::Tensor statesTensor = torch::tensor(states, torch::dtype(torch::kInt32)).to(device);
+    statesTensor = statesTensor.view({1, -1}).to(torch::kFloat32);
+    std::vector<torch::jit::IValue> inputs;
+    inputs.push_back(statesTensor);
+
+    at::Tensor output = m_splitModel.forward(inputs).toTensor();
+
+    // Check if the output is indeed a 1x1 tensor
+    if (output.numel() == 1) {
+        // Directly extract the scalar value as an integer
+        int best_int = output.item<int>();
+        best_int = std::max(best_int, 0);
+        uint32_t best = static_cast<uint32_t>(best_int); 
+        return best;
+    } else {
+        throw std::runtime_error("Expected model to output a single scalar value (1x1 tensor).");
+    }
 }
 
 void SpatialIndex::KDTree::KDTree::storeHeader()
