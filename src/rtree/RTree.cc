@@ -274,8 +274,8 @@ SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createAndBulkLoadNewRTree(
 
         if (((rv == RV_LINEAR || rv == RV_RLRTREE ||rv == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
             throw Tools::IllegalArgumentException( "createAndBulkLoadNewRTree: Property FillFactor must be in range (0.0, 0.5) for LINEAR or QUADRATIC index types");
-        if ( var.m_val.dblVal >= 1.0)
-            throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property FillFactor must be in range (0.0, 1.0) for RSTAR index type");
+        if ( var.m_val.dblVal > 1.0)
+            throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property FillFactor must be in range (0.0, 1.0] for RSTAR index type");
 		fillFactor = var.m_val.dblVal;
 	}
 
@@ -963,9 +963,9 @@ void SpatialIndex::RTree::RTree::initNew(Tools::PropertySet& ps)
         if (((m_treeVariant == RV_LINEAR || m_treeVariant == RV_RLRTREE ||m_treeVariant == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
             throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
                                                     "(0.0, 0.5) for LINEAR or QUADRATIC index types");
-        if ( var.m_val.dblVal >= 1.0)
+        if ( var.m_val.dblVal > 1.0)
             throw Tools::IllegalArgumentException(  "initNew: Property FillFactor must be in range "
-                                                    "(0.0, 1.0) for RSTAR index type");
+                                                    "(0.0, 1.0] for RSTAR index type");
 		m_fillFactor = var.m_val.dblVal;
 	}
 
@@ -1010,8 +1010,8 @@ void SpatialIndex::RTree::RTree::initNew(Tools::PropertySet& ps)
 		if (
 			var.m_varType != Tools::VT_DOUBLE ||
 			var.m_val.dblVal <= 0.0 ||
-			var.m_val.dblVal >= 1.0)
-			throw Tools::IllegalArgumentException("initNew: Property SplitDistributionFactor must be Tools::VT_DOUBLE and in (0.0, 1.0)");
+			var.m_val.dblVal > 1.0)
+			throw Tools::IllegalArgumentException("initNew: Property SplitDistributionFactor must be Tools::VT_DOUBLE and in (0.0, 1.0]");
 
 		m_splitDistributionFactor = var.m_val.dblVal;
 	}
@@ -1023,8 +1023,8 @@ void SpatialIndex::RTree::RTree::initNew(Tools::PropertySet& ps)
 		if (
 			var.m_varType != Tools::VT_DOUBLE ||
 			var.m_val.dblVal <= 0.0 ||
-			var.m_val.dblVal >= 1.0)
-			throw Tools::IllegalArgumentException("initNew: Property ReinsertFactor must be Tools::VT_DOUBLE and in (0.0, 1.0)");
+			var.m_val.dblVal > 1.0)
+			throw Tools::IllegalArgumentException("initNew: Property ReinsertFactor must be Tools::VT_DOUBLE and in (0.0, 1.0]");
 
 		m_reinsertFactor = var.m_val.dblVal;
 	}
@@ -1178,8 +1178,8 @@ void SpatialIndex::RTree::RTree::initOld(Tools::PropertySet& ps)
 	var = ps.getProperty("SplitDistributionFactor");
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
-		if (var.m_varType != Tools::VT_DOUBLE || var.m_val.dblVal <= 0.0 || var.m_val.dblVal >= 1.0)
-			throw Tools::IllegalArgumentException("initOld: Property SplitDistributionFactor must be Tools::VT_DOUBLE and in (0.0, 1.0)");
+		if (var.m_varType != Tools::VT_DOUBLE || var.m_val.dblVal <= 0.0 || var.m_val.dblVal > 1.0)
+			throw Tools::IllegalArgumentException("initOld: Property SplitDistributionFactor must be Tools::VT_DOUBLE and in (0.0, 1.0]");
 
 		m_splitDistributionFactor = var.m_val.dblVal;
 	}
@@ -1188,8 +1188,8 @@ void SpatialIndex::RTree::RTree::initOld(Tools::PropertySet& ps)
 	var = ps.getProperty("ReinsertFactor");
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
-		if (var.m_varType != Tools::VT_DOUBLE || var.m_val.dblVal <= 0.0 || var.m_val.dblVal >= 1.0)
-			throw Tools::IllegalArgumentException("initOld: Property ReinsertFactor must be Tools::VT_DOUBLE and in (0.0, 1.0)");
+		if (var.m_varType != Tools::VT_DOUBLE || var.m_val.dblVal <= 0.0 || var.m_val.dblVal > 1.0)
+			throw Tools::IllegalArgumentException("initOld: Property ReinsertFactor must be Tools::VT_DOUBLE and in (0.0, 1.0]");
 
 		m_reinsertFactor = var.m_val.dblVal;
 	}

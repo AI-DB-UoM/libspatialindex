@@ -1045,8 +1045,8 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
 		if (
 			var.m_varType != Tools::VT_DOUBLE ||
 			var.m_val.dblVal <= 0.0 ||
-			var.m_val.dblVal >= 1.0)
-			throw Tools::IllegalArgumentException("initNew: Property SplitDistributionFactor must be Tools::VT_DOUBLE and in (0.0, 1.0)");
+			var.m_val.dblVal > 1.0)
+			throw Tools::IllegalArgumentException("initNew: Property SplitDistributionFactor must be Tools::VT_DOUBLE and in (0.0, 1.0]");
 
 		m_splitDistributionFactor = var.m_val.dblVal;
 	}
@@ -1058,8 +1058,8 @@ void SpatialIndex::KDTree::KDTree::initNew(Tools::PropertySet& ps)
 		if (
 			var.m_varType != Tools::VT_DOUBLE ||
 			var.m_val.dblVal <= 0.0 ||
-			var.m_val.dblVal >= 1.0)
-			throw Tools::IllegalArgumentException("initNew: Property ReinsertFactor must be Tools::VT_DOUBLE and in (0.0, 1.0)");
+			var.m_val.dblVal > 1.0)
+			throw Tools::IllegalArgumentException("initNew: Property ReinsertFactor must be Tools::VT_DOUBLE and in (0.0, 1.0]");
 
 		m_reinsertFactor = var.m_val.dblVal;
 	}
@@ -1178,8 +1178,8 @@ void SpatialIndex::KDTree::KDTree::initOld(Tools::PropertySet& ps)
 	var = ps.getProperty("SplitDistributionFactor");
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
-		if (var.m_varType != Tools::VT_DOUBLE || var.m_val.dblVal <= 0.0 || var.m_val.dblVal >= 1.0)
-			throw Tools::IllegalArgumentException("initOld: Property SplitDistributionFactor must be Tools::VT_DOUBLE and in (0.0, 1.0)");
+		if (var.m_varType != Tools::VT_DOUBLE || var.m_val.dblVal <= 0.0 || var.m_val.dblVal > 1.0)
+			throw Tools::IllegalArgumentException("initOld: Property SplitDistributionFactor must be Tools::VT_DOUBLE and in (0.0, 1.0]");
 
 		m_splitDistributionFactor = var.m_val.dblVal;
 	}
@@ -1188,8 +1188,8 @@ void SpatialIndex::KDTree::KDTree::initOld(Tools::PropertySet& ps)
 	var = ps.getProperty("ReinsertFactor");
 	if (var.m_varType != Tools::VT_EMPTY)
 	{
-		if (var.m_varType != Tools::VT_DOUBLE || var.m_val.dblVal <= 0.0 || var.m_val.dblVal >= 1.0)
-			throw Tools::IllegalArgumentException("initOld: Property ReinsertFactor must be Tools::VT_DOUBLE and in (0.0, 1.0)");
+		if (var.m_varType != Tools::VT_DOUBLE || var.m_val.dblVal <= 0.0 || var.m_val.dblVal > 1.0)
+			throw Tools::IllegalArgumentException("initOld: Property ReinsertFactor must be Tools::VT_DOUBLE and in (0.0, 1.0]");
 
 		m_reinsertFactor = var.m_val.dblVal;
 	}

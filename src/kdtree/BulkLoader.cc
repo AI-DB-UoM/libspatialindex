@@ -605,8 +605,6 @@ bool BulkLoader::greedyPartition(
 	std::vector<std::pair<uint32_t, double>>& candidateCutPos)
 {
 
-	// TODO use a tree height parameter to record the height of current branch
-
 	bool can_split = false;
 	uint64_t total_entries = tupleSet.size();
 
@@ -896,6 +894,7 @@ bool BulkLoader::modelPartition(
 	double splitValue = candidateCutPos[action].second;
 	if (parentMBR.getLow(splitDimension) >= splitValue || parentMBR.getHigh(splitDimension) <= splitValue)
 		can_split = false;
+
 	// create two sub Regions.
 	double *low = new double[pTree->m_dimension];
 	double *high = new double[pTree->m_dimension];
@@ -933,34 +932,48 @@ bool BulkLoader::modelPartition(
 	delete[] high;
 
 	//  chech if one of the candidlate split leads to super small split.
-	if (leftData.size() <= bleaf || rightData.size() <= bleaf)
-		can_split = false;
+	if (can_split)
+	{
+		if (leftData.size() <= bleaf || rightData.size() <= bleaf)
+		{
+			can_split = false;
+		}
+		else
+		{
+			bestLeftData = std::move(leftData);
+			bestRightData = std::move(rightData);
+			bestLeftMBR = leftMBR; 
+			bestRightMBR = rightMBR; 
+		}
+	}
+
 
 	if (!can_split) 
 	{
 		uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
-		std::vector<ExternalSorter::Record *> leftData;
-		std::vector<ExternalSorter::Record *> rightData;
-		Region leftMBR = pTree->m_infiniteRegion;
-		Region rightMBR = pTree->m_infiniteRegion;
+		std::vector<ExternalSorter::Record *> leftData_;
+		std::vector<ExternalSorter::Record *> rightData_;
+		Region leftMBR_ = pTree->m_infiniteRegion;
+		Region rightMBR_ = pTree->m_infiniteRegion;
 
 		for (uint64_t l = 0; l < left_node_en; ++l)
 		{
 			ExternalSorter::Record *r = tupleSet[l];
-			leftData.push_back(r);
-			leftMBR.combineRegion(r->m_r);
+			leftData_.push_back(r);
+			leftMBR_.combineRegion(r->m_r);
 		}
 		for (uint64_t l = left_node_en; l < total_entries; ++l)
 		{
 			ExternalSorter::Record *r = tupleSet[l];
-			rightData.push_back(r);
-			rightMBR.combineRegion(r->m_r);
+			rightData_.push_back(r);
+			rightMBR_.combineRegion(r->m_r);
 		}
-		bestLeftData = std::move(leftData);
-		bestRightData = std::move(rightData);
-		bestLeftMBR = leftMBR;
-		bestRightMBR = rightMBR;
+		bestLeftData = std::move(leftData_);
+		bestRightData = std::move(rightData_);
+		bestLeftMBR = leftMBR_;
+		bestRightMBR = rightMBR_;
 	}
+
 
 	modelPartition(pTree, bestLeftData, bleaf, bindex, level+1, bestLeftMBR, tupleSet2, queryRegions, candidateCutPos);
 	ExternalSorter::Record* r_left = tupleSet2.back();
