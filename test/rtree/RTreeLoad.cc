@@ -65,15 +65,15 @@ int main(int argc, char** argv)
 		// 	return -1;
 		// }
 
-		if (argc != 6 && strcmp(argv[5], "rlrtree"))
+		if (argc != 8 && strcmp(argv[5], "rlrtree"))
 		{
-			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type" << std::endl;
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type pagesize buffer" << std::endl;
 			return -1;
 		}
 
-		if (!strcmp(argv[5], "rlrtree") && argc != 7)
+		if (!strcmp(argv[5], "rlrtree") && argc != 9)
 		{
-			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type [RLRTree model path]" << std::endl;
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type [RLRTree model path] pagesize buffer" << std::endl;
 			return -1;
 		}
 
@@ -95,13 +95,19 @@ int main(int argc, char** argv)
 		std::string modelPath = "";
 		std::string chooseSubtreeModelPath = "";
 		std::string splitModelPath = "";
+		int pagesize = 4096;
+		int mainMemoryRandomBuffer = 10;
 		if (strcmp(argv[5], "linear") == 0)
 		{
 			myVariant = SpatialIndex::RTree::RV_LINEAR;
+			pagesize = atof(argv[6]);
+			mainMemoryRandomBuffer = atof(argv[7]);
 		}
 		if (strcmp(argv[5], "quadratic") == 0)
 		{
 			myVariant = SpatialIndex::RTree::RV_QUADRATIC;
+			pagesize = atof(argv[6]);
+			mainMemoryRandomBuffer = atof(argv[7]);
 		}
 		if (strcmp(argv[5], "rlrtree") == 0)
 		{
@@ -110,6 +116,8 @@ int main(int argc, char** argv)
 			chooseSubtreeModelPath = modelPath + "/choose_subtree.pth";
 			splitModelPath = modelPath + "/split.pth";
 			std::cerr << "modelPath " << modelPath << std::endl;
+			pagesize = atof(argv[7]);
+			mainMemoryRandomBuffer = atof(argv[8]);
 		}
 
 		if (! fin)
@@ -121,9 +129,9 @@ int main(int argc, char** argv)
 
 		// // Create a new storage manager with the provided base name and a 4K page size.
 		std::string baseName = argv[2];
-		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, 4096);
+		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, pagesize);
 
-		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, 10, false);
+		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, mainMemoryRandomBuffer, false);
 			// applies a main memory random buffer on top of the persistent storage manager
 			// (LRU buffer, etc can be created the same way).
 

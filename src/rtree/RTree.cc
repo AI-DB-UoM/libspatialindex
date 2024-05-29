@@ -864,6 +864,41 @@ void SpatialIndex::RTree::RTree::flush()
 	storeHeader();
 }
 
+bool SpatialIndex::RTree::RTree::isModelAvailable()
+{
+	if (isSplitModelLoaded && isChooseSubtreeModelLoaded)
+		return true;
+	
+	torch::Device device(torch::kCPU);
+	std::string modelPath = "benchmark/model";
+
+	try
+	{
+		m_splitModel = torch::jit::load(modelPath + "/split.pth");
+		m_splitModel.to(device);
+		isSplitModelLoaded = true;
+	}
+	catch(const std::exception& e)
+	{
+		throw Tools::IllegalArgumentException("Split Model path is empty, exiting.");
+	}
+	try
+	{
+		m_chooseSubtreeModel = torch::jit::load(modelPath + "/choose_subtree.pth");
+		m_chooseSubtreeModel.to(device);
+		isChooseSubtreeModelLoaded = true;
+	}
+	catch(const std::exception& e)
+	{
+		throw Tools::IllegalArgumentException("ChooseSubtree Model path is empty, exiting.");
+	}
+
+	if (isSplitModelLoaded && isChooseSubtreeModelLoaded)
+		return true;
+
+	return false; 
+}
+
 uint32_t SpatialIndex::RTree::RTree::chooseSubtreeModelForward(std::vector<double>& states)
 {
 	torch::Device device(torch::kCPU);
@@ -928,6 +963,7 @@ void SpatialIndex::RTree::RTree::initNew(Tools::PropertySet& ps)
 			{
 				m_splitModel = torch::jit::load(modelPath + "/split.pth");
 				m_splitModel.to(device);
+				isSplitModelLoaded = true;
 			}
 			catch(const std::exception& e)
 			{
@@ -937,6 +973,7 @@ void SpatialIndex::RTree::RTree::initNew(Tools::PropertySet& ps)
 			{
 				m_chooseSubtreeModel = torch::jit::load(modelPath + "/choose_subtree.pth");
 				m_chooseSubtreeModel.to(device);
+				isChooseSubtreeModelLoaded = true;
 			}
 			catch(const std::exception& e)
 			{

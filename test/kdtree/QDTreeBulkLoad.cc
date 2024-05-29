@@ -119,15 +119,17 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		if (argc != 9)
+		if (argc != 11)
 		{
-			std::cerr << "Usage: " << argv[0] << "kd_type input_file query_file tree_file capacity utilization modelpath action_space_sizes." << std::endl;
+			std::cerr << "Usage: " << argv[0] << "kd_type input_file query_file tree_file capacity utilization modelpath action_space_sizes pagesize buffer." << std::endl;
 			return -1;
 		}
 
 		std::string baseName = argv[4];
 		double utilization = 1.0;
 		utilization = atof(argv[6]);
+		int pagesize = atoi(argv[9]);
+		int mainMemoryRandomBuffer = atoi(argv[10]);
 		SpatialIndex::KDTree::KDTreeVariant myVariant = SpatialIndex::KDTree::KD_NORMAL;
 		SpatialIndex::KDTree::LoadMethod loadMethod = SpatialIndex::KDTree::LOAD_KD;
 
@@ -141,10 +143,10 @@ int main(int argc, char** argv)
 			return -1;
 		}
 
-		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, 4096);
+		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, pagesize);
 			// Create a new storage manager with the provided base name and a 4K page size.
 
-		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, 10, false);
+		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, mainMemoryRandomBuffer, false);
 			// applies a main memory random buffer on top of the persistent storage manager
 			// (LRU buffer, etc can be created the same way).
 

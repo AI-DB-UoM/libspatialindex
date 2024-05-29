@@ -29,6 +29,13 @@
 
 #include <cstring>
 
+#include <chrono>
+#include <vector>
+#include <numeric>
+#include <algorithm>
+#include <iostream>
+#include <cmath> // For calculating variance
+
 // include library header file.
 #include <spatialindex/SpatialIndex.h>
 
@@ -156,15 +163,16 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		if (argc != 4)
+		if (argc != 5)
 		{
-			cerr << "Usage: " << argv[0] << " query_file tree_file query_type [intersection | kNN | selfjoin]." << endl;
+			cerr << "Usage: " << argv[0] << " query_file tree_file query_type [intersection | kNN | selfjoin] buffer." << endl;
 			return -1;
 		}
 
 		uint32_t queryType = 0;
 		int k = 0; // To store the value of k for kNN queries
 		int len = strlen(argv[3]);
+		int mainMemoryRandomBuffer = atof(argv[4]);
 
 		if (strcmp(argv[3], "intersection") == 0) queryType = 0;
 		else if (len >= 3 && strcmp(&argv[3][len - 2], "NN") == 0) 
@@ -195,7 +203,7 @@ int main(int argc, char** argv)
 		IStorageManager* diskfile = StorageManager::loadDiskStorageManager(baseName);
 			// this will try to locate and open an already existing storage manager.
 
-		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, 10, false);
+		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, mainMemoryRandomBuffer, false);
 			// applies a main memory random buffer on top of the persistent storage manager
 			// (LRU buffer, etc can be created the same way).
 
@@ -211,13 +219,17 @@ int main(int argc, char** argv)
 		double x1, x2, y1, y2;
 		double plow[2], phigh[2];
 
+		vector<double> queryTimes; 
+		vector<double> insertTimes; 
 		while (fin)
 		{
 			fin >> op >> id >> x1 >> y1 >> x2 >> y2;
 			if (! fin.good()) continue; // skip newlines, etc.
 
+			
 			if (op == QUERY)
 			{
+				auto start = chrono::high_resolution_clock::now();
 				plow[0] = x1; plow[1] = y1;
 				phigh[0] = x2; phigh[1] = y2;
 
@@ -243,16 +255,36 @@ int main(int argc, char** argv)
 
 				indexIO += vis.m_indexIO;
 				leafIO += vis.m_leafIO;
+				auto end = chrono::high_resolution_clock::now(); 
+				auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+				queryTimes.push_back(duration); 
 					// example of the Visitor pattern usage, for calculating how many nodes
 					// were visited.
+			}
+			else if (op == INSERT)
+			{
+				auto start = chrono::high_resolution_clock::now();
+
+				plow[0] = x1; plow[1] = y1;
+				phigh[0] = x2; phigh[1] = y2;
+				Region r = Region(plow, phigh, 2);
+
+				std::ostringstream os;
+				os << r;
+				std::string data = os.str();
+
+				tree->insertData((uint32_t)(data.size() + 1), reinterpret_cast<const uint8_t*>(data.c_str()), r, id);
+				//tree->insertData(0, 0, r, id);
+					// example of passing zero size and a null pointer as the associated data.
+				auto end = chrono::high_resolution_clock::now(); 
+				auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+				insertTimes.push_back(duration); 
 			}
 			else
 			{
 				cerr << "This is not a query operation." << endl;
 			}
-
-			if ((count % 1000) == 0) cerr << count << endl;
-
+			
 			count++;
 		}
 
@@ -265,6 +297,66 @@ int main(int argc, char** argv)
 		cerr << "Index I/O: " << indexIO << endl;
 		cerr << "Leaf I/O: " << leafIO << endl;
 		cerr << "Buffer hits: " << file->getHits() << endl;
+
+		if (queryTimes.size() > 0)
+		{
+			// Query mean
+			double mean = accumulate(queryTimes.begin(), queryTimes.end(), 0.0) / queryTimes.size();
+
+			// Query stdDev
+			double variance = 0.0;
+			for (auto time : queryTimes) {
+				variance += (time - mean) * (time - mean);
+			}
+			variance /= queryTimes.size();
+			double stdDev = sqrt(variance);
+	
+			// Query P50
+			nth_element(queryTimes.begin(), queryTimes.begin() + queryTimes.size() / 2, queryTimes.end());
+			double p50 = queryTimes[queryTimes.size() / 2];
+
+			// Query P99
+			size_t n = queryTimes.size();
+			nth_element(queryTimes.begin(), queryTimes.begin() + n * 99 / 100, queryTimes.end());
+			double p99 = queryTimes[n * 99 / 100];
+
+			cerr << "Query num: " << queryTimes.size() << endl;
+			cerr << "Query mean: " << mean << endl;
+			cerr << "Query variance: " << variance << endl;
+			cerr << "Query stdDev: " << stdDev << endl;
+			cerr << "Query p50: " << p50 << endl;
+			cerr << "Query p99: " << p99 << endl;
+		}
+
+		if (insertTimes.size() > 0)
+		{
+			// Insert mean
+			double mean = accumulate(insertTimes.begin(), insertTimes.end(), 0.0) / insertTimes.size();
+
+			// Insert stdDev
+			double variance = 0.0;
+			for (auto time : insertTimes) {
+				variance += (time - mean) * (time - mean);
+			}
+			variance /= insertTimes.size();
+			double stdDev = sqrt(variance);
+	
+			// Insert P50
+			nth_element(insertTimes.begin(), insertTimes.begin() + insertTimes.size() / 2, insertTimes.end());
+			double p50 = insertTimes[insertTimes.size() / 2];
+
+			// Insert P99
+			size_t n = insertTimes.size();
+			nth_element(insertTimes.begin(), insertTimes.begin() + n * 99 / 100, insertTimes.end());
+			double p99 = insertTimes[n * 99 / 100];
+
+			cerr << "Insert num: " << insertTimes.size() << endl;
+			cerr << "Insert mean: " << mean << endl;
+			cerr << "Insert variance: " << variance << endl;
+			cerr << "Insert stdDev: " << stdDev << endl;
+			cerr << "Insert p50: " << p50 << endl;
+			cerr << "Insert p99: " << p99 << endl;
+		}	
 
 		delete tree;
 		delete file;
@@ -279,6 +371,12 @@ int main(int argc, char** argv)
 		cerr << s << endl;
 		return -1;
 	}
+	catch (std::exception& e) {
+        cerr << "******ERROR******" << endl;
+        cerr << "Standard exception: " << e.what() << endl;
+        cerr << "Occurred at: " << __FILE__ << ":" << __LINE__ << endl;
+        return -1;
+    }
 	catch (...)
 	{
 		cerr << "******ERROR******" << endl;

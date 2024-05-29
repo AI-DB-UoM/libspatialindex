@@ -118,19 +118,21 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		if (argc != 5)
+		if (argc != 7)
 		{
-			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity utilization." << std::endl;
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity utilization pagesize buffer." << std::endl;
 			return -1;
 		}
 
 		std::string baseName = argv[2];
 		double utilization = atof(argv[4]);
+		int pagesize = atoi(argv[5]);
+		int mainMemoryRandomBuffer = atoi(argv[6]);
 
-		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, 4096);
+		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, pagesize);
 			// Create a new storage manager with the provided base name and a 4K page size.
 
-		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, 10, false);
+		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, mainMemoryRandomBuffer, false);
 			// applies a main memory random buffer on top of the persistent storage manager
 			// (LRU buffer, etc can be created the same way).
 

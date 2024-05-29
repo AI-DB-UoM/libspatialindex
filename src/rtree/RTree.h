@@ -108,6 +108,8 @@ namespace SpatialIndex
 
 			uint32_t chooseSubtreeModelForward(std::vector<double>& states);
 
+			bool isModelAvailable();
+
 			IStorageManager* m_pStorageManager;
 
 			id_type m_rootID, m_headerID;
@@ -154,6 +156,8 @@ namespace SpatialIndex
 
 			torch::jit::script::Module m_splitModel;
 			torch::jit::script::Module m_chooseSubtreeModel;
+			bool isSplitModelLoaded = false;
+			bool isChooseSubtreeModelLoaded = false;
 			uint32_t m_rlr_action_space_size = 2;
 			uint32_t m_rlr_scale = 4;
 
