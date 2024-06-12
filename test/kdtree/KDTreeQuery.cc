@@ -39,6 +39,8 @@
 // include library header file.
 #include <spatialindex/SpatialIndex.h>
 
+#include <iomanip> // Include for setprecision
+
 using namespace SpatialIndex;
 using namespace std;
 
@@ -222,6 +224,9 @@ int main(int argc, char** argv)
 
 		vector<double> queryTimes; 
 		vector<double> insertTimes; 
+
+		cerr << fixed << setprecision(10);
+
 		while (fin)
 		{
 			fin >> op >> id >> x1 >> y1 >> x2 >> y2;
@@ -309,7 +314,8 @@ int main(int argc, char** argv)
 			for (auto time : queryTimes) {
 				variance += (time - mean) * (time - mean);
 			}
-			variance /= queryTimes.size();
+			if (queryTimes.size() > 1)
+				variance /= (queryTimes.size() - 1);
 			double stdDev = sqrt(variance);
 	
 			// Query P50
@@ -339,7 +345,8 @@ int main(int argc, char** argv)
 			for (auto time : insertTimes) {
 				variance += (time - mean) * (time - mean);
 			}
-			variance /= insertTimes.size();
+			if (insertTimes.size() > 1)
+				variance /= (insertTimes.size() - 1);
 			double stdDev = sqrt(variance);
 	
 			// Insert P50

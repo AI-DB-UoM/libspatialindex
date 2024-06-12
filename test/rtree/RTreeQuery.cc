@@ -39,6 +39,8 @@
 // include library header file.
 #include <spatialindex/SpatialIndex.h>
 
+#include <iomanip> // Include for setprecision
+
 using namespace SpatialIndex;
 using namespace std;
 
@@ -69,6 +71,12 @@ public:
 		IShape* pS;
 		d.getShape(&pS);
 			// do something.
+
+		// Region* pr = dynamic_cast<Region*>(pS);
+
+		// cerr << pr->m_pLow[0] << " " << pr->m_pLow[1] << endl;
+		// cerr << pr->m_pHigh[0] << " " << pr->m_pHigh[1] << endl << endl;
+
 		delete pS;
 
 		// data should be an array of characters representing a Region as a string.
@@ -221,9 +229,14 @@ int main(int argc, char** argv)
 
 		vector<double> queryTimes; 
 		vector<double> insertTimes; 
+
+		cerr << fixed << setprecision(10);
+
 		while (fin)
 		{
 			fin >> op >> id >> x1 >> y1 >> x2 >> y2;
+
+			// cerr << op << " " << id << " " << x1 << " " << x2 << " " << y1 << " " << y2 << endl;
 			if (! fin.good()) continue; // skip newlines, etc.
 
 			
@@ -237,8 +250,17 @@ int main(int argc, char** argv)
 
 				if (queryType == 0)
 				{
+					// cerr << "Query Point:" << endl;
+
+					// cerr << plow[0] << " " << plow[1] << endl;
+					// cerr << phigh[0] << " " << phigh[1] << endl << endl;
+
 					Region r = Region(plow, phigh, 2);
+
+					// cerr << "Query Result--:" << endl;
 					tree->intersectsWithQuery(r, vis);
+					// cerr << "Query Result--:" << endl;
+
 						// this will find all data that intersect with the query range.
 				}
 				else if (queryType == 1)
@@ -308,7 +330,8 @@ int main(int argc, char** argv)
 			for (auto time : queryTimes) {
 				variance += (time - mean) * (time - mean);
 			}
-			variance /= queryTimes.size();
+			if (queryTimes.size() > 1)
+				variance /= (queryTimes.size() - 1);
 			double stdDev = sqrt(variance);
 	
 			// Query P50
@@ -338,7 +361,8 @@ int main(int argc, char** argv)
 			for (auto time : insertTimes) {
 				variance += (time - mean) * (time - mean);
 			}
-			variance /= insertTimes.size();
+			if (insertTimes.size() > 1)
+				variance /= (insertTimes.size() - 1);
 			double stdDev = sqrt(variance);
 	
 			// Insert P50
