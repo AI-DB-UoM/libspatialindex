@@ -342,7 +342,8 @@ void BulkLoader::topDownPartitioning(
 	std::cerr << "KDTree::BulkLoader: Sorting data." << std::endl;
 	#endif
 
-    std::shared_ptr<ExternalSorter> es = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+    // std::shared_ptr<ExternalSorter> es = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+	std::vector<ExternalSorter::Record*> es;
 
 	while (stream.hasNext())
 	{
@@ -352,17 +353,21 @@ void BulkLoader::topDownPartitioning(
 				"topDownPartitioning: KDTree bulk load expects SpatialIndex::KDTree::Data entries."
 			);
 
-		es->insert(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));
+		// es->insert(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));
+		es.push_back(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));
 		d->m_pData = nullptr;
 		delete d;
 	}
-	es->sort();
+	// es->sort();
+	std::sort(es.begin(), es.end(), ExternalSorter::Record::SortAscending());
 
-	pTree->m_stats.m_u64Data = es->getTotalEntries();
+	// pTree->m_stats.m_u64Data = es->getTotalEntries();
+	pTree->m_stats.m_u64Data = es.size();
 
 	pTree->m_stats.m_nodesInLevel.push_back(0);
 
-	std::shared_ptr<ExternalSorter> es2 = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+	// std::shared_ptr<ExternalSorter> es2 = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+	std::vector<ExternalSorter::Record *> es2;
 	partition(pTree, es, pTree->m_dimension, bleaf, bindex, 1, es2, pageSize, numberOfPages);
 
 	pTree->storeHeader();
@@ -370,98 +375,195 @@ void BulkLoader::topDownPartitioning(
 
 
 void BulkLoader::partition(
-	SpatialIndex::KDTree::KDTree* pTree,
-	std::shared_ptr<ExternalSorter> es,
-	uint32_t dimension,
-	uint32_t bleaf,
-	uint32_t bindex,
-	uint32_t level,
-	std::shared_ptr<ExternalSorter> es2,
-	uint32_t pageSize,
-	uint32_t numberOfPages
+    SpatialIndex::KDTree::KDTree* pTree,
+    std::vector<ExternalSorter::Record *> es,
+    uint32_t dimension,
+    uint32_t bleaf,
+    uint32_t bindex,
+    uint32_t level,
+	std::vector<ExternalSorter::Record *>& es2,
+    uint32_t pageSize,
+    uint32_t numberOfPages
 ) {
+    // uint64_t total_entries = es->getTotalEntries();
+	uint64_t total_entries = es.size();
+    uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
+    uint64_t right_node_en = static_cast<uint64_t>(total_entries - left_node_en);
 
-	uint64_t total_entries = es->getTotalEntries();
-	uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
-	uint64_t right_node_en = static_cast<uint64_t>(total_entries - left_node_en);
+    if (pTree->m_stats.m_nodesInLevel.size() < level) {
+        pTree->m_stats.m_nodesInLevel.push_back(0);
+    }
 
-	if (pTree->m_stats.m_nodesInLevel.size() < level)
-	{
-		pTree->m_stats.m_nodesInLevel.push_back(0);
-	}
+    if (total_entries <= bleaf) {
+        // std::vector<ExternalSorter::Record*> node;
+        // ExternalSorter::Record* r;
+        // uint32_t i = 0;
 
-	if (total_entries <= bleaf)
-	{
-		std::vector<ExternalSorter::Record*> node;
-		ExternalSorter::Record* r;
-		uint32_t i = 0;
+        // while (i < total_entries) {
+        //     try { r = es->getNextRecord(); } catch (Tools::EndOfStreamException&) { break; }
+        //     node.push_back(r);
+        //     i++;
+        // }
 
-		while (i < total_entries)
-		{
-			try { r = es->getNextRecord(); } catch (Tools::EndOfStreamException&) { break; }
-			node.push_back(r);
-			i++;
-		}
+        Node* n = createNode(pTree, es, 0);
+        es.clear();
+        pTree->writeNode(n);
+        es2.push_back(new ExternalSorter::Record(n->m_nodeMBR, n->m_identifier, 0, nullptr, 0));
+        pTree->m_rootID = n->m_identifier;
 
-		Node* n = createNode(pTree, node, 0);
-		node.clear();
-		pTree->writeNode(n);
-		es2->insert(new ExternalSorter::Record(n->m_nodeMBR, n->m_identifier, 0, nullptr, 0));
-		pTree->m_rootID = n->m_identifier;
+        pTree->m_stats.m_u32TreeHeight = std::max(pTree->m_stats.m_u32TreeHeight, static_cast<uint32_t>(level));
 
-		pTree->m_stats.m_u32TreeHeight = std::max(pTree->m_stats.m_u32TreeHeight, static_cast<uint32_t>(level));
+        delete n;
+    } else {
+        // auto left_node_es = std::make_shared<ExternalSorter>(pageSize, numberOfPages);
+        // auto right_node_es = std::make_shared<ExternalSorter>(pageSize, numberOfPages);
+		std::vector<ExternalSorter::Record *> left_node_es;
+		std::vector<ExternalSorter::Record *> right_node_es;
+        ExternalSorter::Record* pR_left;
+        ExternalSorter::Record* pR_right;
 
-		delete n;
-	}
-	else
-	{
-        std::shared_ptr<ExternalSorter> left_node_es = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
-        std::shared_ptr<ExternalSorter> right_node_es = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
-		ExternalSorter::Record* pR_left;
-		ExternalSorter::Record* pR_right;
+        uint32_t sort_dim_index = level % dimension;
 
-		uint32_t sort_dim_index = level % dimension;
+        for (uint64_t i = 0; i < left_node_en; ++i) {
+            try { pR_left = es[i]; }
+            catch (Tools::EndOfStreamException&) { break; }
+            pR_left->m_s = sort_dim_index;
+			left_node_es.push_back(pR_left);
+            // left_node_es->insert(pR_left);
+        }
+        // left_node_es->sort();
+		std::sort(left_node_es.begin(), left_node_es.end(), ExternalSorter::Record::SortAscending());
 
-		for (uint64_t i = 0; i < left_node_en; ++i)
-		{
-			try { pR_left = es->getNextRecord(); }
-			catch (Tools::EndOfStreamException&) { break; }
-			pR_left->m_s = sort_dim_index;
-			left_node_es->insert(pR_left);
-		}
-		left_node_es->sort();
-		
-		partition(pTree, left_node_es, dimension, bleaf, bindex, level+1, es2, pageSize, numberOfPages);
-		ExternalSorter::Record* r_left = es2->getNextRecord();
+		for (uint64_t i = left_node_en; i < total_entries; ++i) {
+            try { pR_right = es[i]; }
+            catch (Tools::EndOfStreamException&) { break; }
+            pR_right->m_s = sort_dim_index;
+			right_node_es.push_back(pR_right);
+            // right_node_es->insert(pR_right);
+        }
+        // right_node_es->sort();
+		std::sort(right_node_es.begin(), right_node_es.end(), ExternalSorter::Record::SortAscending());
 
-		for (uint64_t i = 0; i < right_node_en; ++i)
-		{
-			try { pR_right = es->getNextRecord(); }
-			catch (Tools::EndOfStreamException&) { break; }
-			pR_right->m_s = sort_dim_index;
-			right_node_es->insert(pR_right);
-		}
-		right_node_es->sort();
+        partition(pTree, left_node_es, dimension, bleaf, bindex, level + 1, es2, pageSize, numberOfPages);
+        ExternalSorter::Record* r_left = es2.back();
+		es2.pop_back();
 
-		partition(pTree, right_node_es, dimension, bleaf, bindex, level+1, es2, pageSize, numberOfPages);
-		ExternalSorter::Record* r_right = es2->getNextRecord();
+        partition(pTree, right_node_es, dimension, bleaf, bindex, level + 1, es2, pageSize, numberOfPages);
+        ExternalSorter::Record* r_right = es2.back();
+		es2.pop_back();
 
-		std::vector<ExternalSorter::Record*> parent;
-		parent.push_back(r_left);
-		parent.push_back(r_right);
+        std::vector<ExternalSorter::Record*> parent;
+        parent.push_back(r_left);
+        parent.push_back(r_right);
 
-		Node* n_parent = createNode(pTree, parent, pTree->m_stats.m_u32TreeHeight - level);
+        Node* n_parent = createNode(pTree, parent, pTree->m_stats.m_u32TreeHeight - level);
 
-		parent.clear();
-		pTree->writeNode(n_parent);
+        parent.clear();
+        pTree->writeNode(n_parent);
 
-		es2->insert(new ExternalSorter::Record(n_parent->m_nodeMBR, n_parent->m_identifier, 0, nullptr, 0));
-		pTree->m_rootID = n_parent->m_identifier;
+        es2.push_back(new ExternalSorter::Record(n_parent->m_nodeMBR, n_parent->m_identifier, 0, nullptr, 0));
+        pTree->m_rootID = n_parent->m_identifier;
 
-		delete n_parent;
-	}
-
+        delete n_parent;
+    }
 }
+
+
+// void BulkLoader::partition(
+// 	SpatialIndex::KDTree::KDTree* pTree,
+// 	std::shared_ptr<ExternalSorter> es,
+// 	uint32_t dimension,
+// 	uint32_t bleaf,
+// 	uint32_t bindex,
+// 	uint32_t level,
+// 	std::shared_ptr<ExternalSorter> es2,
+// 	uint32_t pageSize,
+// 	uint32_t numberOfPages
+// ) {
+
+// 	uint64_t total_entries = es->getTotalEntries();
+// 	uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
+// 	uint64_t right_node_en = static_cast<uint64_t>(total_entries - left_node_en);
+
+// 	if (pTree->m_stats.m_nodesInLevel.size() < level)
+// 	{
+// 		pTree->m_stats.m_nodesInLevel.push_back(0);
+// 	}
+
+// 	if (total_entries <= bleaf)
+// 	{
+// 		std::vector<ExternalSorter::Record*> node;
+// 		ExternalSorter::Record* r;
+// 		uint32_t i = 0;
+
+// 		while (i < total_entries)
+// 		{
+// 			try { r = es->getNextRecord(); } catch (Tools::EndOfStreamException&) { break; }
+// 			node.push_back(r);
+// 			i++;
+// 		}
+
+// 		Node* n = createNode(pTree, node, 0);
+// 		node.clear();
+// 		pTree->writeNode(n);
+// 		es2->insert(new ExternalSorter::Record(n->m_nodeMBR, n->m_identifier, 0, nullptr, 0));
+// 		pTree->m_rootID = n->m_identifier;
+
+// 		pTree->m_stats.m_u32TreeHeight = std::max(pTree->m_stats.m_u32TreeHeight, static_cast<uint32_t>(level));
+
+// 		delete n;
+// 	}
+// 	else
+// 	{
+//         std::shared_ptr<ExternalSorter> left_node_es = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+//         std::shared_ptr<ExternalSorter> right_node_es = std::shared_ptr<ExternalSorter>(new ExternalSorter(pageSize, numberOfPages));
+// 		ExternalSorter::Record* pR_left;
+// 		ExternalSorter::Record* pR_right;
+
+// 		uint32_t sort_dim_index = level % dimension;
+
+// 		for (uint64_t i = 0; i < left_node_en; ++i)
+// 		{
+// 			try { pR_left = es->getNextRecord(); }
+// 			catch (Tools::EndOfStreamException&) { break; }
+// 			pR_left->m_s = sort_dim_index;
+// 			left_node_es->insert(pR_left);
+// 		}
+// 		left_node_es->sort();
+
+// 		for (uint64_t i = 0; i < right_node_en; ++i)
+// 		{
+// 			try { pR_right = es->getNextRecord(); }
+// 			catch (Tools::EndOfStreamException&) { break; }
+// 			pR_right->m_s = sort_dim_index;
+// 			right_node_es->insert(pR_right);
+// 		}
+// 		right_node_es->sort();
+
+// 		es.reset();
+		
+// 		partition(pTree, left_node_es, dimension, bleaf, bindex, level+1, es2, pageSize, numberOfPages);
+// 		ExternalSorter::Record* r_left = es2->getNextRecord();
+
+// 		partition(pTree, right_node_es, dimension, bleaf, bindex, level+1, es2, pageSize, numberOfPages);
+// 		ExternalSorter::Record* r_right = es2->getNextRecord();
+
+// 		std::vector<ExternalSorter::Record*> parent;
+// 		parent.push_back(r_left);
+// 		parent.push_back(r_right);
+
+// 		Node* n_parent = createNode(pTree, parent, pTree->m_stats.m_u32TreeHeight - level);
+
+// 		parent.clear();
+// 		pTree->writeNode(n_parent);
+
+// 		es2->insert(new ExternalSorter::Record(n_parent->m_nodeMBR, n_parent->m_identifier, 0, nullptr, 0));
+// 		pTree->m_rootID = n_parent->m_identifier;
+
+// 		delete n_parent;
+// 	}
+
+// }
 
 std::vector<std::pair<uint32_t, double>> BulkLoader::generageCandidateCutPos(std::vector<Region>& regions)
 {
@@ -572,6 +674,7 @@ void BulkLoader::topDownGreedyPartitioning(
 		d->m_pData = nullptr;
 		delete d;
 	}
+	std::sort(tupleSet.begin(), tupleSet.end(), ExternalSorter::Record::SortAscending());
 
 	std::vector<Region> queryRegions;
 	while (queryStream.hasNext())
@@ -617,7 +720,7 @@ bool BulkLoader::greedyPartition(
 	if (total_entries <= bleaf)
 	{
 		// std::cerr << "KDTree::greedyPartition: ----leaf----" << " level: " << level << std::endl;
-
+		
 		Node* n = createNode(pTree, tupleSet, 0);
 		tupleSet.clear();
 		pTree->writeNode(n);
@@ -719,15 +822,19 @@ bool BulkLoader::greedyPartition(
 		Region leftMBR = pTree->m_infiniteRegion;
 		Region rightMBR = pTree->m_infiniteRegion;
 
+        // uint32_t sort_dim_index = level % dimension;
+
 		for (uint64_t l = 0; l < left_node_en; ++l)
 		{
 			ExternalSorter::Record *r = tupleSet[l];
+            r->m_s = maxSplitDimension;
 			leftData.push_back(r);
 			leftMBR.combineRegion(r->m_r);
 		}
 		for (uint64_t l = left_node_en; l < total_entries; ++l)
 		{
 			ExternalSorter::Record *r = tupleSet[l];
+            r->m_s = maxSplitDimension;
 			rightData.push_back(r);
 			rightMBR.combineRegion(r->m_r);
 		}
@@ -736,12 +843,13 @@ bool BulkLoader::greedyPartition(
 		bestLeftMBR = leftMBR;
 		bestRightMBR = rightMBR;
 	}
-
+	std::sort(bestLeftData.begin(), bestLeftData.end(), ExternalSorter::Record::SortAscending());
 	greedyPartition(pTree, bestLeftData, bleaf, bindex, level+1, bestLeftMBR, tupleSet2, queryRegions, candidateCutPos);
 	// ExternalSorter::Record* r_left = tupleSet2
 	ExternalSorter::Record* r_left = tupleSet2.back();
 	tupleSet2.pop_back();
 
+	std::sort(bestRightData.begin(), bestRightData.end(), ExternalSorter::Record::SortAscending());
 	greedyPartition(pTree, bestRightData, bleaf, bindex, level+1, bestRightMBR, tupleSet2, queryRegions, candidateCutPos);
 
 	ExternalSorter::Record* r_right = tupleSet2.back();
@@ -819,6 +927,7 @@ void BulkLoader::topDownModelPartitioning(
 		d->m_pData = nullptr;
 		delete d;
 	}
+	std::sort(tupleSet.begin(), tupleSet.end(), ExternalSorter::Record::SortAscending());
 
 	std::vector<Region> queryRegions;
 	while (queryStream.hasNext())
@@ -915,6 +1024,7 @@ bool BulkLoader::modelPartition(
 	for (uint64_t l = 0; l < total_entries; ++l)
 	{
 		ExternalSorter::Record *r = tupleSet[l];
+		r->m_s = splitDimension;
 		if (leftMBR.intersectsRegion(r->m_r))
 		{
 			leftData.push_back(r);
@@ -947,7 +1057,6 @@ bool BulkLoader::modelPartition(
 		}
 	}
 
-
 	if (!can_split) 
 	{
 		uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
@@ -959,12 +1068,14 @@ bool BulkLoader::modelPartition(
 		for (uint64_t l = 0; l < left_node_en; ++l)
 		{
 			ExternalSorter::Record *r = tupleSet[l];
+			r->m_s = splitDimension;
 			leftData_.push_back(r);
 			leftMBR_.combineRegion(r->m_r);
 		}
 		for (uint64_t l = left_node_en; l < total_entries; ++l)
 		{
 			ExternalSorter::Record *r = tupleSet[l];
+			r->m_s = splitDimension;
 			rightData_.push_back(r);
 			rightMBR_.combineRegion(r->m_r);
 		}
@@ -974,11 +1085,12 @@ bool BulkLoader::modelPartition(
 		bestRightMBR = rightMBR_;
 	}
 
-
+	std::sort(bestLeftData.begin(), bestLeftData.end(), ExternalSorter::Record::SortAscending());
 	modelPartition(pTree, bestLeftData, bleaf, bindex, level+1, bestLeftMBR, tupleSet2, queryRegions, candidateCutPos);
 	ExternalSorter::Record* r_left = tupleSet2.back();
 	tupleSet2.pop_back();
 
+	std::sort(bestRightData.begin(), bestRightData.end(), ExternalSorter::Record::SortAscending());
 	modelPartition(pTree, bestRightData, bleaf, bindex, level+1, bestRightMBR, tupleSet2, queryRegions, candidateCutPos);
 	ExternalSorter::Record* r_right = tupleSet2.back();
 	tupleSet2.pop_back();

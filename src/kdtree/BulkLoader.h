@@ -159,13 +159,13 @@ namespace SpatialIndex
 		protected:
 			void partition(
 				KDTree* pTree,
-				std::shared_ptr<ExternalSorter> es,
+				std::vector<ExternalSorter::Record *> es,
 				uint32_t dimension,
 				uint32_t indexSize,
 				uint32_t leafSize,
 				uint32_t level,
 				// uint32_t depth,
-				std::shared_ptr<ExternalSorter> es2,
+				std::vector<ExternalSorter::Record *>& es2,
 				uint32_t pageSize,
 				uint32_t numberOfPages
 			);
