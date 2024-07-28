@@ -345,189 +345,130 @@ bool Node::insertData(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type 
 {
 	if (m_children < m_capacity)
 	{
-		bool adjusted = false;
+		// bool adjusted = false;
 
 		// this has to happen before insertEntry modifies m_nodeMBR.
-		bool b = m_nodeMBR.containsRegion(mbr);
+		// bool b = m_nodeMBR.containsRegion(mbr);
 
 		insertEntry(dataLength, pData, mbr, id);
 		m_pTree->writeNode(this);
 
-		if ((! b) && (! pathBuffer.empty()))
-		{
-			id_type cParent = pathBuffer.top(); pathBuffer.pop();
-			NodePtr ptrN = m_pTree->readNode(cParent);
-			Index* p = static_cast<Index*>(ptrN.get());
-			p->adjustTree(this, pathBuffer);
-			adjusted = true;
-		}
+		// if ((! b) && (! pathBuffer.empty()))
+		// {
+		// 	id_type cParent = pathBuffer.top(); pathBuffer.pop();
+		// 	NodePtr ptrN = m_pTree->readNode(cParent);
+		// 	Index* p = static_cast<Index*>(ptrN.get());
+		// 	p->adjustTree(this, pathBuffer);
+		// 	adjusted = true;
+		// }
 
-		return adjusted;
+		return true;
 	}
-	// else if (m_pTree->m_treeVariant == RV_RSTAR && (! pathBuffer.empty()) && overflowTable[m_level] == 0)
-	// {
-	// 	overflowTable[m_level] = 1;
-
-	// 	std::vector<uint32_t> vReinsert, vKeep;
-	// 	reinsertData(dataLength, pData, mbr, id, vReinsert, vKeep);
-
-	// 	uint32_t lReinsert = static_cast<uint32_t>(vReinsert.size());
-	// 	uint32_t lKeep = static_cast<uint32_t>(vKeep.size());
-
-	// 	uint8_t** reinsertdata = nullptr;
-	// 	RegionPtr* reinsertmbr = nullptr;
-	// 	id_type* reinsertid = nullptr;
-	// 	uint32_t* reinsertlen = nullptr;
-	// 	uint8_t** keepdata = nullptr;
-	// 	RegionPtr* keepmbr = nullptr;
-	// 	id_type* keepid = nullptr;
-	// 	uint32_t* keeplen = nullptr;
-
-	// 	try
-	// 	{
-	// 		reinsertdata = new uint8_t*[lReinsert];
-	// 		reinsertmbr = new RegionPtr[lReinsert];
-	// 		reinsertid = new id_type[lReinsert];
-	// 		reinsertlen = new uint32_t[lReinsert];
-
-	// 		keepdata = new uint8_t*[m_capacity + 1];
-	// 		keepmbr = new RegionPtr[m_capacity + 1];
-	// 		keepid = new id_type[m_capacity + 1];
-	// 		keeplen = new uint32_t[m_capacity + 1];
-	// 	}
-	// 	catch (...)
-	// 	{
-	// 		delete[] reinsertdata;
-	// 		delete[] reinsertmbr;
-	// 		delete[] reinsertid;
-	// 		delete[] reinsertlen;
-	// 		delete[] keepdata;
-	// 		delete[] keepmbr;
-	// 		delete[] keepid;
-	// 		delete[] keeplen;
-	// 		throw;
-	// 	}
-
-	// 	uint32_t cIndex;
-
-	// 	for (cIndex = 0; cIndex < lReinsert; ++cIndex)
-	// 	{
-	// 		reinsertlen[cIndex] = m_pDataLength[vReinsert[cIndex]];
-	// 		reinsertdata[cIndex] = m_pData[vReinsert[cIndex]];
-	// 		reinsertmbr[cIndex] = m_ptrMBR[vReinsert[cIndex]];
-	// 		reinsertid[cIndex] = m_pIdentifier[vReinsert[cIndex]];
-	// 	}
-
-	// 	for (cIndex = 0; cIndex < lKeep; ++cIndex)
-	// 	{
-	// 		keeplen[cIndex] = m_pDataLength[vKeep[cIndex]];
-	// 		keepdata[cIndex] = m_pData[vKeep[cIndex]];
-	// 		keepmbr[cIndex] = m_ptrMBR[vKeep[cIndex]];
-	// 		keepid[cIndex] = m_pIdentifier[vKeep[cIndex]];
-	// 	}
-
-	// 	delete[] m_pDataLength;
-	// 	delete[] m_pData;
-	// 	delete[] m_ptrMBR;
-	// 	delete[] m_pIdentifier;
-
-	// 	m_pDataLength = keeplen;
-	// 	m_pData = keepdata;
-	// 	m_ptrMBR = keepmbr;
-	// 	m_pIdentifier = keepid;
-	// 	m_children = lKeep;
-	// 	m_totalDataLength = 0;
-
-	// 	for (uint32_t u32Child = 0; u32Child < m_children; ++u32Child) m_totalDataLength += m_pDataLength[u32Child];
-
-	// 	for (uint32_t cDim = 0; cDim < m_nodeMBR.m_dimension; ++cDim)
-	// 	{
-	// 		m_nodeMBR.m_pLow[cDim] = std::numeric_limits<double>::max();
-	// 		m_nodeMBR.m_pHigh[cDim] = -std::numeric_limits<double>::max();
-
-	// 		for (uint32_t u32Child = 0; u32Child < m_children; ++u32Child)
-	// 		{
-	// 			m_nodeMBR.m_pLow[cDim] = std::min(m_nodeMBR.m_pLow[cDim], m_ptrMBR[u32Child]->m_pLow[cDim]);
-	// 			m_nodeMBR.m_pHigh[cDim] = std::max(m_nodeMBR.m_pHigh[cDim], m_ptrMBR[u32Child]->m_pHigh[cDim]);
-	// 		}
-	// 	}
-
-	// 	m_pTree->writeNode(this);
-
-	// 	// Divertion from R*-Tree algorithm here. First adjust
-	// 	// the path to the root, then start reinserts, to avoid complicated handling
-	// 	// of changes to the same node from multiple insertions.
-	// 	id_type cParent = pathBuffer.top(); pathBuffer.pop();
-	// 	NodePtr ptrN = m_pTree->readNode(cParent);
-	// 	Index* p = static_cast<Index*>(ptrN.get());
-	// 	p->adjustTree(this, pathBuffer, true);
-
-	// 	for (cIndex = 0; cIndex < lReinsert; ++cIndex)
-	// 	{
-	// 		m_pTree->insertData_impl(
-	// 			reinsertlen[cIndex], reinsertdata[cIndex],
-	// 			*(reinsertmbr[cIndex]), reinsertid[cIndex],
-	// 			m_level, overflowTable);
-	// 	}
-
-	// 	delete[] reinsertdata;
-	// 	delete[] reinsertmbr;
-	// 	delete[] reinsertid;
-	// 	delete[] reinsertlen;
-
-	// 	return true;
-	// }
 	else
 	{
-		NodePtr n;
-		NodePtr nn;
-		split(dataLength, pData, mbr, id, n, nn);
+		NodePtr left;
+		NodePtr right;
+		
+		split(dataLength, pData, mbr, id, left, right);
 
 		if (pathBuffer.empty())
 		{
-			n->m_level = m_level;
-			nn->m_level = m_level;
-			n->m_identifier = -1;
-			nn->m_identifier = -1;
-			m_pTree->writeNode(n.get());
-			m_pTree->writeNode(nn.get());
+			// std::cerr<< "pathBuffer is empty" << std::endl;
+			// n->m_level = m_level;
+			// nn->m_level = m_level;
+			// n->m_identifier = -1;
+			// nn->m_identifier = -1;
+			// m_pTree->writeNode(n.get());
+			// m_pTree->writeNode(nn.get());
+
+			// NodePtr ptrR = m_pTree->m_indexPool.acquire();
+			// if (ptrR.get() == nullptr)
+			// {
+			// 	ptrR = NodePtr(new Index(m_pTree, m_pTree->m_rootID, m_level + 1), &(m_pTree->m_indexPool));
+			// }
+			// else
+			// {
+			// 	//ptrR->m_pTree = m_pTree;
+			// 	ptrR->m_identifier = m_pTree->m_rootID;
+			// 	ptrR->m_level = m_level + 1;
+			// 	ptrR->m_nodeMBR = m_pTree->m_infiniteRegion;
+			// }
+
+			// ptrR->insertEntry(0, nullptr, n->m_nodeMBR, n->m_identifier);
+			// ptrR->insertEntry(0, nullptr, nn->m_nodeMBR, nn->m_identifier);
+
+			// m_pTree->writeNode(ptrR.get());
+
+			// m_pTree->m_stats.m_nodesInLevel[m_level] = 2;
+			// m_pTree->m_stats.m_nodesInLevel.push_back(1);
+			// m_pTree->m_stats.m_u32TreeHeight = m_level + 2;
+		}
+		else
+		{
+			left->m_level = 0;
+			right->m_level = 0;
+			left->m_identifier = -1;
+			right->m_identifier = -1;
+
+			m_pTree->writeNode(left.get());
+			m_pTree->writeNode(right.get());
 
 			NodePtr ptrR = m_pTree->m_indexPool.acquire();
 			if (ptrR.get() == nullptr)
 			{
-				ptrR = NodePtr(new Index(m_pTree, m_pTree->m_rootID, m_level + 1), &(m_pTree->m_indexPool));
-			}
-			else
-			{
-				//ptrR->m_pTree = m_pTree;
-				ptrR->m_identifier = m_pTree->m_rootID;
-				ptrR->m_level = m_level + 1;
-				ptrR->m_nodeMBR = m_pTree->m_infiniteRegion;
+				std::cerr << " ptrR.get() == nullptr " << std::endl;
+				ptrR = NodePtr(new Index(m_pTree, -1, m_level), &(m_pTree->m_indexPool));
 			}
 
-			ptrR->insertEntry(0, nullptr, n->m_nodeMBR, n->m_identifier);
-			ptrR->insertEntry(0, nullptr, nn->m_nodeMBR, nn->m_identifier);
+			// std::cerr << " ptrR->m_children " << ptrR->m_children << std::endl;
+			// std::cerr << " ptrR->m_capacity " << ptrR->m_capacity << std::endl;
+
+			ptrR->insertEntry(0, nullptr, left->m_nodeMBR, left->m_identifier);
+			ptrR->insertEntry(0, nullptr, right->m_nodeMBR, right->m_identifier);
+
+			// std::cerr << " ptrR->m_children " << ptrR->m_children << std::endl;
+			// std::cerr << " ptrR->m_capacity " << ptrR->m_capacity << std::endl;
+			// std::cerr << " ptrR->m_identifier " << ptrR->m_identifier << std::endl;
+			// std::cerr << " m_identifier " << m_identifier << std::endl;
+			// std::cerr << " m_capacity " << m_capacity << std::endl;
+			// std::cerr << " m_children " << m_children << std::endl;
+			
+			ptrR->m_identifier = m_identifier;
+
+			// m_pTree->deleteNode(m_pTree->readNode(m_identifier).get());
 
 			m_pTree->writeNode(ptrR.get());
+			// std::cerr << " After write ptrR->m_identifier " << ptrR->m_identifier << std::endl;
 
-			m_pTree->m_stats.m_nodesInLevel[m_level] = 2;
-			m_pTree->m_stats.m_nodesInLevel.push_back(1);
-			m_pTree->m_stats.m_u32TreeHeight = m_level + 2;
-		}
-		else
-		{
-			n->m_level = m_level;
-			nn->m_level = m_level;
-			n->m_identifier = m_identifier;
-			nn->m_identifier = -1;
-
-			m_pTree->writeNode(n.get());
-			m_pTree->writeNode(nn.get());
 
 			id_type cParent = pathBuffer.top(); pathBuffer.pop();
 			NodePtr ptrN = m_pTree->readNode(cParent);
 			Index* p = static_cast<Index*>(ptrN.get());
-			p->adjustTree(n.get(), nn.get(), pathBuffer, overflowTable);
+			// std::cerr << " p->m_identifier " << p->m_identifier << std::endl;
+			// std::cerr << " p->m_pIdentifier left " << p->m_pIdentifier[0] << std::endl;
+			// std::cerr << " p->m_pIdentifier right " << p->m_pIdentifier[1] << std::endl;
+
+
+
+			if (m_identifier == p->m_pIdentifier[0]) 
+			{
+				p->m_pIdentifier[0] = ptrR->m_identifier;
+			}
+			else
+			{
+				p->m_pIdentifier[1] = ptrR->m_identifier;
+			}
+		
+
+			// m_pTree->writeNode(ptrR.get());
+
+
+			left.relinquish();
+			right.relinquish();
+			ptrR.relinquish();
+
+
+			// p->adjustTree(n.get(), nn.get(), pathBuffer, overflowTable);
 		}
 
 		return true;

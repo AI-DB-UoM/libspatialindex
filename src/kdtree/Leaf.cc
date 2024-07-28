@@ -67,49 +67,69 @@ void Leaf::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, N
 {
 	++(m_pTree->m_stats.m_u64Splits);
 
-	std::vector<uint32_t> g1, g2;
-
-	switch (m_pTree->m_treeVariant)
+	RstarSplitEntry** dataLow = nullptr;
+	try
 	{
-		case KD_NORMAL:
-		case QD_NORMAL:
-		case KD_GREEDY:
-			rtreeSplit(dataLength, pData, mbr, id, g1, g2);
-			break;
-		// case RV_QUADRATIC:
-		// 	rtreeSplit(dataLength, pData, mbr, id, g1, g2);
-		// 	break;
-		// case RV_RSTAR:
-		// 	rstarSplit(dataLength, pData, mbr, id, g1, g2);
-		// 	break;
-		default:
-			throw Tools::NotSupportedException("Leaf::split: Tree variant not supported.");
+		dataLow = new RstarSplitEntry*[m_capacity + 1];
+	}
+	catch (...)
+	{
+		delete[] dataLow;
+		throw;
 	}
 
-	pLeft = m_pTree->m_leafPool.acquire();
-	pRight = m_pTree->m_leafPool.acquire();
+	m_pDataLength[m_capacity] = dataLength;
+	m_pData[m_capacity] = pData;
+	m_ptrMBR[m_capacity] = m_pTree->m_regionPool.acquire();
+	*(m_ptrMBR[m_capacity]) = mbr;
+	m_pIdentifier[m_capacity] = id;
 
-	if (pLeft.get() == nullptr) pLeft = NodePtr(new Leaf(m_pTree, -1), &(m_pTree->m_leafPool));
-	if (pRight.get() == nullptr) pRight = NodePtr(new Leaf(m_pTree, -1), &(m_pTree->m_leafPool));
+	uint32_t u32Child = 0, cDim, cIndex;
+	uint32_t sort_dim_index = m_level % m_pTree->m_dimension;
 
-	pLeft->m_nodeMBR = m_pTree->m_infiniteRegion;
-	pRight->m_nodeMBR = m_pTree->m_infiniteRegion;
 
-	uint32_t cIndex;
-
-	for (cIndex = 0; cIndex < g1.size(); ++cIndex)
+	for (u32Child = 0; u32Child <= m_capacity; ++u32Child)
 	{
-		pLeft->insertEntry(m_pDataLength[g1[cIndex]], m_pData[g1[cIndex]], *(m_ptrMBR[g1[cIndex]]), m_pIdentifier[g1[cIndex]]);
-		// we don't want to delete the data array from this node's destructor!
-		m_pData[g1[cIndex]] = nullptr;
+		try
+		{
+			dataLow[u32Child] = new RstarSplitEntry(m_ptrMBR[u32Child].get(), u32Child, sort_dim_index);
+		}
+		catch (...)
+		{
+			for (uint32_t i = 0; i < u32Child; ++i) delete dataLow[i];
+			delete[] dataLow;
+			throw;
+		}
 	}
 
-	for (cIndex = 0; cIndex < g2.size(); ++cIndex)
-	{
-		pRight->insertEntry(m_pDataLength[g2[cIndex]], m_pData[g2[cIndex]], *(m_ptrMBR[g2[cIndex]]), m_pIdentifier[g2[cIndex]]);
-		// we don't want to delete the data array from this node's destructor!
-		m_pData[g2[cIndex]] = nullptr;
-	}
+	::qsort(dataLow, m_capacity + 1, sizeof(RstarSplitEntry*), RstarSplitEntry::compareLow);
+
+	uint32_t total_entries = m_capacity + 1;
+    uint32_t left_node_en = static_cast<uint32_t>(total_entries / 2);
+    uint32_t right_node_en = static_cast<uint32_t>(total_entries - left_node_en);
+
+	pLeft = NodePtr(new Leaf(m_pTree, -1), &(m_pTree->m_leafPool));
+	for (uint32_t i = 0; i < left_node_en; ++i) {
+		try 
+		{ 
+			uint32_t child_id = dataLow[i]->m_index;
+			pLeft->insertEntry(m_pDataLength[child_id], m_pData[child_id], *(m_ptrMBR[child_id]), m_pIdentifier[child_id]);
+		}
+		catch (Tools::EndOfStreamException&) { break; }
+    }
+	// m_pTree->writeNode(pLeft.get());
+
+	pRight = NodePtr(new Leaf(m_pTree, -1), &(m_pTree->m_leafPool));
+	for (uint32_t i = left_node_en; i < total_entries; ++i) {
+		try 
+		{ 
+			uint32_t child_id = dataLow[i]->m_index;
+			pRight->insertEntry(m_pDataLength[child_id], m_pData[child_id], *(m_ptrMBR[child_id]), m_pIdentifier[child_id]);
+		}
+		catch (Tools::EndOfStreamException&) { break; }
+		
+    }
+
 }
 
 void Leaf::deleteData(const Region& mbr, id_type id, std::stack<id_type>& pathBuffer)

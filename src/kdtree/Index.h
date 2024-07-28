@@ -49,6 +49,7 @@ namespace SpatialIndex
 
 			uint32_t findLeastEnlargement(const Region&) const;
 			uint32_t findLeastOverlap(const Region&) const;
+			uint32_t findInsertChild(const Region&) const;
 
 			void adjustTree(Node*, std::stack<id_type>&, bool force = false);
 			void adjustTree(Node*, Node*, std::stack<id_type>&, uint8_t* overflowTable);

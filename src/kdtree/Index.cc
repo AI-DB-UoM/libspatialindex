@@ -56,22 +56,8 @@ NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::st
 		case KD_NORMAL:
 		case KD_GREEDY:
 		case QD_NORMAL:
-			child = findLeastEnlargement(mbr);
+			child = findInsertChild(mbr);
 			break;
-		// case RV_QUADRATIC:
-		// 	child = findLeastEnlargement(mbr);
-		// 	break;
-		// case RV_RSTAR:
-		// 	if (m_level == 1)
-		// 	{
-		// 		// if this node points to leaves...
-		// 		child = findLeastOverlap(mbr);
-		// 	}
-		// 	else
-		// 	{
-		// 		child = findLeastEnlargement(mbr);
-		// 	}
-			// break;
 		default:
 			throw Tools::NotSupportedException("Index::chooseSubtree: Tree variant not supported.");
 	}
@@ -83,6 +69,22 @@ NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::st
 	if (ret.get() == n.get()) n.relinquish();
 
 	return ret;
+}
+
+uint32_t Index::findInsertChild(const Region& r) const
+{
+
+	RegionPtr t = m_pTree->m_regionPool.acquire();
+
+	for (uint32_t cChild = 0; cChild < m_children; ++cChild)
+	{
+		if (m_ptrMBR[cChild]->intersectsRegion(r) || m_ptrMBR[cChild]->touchesRegion(r))
+		{
+			return cChild;
+		}
+	}
+
+	return 0;
 }
 
 NodePtr Index::findLeaf(const Region& mbr, id_type id, std::stack<id_type>& pathBuffer)
@@ -109,45 +111,99 @@ void Index::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, 
 {
 	++(m_pTree->m_stats.m_u64Splits);
 
-	std::vector<uint32_t> g1, g2;
+	// std::vector<ExternalSorter::Record*> es;
 
-	switch (m_pTree->m_treeVariant)
-	{
-		case KD_NORMAL:
-		case KD_GREEDY:
-		case QD_NORMAL:
-			rtreeSplit(dataLength, pData, mbr, id, g1, g2);
-			break;
-		// case RV_QUADRATIC:
-		// 	rtreeSplit(dataLength, pData, mbr, id, g1, g2);
-		// 	break;
-		// case RV_RSTAR:
-		// 	rstarSplit(dataLength, pData, mbr, id, g1, g2);
-		// 	break;
-		default:
-			throw Tools::NotSupportedException("Index::split: Tree variant not supported.");
-	}
+	// uint32_t sort_dim_index = m_level % m_pTree->m_dimension;
 
-	ptrLeft = m_pTree->m_indexPool.acquire();
-	ptrRight = m_pTree->m_indexPool.acquire();
 
-	if (ptrLeft.get() == nullptr) ptrLeft = NodePtr(new Index(m_pTree, m_identifier, m_level), &(m_pTree->m_indexPool));
-	if (ptrRight.get() == nullptr) ptrRight = NodePtr(new Index(m_pTree, -1, m_level), &(m_pTree->m_indexPool));
+	// for(uint64_t i = 0; i < m_capacity; ++i)
+	// {
+	// 	es.push_back(new ExternalSorter::Record(m_ptrMBR[i], m_pIdentifier[i], m_pDataLength[i], m_pData[i], sort_dim_index));
+	// }
 
-	ptrLeft->m_nodeMBR = m_pTree->m_infiniteRegion;
-	ptrRight->m_nodeMBR = m_pTree->m_infiniteRegion;
+	// es.push_back(new ExternalSorter::Record(mbr, id, dataLength,pData, sort_dim_index));
 
-	uint32_t cIndex;
+	// std::sort(es.begin(), es.end(), ExternalSorter::Record::SortAscending());
 
-	for (cIndex = 0; cIndex < g1.size(); ++cIndex)
-	{
-		ptrLeft->insertEntry(0, nullptr, *(m_ptrMBR[g1[cIndex]]), m_pIdentifier[g1[cIndex]]);
-	}
+	// // sort_dim_index = (m_level + 1) % m_pTree->m_dimension;
+	// uint64_t total_entries = es.size();
+    // uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
+    // uint64_t right_node_en = static_cast<uint64_t>(total_entries - left_node_en);
+	
+	// std::vector<ExternalSorter::Record *> left_node_es;
+	// std::vector<ExternalSorter::Record *> right_node_es;
+	// ExternalSorter::Record* pR_left;
+	// ExternalSorter::Record* pR_right;
 
-	for (cIndex = 0; cIndex < g2.size(); ++cIndex)
-	{
-		ptrRight->insertEntry(0, nullptr, *(m_ptrMBR[g2[cIndex]]), m_pIdentifier[g2[cIndex]]);
-	}
+	// Node* left = new Leaf(m_pTree, -1);
+
+	// for (uint64_t i = 0; i < left_node_en; ++i) {
+	// 	try { pR_left = es[i]; }
+	// 	catch (Tools::EndOfStreamException&) { break; }
+	// 	// pR_left->m_s = sort_dim_index;
+	// 	// left_node_es.push_back(pR_left);
+	// 	left->insertEntry(pR_left->m_len, pR_left->m_pData, pR_left->m_r, pR_left->m_id);
+    // }
+	// left->m_level = m_level + 1;
+	// left->m_identifier = -1;
+	// m_pTree->writeNode(left);
+
+	// Node* right = new Leaf(m_pTree, -1);
+	// for (uint64_t i = left_node_en; i < total_entries; ++i) {
+	// 	try { pR_right = es[i]; }
+	// 	catch (Tools::EndOfStreamException&) { break; }
+	// 	// pR_right->m_s = sort_dim_index;
+	// 	// right_node_es.push_back(pR_right);
+	// 	// right_node_es->insert(pR_right);
+	// 	right->insertEntry(pR_right->m_len, pR_right->m_pData, pR_right->m_r, pR_right->m_id);
+	// }
+	// right->m_level = m_level + 1;
+	// right->m_identifier = -1;
+	// m_pTree->writeNode(right);
+
+	// pTree->m_stats.m_u32TreeHeight += 1;
+
+	// std::vector<ExternalSorter::Record*> parent;
+	// parent.push_back(r_left);
+	// parent.push_back(r_right);
+	// if (pathBuffer.empty())
+	// {
+
+	// 	NodePtr ptrR = m_pTree->m_indexPool.acquire();
+	// 	if (ptrR.get() == nullptr)
+	// 	{
+	// 		ptrR = NodePtr(new Index(m_pTree, m_pTree->m_rootID, m_level + 1), &(m_pTree->m_indexPool));
+	// 	}
+	// 	else
+	// 	{
+	// 		//ptrR->m_pTree = m_pTree;
+	// 		ptrR->m_identifier = m_pTree->m_rootID;
+	// 		ptrR->m_level = m_level + 1;
+	// 		ptrR->m_nodeMBR = m_pTree->m_infiniteRegion;
+	// 	}
+
+	// 	m_capacity = 2;
+	// 	m_children = 0;
+
+	// 	ptrR->insertEntry(0, nullptr, left->m_nodeMBR, left->m_identifier);
+	// 	ptrR->insertEntry(0, nullptr, right->m_nodeMBR, right->m_identifier);
+
+	// 	// m_pTree->writeNode(ptrR.get());
+
+	// 	// m_pTree->m_stats.m_nodesInLevel[m_level] = 2;
+	// 	// m_pTree->m_stats.m_nodesInLevel.push_back(1);
+	// 	// m_pTree->m_stats.m_u32TreeHeight = m_level + 2;
+	// }
+	// // else
+	// // {
+
+
+	// 	// id_type cParent = pathBuffer.top(); pathBuffer.pop();
+	// 	// NodePtr ptrN = m_pTree->readNode(cParent);
+	// 	// Index* p = static_cast<Index*>(ptrN.get());
+	// 	// p->adjustTree(n.get(), nn.get(), pathBuffer, overflowTable);
+	// // }
+
 }
 
 uint32_t Index::findLeastEnlargement(const Region& r) const
