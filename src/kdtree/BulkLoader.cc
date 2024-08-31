@@ -28,6 +28,10 @@
 #include <cstring>
 #include <cstdio>
 #include <cmath>
+#include <random>
+#include <ctime>
+
+#include <algorithm>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -578,15 +582,22 @@ void BulkLoader::topDownGreedyPartitioning(
 		d->m_pData = nullptr;
 		delete d;
 	}
+	// std::cerr << " before sort" << tupleSet.size() << std::endl;
 	std::sort(tupleSet.begin(), tupleSet.end(), ExternalSorter::Record::SortAscending());
+	// std::cerr << " after sort" << std::endl;
 
-	std::vector<Region> queryRegions;
+	std::vector<Region> allqueryRegions;
 	while (queryStream.hasNext())
 	{
 		Data* d = reinterpret_cast<Data*>(queryStream.getNext());
-		queryRegions.push_back(d->m_region);
+		allqueryRegions.push_back(d->m_region);
 		delete d;
 	}
+
+	std::vector<Region> queryRegions;
+
+	std::sample(allqueryRegions.begin(), allqueryRegions.end(), std::back_inserter(queryRegions), 200, std::mt19937{std::random_device{}()});
+
 
 	pTree->m_stats.m_u64Data = tupleSet.size();
 
@@ -637,7 +648,7 @@ bool BulkLoader::greedyPartition(
 	// std::cerr << "KDTree::greedyPartition: ----node----" << " level: " << level << std::endl;
 
 	uint64_t maxSkip = std::numeric_limits<uint64_t>::min();
-	uint32_t maxSplitDimension;
+	uint32_t maxSplitDimension = 0;
 	double maxSplitValue;
 
 	std::vector<ExternalSorter::Record *> bestLeftData;
@@ -672,6 +683,7 @@ bool BulkLoader::greedyPartition(
 		for (uint64_t l = 0; l < total_entries; ++l)
 		{
 			ExternalSorter::Record *r = tupleSet[l];
+            r->m_s = splitDimension;
 			if (leftMBR.intersectsRegion(r->m_r))
 			{
 				leftData.push_back(r);
@@ -747,13 +759,19 @@ bool BulkLoader::greedyPartition(
 		bestLeftMBR = leftMBR;
 		bestRightMBR = rightMBR;
 	}
+	// std::cerr << " before sort left" << bestLeftData.size() << std::endl;
 	std::sort(bestLeftData.begin(), bestLeftData.end(), ExternalSorter::Record::SortAscending());
+	// std::cerr << " after sort left" << std::endl;
+
 	greedyPartition(pTree, bestLeftData, bleaf, bindex, level+1, bestLeftMBR, tupleSet2, queryRegions, candidateCutPos);
 	// ExternalSorter::Record* r_left = tupleSet2
 	ExternalSorter::Record* r_left = tupleSet2.back();
 	tupleSet2.pop_back();
 
+	// std::cerr << " before sort right" << bestRightData.size() << std::endl;
 	std::sort(bestRightData.begin(), bestRightData.end(), ExternalSorter::Record::SortAscending());
+	// std::cerr << " after sort right" << std::endl;
+
 	greedyPartition(pTree, bestRightData, bleaf, bindex, level+1, bestRightMBR, tupleSet2, queryRegions, candidateCutPos);
 
 	ExternalSorter::Record* r_right = tupleSet2.back();
@@ -853,6 +871,10 @@ void BulkLoader::topDownModelPartitioning(
 	pTree->storeHeader();
 }
 
+
+std::mt19937 generator(static_cast<unsigned int>(std::time(nullptr)));
+std::uniform_real_distribution<double> distribution(0.0, 1.0);
+
 bool BulkLoader::modelPartition(
 	SpatialIndex::KDTree::KDTree* pTree,
 	std::vector<ExternalSorter::Record *> tupleSet,
@@ -901,7 +923,21 @@ bool BulkLoader::modelPartition(
 		state.insert(state.end(), low_bits.begin(), low_bits.end());
 		state.insert(state.end(), high_bits.begin(), high_bits.end());
 	}
-	uint32_t action = pTree->splitModelForward(state);
+
+
+
+	double randomValue = distribution(generator);
+	uint32_t action = 0;
+
+	if (randomValue >= 0.5) 
+	{
+		std::uniform_int_distribution<uint32_t> actionDistribution(0, candidateCutPos.size() - 1);
+		action = actionDistribution(generator);
+	}
+	else
+	{
+		action = pTree->splitModelForward(state);
+	}
 
 	uint32_t splitDimension = candidateCutPos[action].first;
 	double splitValue = candidateCutPos[action].second;
@@ -989,7 +1025,13 @@ bool BulkLoader::modelPartition(
 		bestRightMBR = rightMBR_;
 	}
 
+	// std::cerr << "bestLeftData: " << " bestLeftData[0]->m_s: " << bestLeftData[0]->m_s << std::endl;
 	std::sort(bestLeftData.begin(), bestLeftData.end(), ExternalSorter::Record::SortAscending());
+	// for (int i = 0; i < bestLeftData.size(); ++i)
+	// {
+	// 	std::cerr << bestLeftData[i]->m_r.m_pLow[0] << "," << bestLeftData[i]->m_r.m_pHigh[0] << "  " << bestLeftData[i]->m_r.m_pLow[1] << "," << bestLeftData[i]->m_r.m_pHigh[1] << std::endl;
+	// }
+
 	modelPartition(pTree, bestLeftData, bleaf, bindex, level+1, bestLeftMBR, tupleSet2, queryRegions, candidateCutPos);
 	ExternalSorter::Record* r_left = tupleSet2.back();
 	tupleSet2.pop_back();

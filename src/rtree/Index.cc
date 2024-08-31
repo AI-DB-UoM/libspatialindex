@@ -59,7 +59,11 @@ NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::st
 			break;
 		case RV_RLRTREE:
 			if (m_pTree->isModelAvailable())
-				child = findRLRLeastEnlargement(mbr);
+			{
+				// child = findRLRLeastEnlargement(mbr);
+				// if (child == 0)
+				child = findLeastEnlargement(mbr);
+			}
 			else
 				child = findLeastEnlargement(mbr);
 			break;

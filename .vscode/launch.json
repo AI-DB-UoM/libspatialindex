@@ -2,13 +2,42 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "KDGreedyBuild",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/test-kdtree-KDTreeBulkLoad",
+            "args": [
+                "greedy_kdtree",
+                "kdtree_greedy_data",
+                "/benchmark/libspatialindex/range_1000_2_uniform_1_0.001x0.001",
+                "/benchmark/benchmark/tree",
+                "100",
+                "1.0",
+                "4096",
+                "0"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/test",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
             "name": "KDTreeInsert",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/test/test-kdtree-KDTreeQuery",
             "args": [
-                "/home/research/Dropbox/PostDoc/topics/RLSpatial/benchmark/benchmark/libspatialindex/us_10000_insert_10000_2_uniform_1",
-                "/home/research/Dropbox/PostDoc/topics/RLSpatial/benchmark/benchmark/tree",
+                "/benchmark/libspatialindex/us_10000_insert_10000_2_uniform_1",
+                "/benchmark/tree",
                 "intersection",
                 "0"
             ],

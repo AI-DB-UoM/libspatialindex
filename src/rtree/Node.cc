@@ -774,17 +774,6 @@ void Node::rlrtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_typ
 		throw;
 	}
 
-
-	// // 1. Init
-	// uint32_t u32Child;
-	// uint32_t minimumLoad = static_cast<uint32_t>(std::floor(m_capacity * m_pTree->m_fillFactor));
-
-	// // use this mask array for marking visited entries.
-	// uint8_t* mask = new uint8_t[m_capacity + 1];
-	// memset(mask, 0, m_capacity + 1);
-
-	// insert new data in the node for easier manipulation. Data arrays are always
-	// by one larger than node capacity.
 	m_pDataLength[m_capacity] = dataLength;
 	m_pData[m_capacity] = pData;
 	m_ptrMBR[m_capacity] = m_pTree->m_regionPool.acquire();
@@ -846,6 +835,8 @@ void Node::rlrtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_typ
 	::qsort(dataBottom, m_capacity + 1, sizeof(RstarSplitEntry*), RstarSplitEntry::compareLow);
 	prefix = *(dataBottom[0]->m_pRegion);
 	suffix = *(dataBottom[m_capacity - minimumLoad + 1]->m_pRegion);
+
+
 	
 	for (u32Child = 1; u32Child < minimumLoad - 1; ++u32Child)
 	{
@@ -887,6 +878,28 @@ void Node::rlrtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_typ
 	}
 	else
 	{
+
+		// std::cerr << "------------RtreeSplit------------" << std::endl;
+		std::vector<uint32_t> rtree_group1, rtree_group2;
+		rtreeSplit(dataLength, pData, mbr, id, rtree_group1, rtree_group2);
+		Region rtree_mbr1 = *(m_ptrMBR[rtree_group1[0]]);
+		Region rtree_mbr2 = *(m_ptrMBR[rtree_group2[0]]);
+		for (int i = 1; i < rtree_group1.size(); i++)
+		{
+			rtree_mbr1.combineRegion(*(m_ptrMBR[rtree_group1[i]]));
+		}
+		for (int i = 1; i < rtree_group2.size(); i++)
+		{
+			rtree_mbr2.combineRegion(*(m_ptrMBR[rtree_group2[i]]));
+		}
+		// std::cerr << "MBR1: " << "m_xmin" << mbr1.m_pLow[0] << " m_xmax" << mbr1.m_pHigh[0] << " m_ymin " << mbr1.m_pLow[1] << " m_ymax" << mbr1.m_pHigh[1] << std::endl;
+		// std::cerr << "MBR2: " << "m_xmin" << mbr2.m_pLow[0] << " m_xmax" << mbr2.m_pHigh[0] << " m_ymin " << mbr2.m_pLow[1] << " m_ymax" << mbr2.m_pHigh[1] << std::endl;
+
+		// std::cerr << "MBR Area: " << rtree_mbr1.getArea() + rtree_mbr2.getArea() << std::endl;
+		// std::cerr << "MBR Margin: " << rtree_mbr1.getMargin() + rtree_mbr2.getMargin() << std::endl;
+		
+		// else
+		// {
 		std::vector<uint32_t> candidate_split_action(m_pTree->m_rlr_action_space_size);
 
 		std::vector<std::pair<double, int> > zero_ovlp_splits;
@@ -894,8 +907,9 @@ void Node::rlrtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_typ
 		{
 			if (split_locations[i].overlap == 0)
 			{
-				double perimeter = std::max(split_locations[i].perimeter1, split_locations[i].perimeter2);
-				zero_ovlp_splits.emplace_back(perimeter, i);
+				// double perimeter = std::max(split_locations[i].perimeter1, split_locations[i].perimeter2);
+				double area = std::max(split_locations[i].area1, split_locations[i].area2);
+				zero_ovlp_splits.emplace_back(area, i);
 			}
 		}
 		sort(zero_ovlp_splits.begin(), zero_ovlp_splits.end());
@@ -930,10 +944,12 @@ void Node::rlrtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_typ
 
 		// Invoke the libtorch model
 		uint32_t best = m_pTree->splitModelForward(states); 
-		best = std::min(m_children - 1, best);
+		best = std::min(m_pTree->m_rlr_action_space_size - 1, best);
 		// Do split
 		int dim = split_locations[candidate_split_action[best]].dimension;
 		int split_loc = split_locations[candidate_split_action[best]].location;
+		// std::cerr << "------------RLRtreeSplit------------" << std::endl;
+		// std::cerr << "split best: " << best << " dim: " << dim << " split_loc: " << split_loc << std::endl;
 
 		if (dim == 0) 
 		{
@@ -957,6 +973,28 @@ void Node::rlrtreeSplit(uint32_t dataLength, uint8_t* pData, Region& mbr, id_typ
 				group2.push_back(dataBottom[u32Child]->m_index);
 			}
 		}
+
+		Region mbr1 = *(m_ptrMBR[group1[0]]);
+		Region mbr2 = *(m_ptrMBR[group2[0]]);
+		for (int i = 1; i < group1.size(); i++)
+		{
+			mbr1.combineRegion(*(m_ptrMBR[group1[i]]));
+		}
+		for (int i = 1; i < group2.size(); i++)
+		{
+			mbr2.combineRegion(*(m_ptrMBR[group2[i]]));
+		}
+
+		// std::cerr << "MBR Area: " << mbr1.getArea() + mbr2.getArea() << std::endl;
+		// std::cerr << "MBR Margin: " << mbr1.getMargin() + mbr2.getMargin() << std::endl;
+		if (rtree_mbr1.getMargin() + rtree_mbr2.getMargin() < mbr1.getMargin() + mbr2.getMargin()) {
+			group1 = rtree_group1;
+			group2 = rtree_group2;
+		}
+
+		// std::cerr << "MBR1: " << "m_xmin" << mbr1.m_pLow[0] << " m_xmax" << mbr1.m_pHigh[0] << " m_ymin " << mbr1.m_pLow[1] << " m_ymax" << mbr1.m_pHigh[1] << std::endl;
+		// std::cerr << "MBR2: " << "m_xmin" << mbr2.m_pLow[0] << " m_xmax" << mbr2.m_pHigh[0] << " m_ymin " << mbr2.m_pLow[1] << " m_ymax" << mbr2.m_pHigh[1] << std::endl;
+
 	}
 
 }
