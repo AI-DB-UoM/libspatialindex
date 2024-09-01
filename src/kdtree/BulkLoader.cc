@@ -586,18 +586,25 @@ void BulkLoader::topDownGreedyPartitioning(
 	std::sort(tupleSet.begin(), tupleSet.end(), ExternalSorter::Record::SortAscending());
 	// std::cerr << " after sort" << std::endl;
 
-	std::vector<Region> allqueryRegions;
+	// std::vector<Region> allqueryRegions;
+	// while (queryStream.hasNext())
+	// {
+	// 	Data* d = reinterpret_cast<Data*>(queryStream.getNext());
+	// 	allqueryRegions.push_back(d->m_region);
+	// 	delete d;
+	// }
+
+	// std::vector<Region> queryRegions;
+
+	// std::sample(allqueryRegions.begin(), allqueryRegions.end(), std::back_inserter(queryRegions), 200, std::mt19937{std::random_device{}()});
+
+	std::vector<Region> queryRegions;
 	while (queryStream.hasNext())
 	{
 		Data* d = reinterpret_cast<Data*>(queryStream.getNext());
-		allqueryRegions.push_back(d->m_region);
+		queryRegions.push_back(d->m_region);
 		delete d;
 	}
-
-	std::vector<Region> queryRegions;
-
-	std::sample(allqueryRegions.begin(), allqueryRegions.end(), std::back_inserter(queryRegions), 200, std::mt19937{std::random_device{}()});
-
 
 	pTree->m_stats.m_u64Data = tupleSet.size();
 
@@ -760,7 +767,7 @@ bool BulkLoader::greedyPartition(
 		bestRightMBR = rightMBR;
 	}
 	// std::cerr << " before sort left" << bestLeftData.size() << std::endl;
-	std::sort(bestLeftData.begin(), bestLeftData.end(), ExternalSorter::Record::SortAscending());
+	// std::sort(bestLeftData.begin(), bestLeftData.end(), ExternalSorter::Record::SortAscending());
 	// std::cerr << " after sort left" << std::endl;
 
 	greedyPartition(pTree, bestLeftData, bleaf, bindex, level+1, bestLeftMBR, tupleSet2, queryRegions, candidateCutPos);
@@ -769,7 +776,7 @@ bool BulkLoader::greedyPartition(
 	tupleSet2.pop_back();
 
 	// std::cerr << " before sort right" << bestRightData.size() << std::endl;
-	std::sort(bestRightData.begin(), bestRightData.end(), ExternalSorter::Record::SortAscending());
+	// std::sort(bestRightData.begin(), bestRightData.end(), ExternalSorter::Record::SortAscending());
 	// std::cerr << " after sort right" << std::endl;
 
 	greedyPartition(pTree, bestRightData, bleaf, bindex, level+1, bestRightMBR, tupleSet2, queryRegions, candidateCutPos);
