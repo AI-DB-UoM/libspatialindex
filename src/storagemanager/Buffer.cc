@@ -83,7 +83,8 @@ void Buffer::loadByteArray(const id_type page, uint32_t& len, uint8_t** data)
 	else
 	{
 		m_pStorageManager->loadByteArray(page, len, data);
-		addEntry(page, new Entry(len, static_cast<const uint8_t*>(*data)));
+		// This is to avoid butter hits when executing queries.
+		//addEntry(page, new Entry(len, static_cast<const uint8_t*>(*data)));
 	}
 }
 

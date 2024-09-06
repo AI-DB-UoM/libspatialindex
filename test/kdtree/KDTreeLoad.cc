@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 		std::string baseName = argv[2];
 		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, 4096);
 
-		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, 10, false);
+		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, 10, true);
 			// applies a main memory random buffer on top of the persistent storage manager
 			// (LRU buffer, etc can be created the same way).
 
