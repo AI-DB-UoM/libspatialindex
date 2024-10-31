@@ -79,6 +79,8 @@ public:
 	}
 
 	void visitData(std::vector<const IData*>& ) override {}
+
+	void visitNodeCost(const INode& n, size_t time_cost) override {}
 };
 
 // example of a Strategy pattern.

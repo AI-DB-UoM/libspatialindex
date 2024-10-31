@@ -56,6 +56,10 @@ class MyVisitor : public IVisitor
 public:
 	size_t m_indexIO{0};
 	size_t m_leafIO{0};
+	size_t m_dataTime{0};
+	size_t m_dataCount{0};
+	size_t m_indexTime{0};
+	size_t m_leafTime{0};
 
 public:
     MyVisitor() = default;
@@ -68,9 +72,16 @@ public:
 
 	void visitData(const IData& d) override
 	{
+		auto start = chrono::high_resolution_clock::now();
 		IShape* pS;
 		d.getShape(&pS);
 			// do something.
+
+		// Region* pr = dynamic_cast<Region*>(pS);
+
+		// cerr << pr->m_pLow[0] << " " << pr->m_pLow[1] << endl;
+		// cerr << pr->m_pHigh[0] << " " << pr->m_pHigh[1] << endl << endl;
+
 		delete pS;
 
 		// data should be an array of characters representing a Region as a string.
@@ -84,13 +95,22 @@ public:
 
 		// TODO Uncomment the following code if you want to see the query result
 		// cout << d.getIdentifier() << endl;
-
 			// the ID of this data entry is an answer to the query. I will just print it to stdout.
+		auto end = chrono::high_resolution_clock::now(); 
+		auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+		m_dataTime += duration;
+		m_dataCount++;
 	}
 
 	void visitData(std::vector<const IData*>& v) override
 	{
 		cout << v[0]->getIdentifier() << " " << v[1]->getIdentifier() << endl;
+	}
+
+	void visitNodeCost(const INode& n, size_t time_cost) override 
+	{
+		if (n.isLeaf()) m_leafTime += time_cost;
+		else m_indexTime += time_cost;
 	}
 };
 
@@ -217,6 +237,9 @@ int main(int argc, char** argv)
 		size_t count = 0;
 		size_t indexIO = 0;
 		size_t leafIO = 0;
+		size_t dataTime = 0;
+		size_t indexTime = 0;
+		size_t leafTime = 0;
 		id_type id;
 		uint32_t op;
 		double x1, x2, y1, y2;
@@ -224,6 +247,7 @@ int main(int argc, char** argv)
 
 		vector<double> queryTimes; 
 		vector<double> insertTimes; 
+		vector<size_t> dataCounts; 
 
 		cerr << fixed << setprecision(10);
 
@@ -260,11 +284,13 @@ int main(int argc, char** argv)
 
 				indexIO += vis.m_indexIO;
 				leafIO += vis.m_leafIO;
-					// example of the Visitor pattern usage, for calculating how many nodes
-					// were visited.
+				dataTime += vis.m_dataTime;
+				leafTime += vis.m_leafTime;
+				indexTime += vis.m_indexTime;
 				auto end = chrono::high_resolution_clock::now(); 
 				auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
 				queryTimes.push_back(duration); 
+				dataCounts.push_back(vis.m_dataCount);
 			}
 			else if (op == INSERT)
 			{
@@ -302,7 +328,13 @@ int main(int argc, char** argv)
 		cerr << *tree;
 		cerr << "Index I/O: " << indexIO << endl;
 		cerr << "Leaf I/O: " << leafIO << endl;
+		cerr << "Index Time: " << indexTime << endl;
+		cerr << "Leaf Time: " << leafTime << endl;
+		cerr << "Data Time: " << dataTime << endl;
 		cerr << "Buffer hits: " << file->getHits() << endl;
+
+		size_t totalSum = std::accumulate(dataCounts.begin(), dataCounts.end(), 0ULL);
+		cerr << "Total sum of dataCounts: " << totalSum << endl;
 
 		if (queryTimes.size() > 0)
 		{
@@ -318,21 +350,21 @@ int main(int argc, char** argv)
 				variance /= (queryTimes.size() - 1);
 			double stdDev = sqrt(variance);
 	
-			// Query P50
-			nth_element(queryTimes.begin(), queryTimes.begin() + queryTimes.size() / 2, queryTimes.end());
-			double p50 = queryTimes[queryTimes.size() / 2];
-
-			// Query P99
-			size_t n = queryTimes.size();
-			nth_element(queryTimes.begin(), queryTimes.begin() + n * 99 / 100, queryTimes.end());
-			double p99 = queryTimes[n * 99 / 100];
-
 			cerr << "Query num: " << queryTimes.size() << endl;
 			cerr << "Query mean: " << mean << endl;
 			cerr << "Query variance: " << variance << endl;
 			cerr << "Query stdDev: " << stdDev << endl;
-			cerr << "Query p50: " << p50 << endl;
-			cerr << "Query p99: " << p99 << endl;
+			// cerr << "Query p50: " << p50 << endl;
+			// cerr << "Query p99: " << p99 << endl;
+			// Query P1 to P100
+			size_t n = queryTimes.size();
+			for (int p = 0; p < 100; ++p) {
+				nth_element(queryTimes.begin(), queryTimes.begin() + n * p / 100, queryTimes.end());
+				size_t percentile = queryTimes[n * p / 100];
+				size_t dataCount = dataCounts[n * p / 100];
+				cerr << "Query P" << p << ": " << percentile << endl;
+				cerr << "Query P" << p << " Count: " << dataCount << endl;
+			}
 		}
 
 		if (insertTimes.size() > 0)

@@ -112,6 +112,8 @@ public:
 	{
 		cout << v[0]->getIdentifier() << " " << v[1]->getIdentifier() << "\n";
 	}
+
+	void visitNodeCost(const INode& n, size_t time_cost) override {}
 };
 
 int main(int argc, char** argv)

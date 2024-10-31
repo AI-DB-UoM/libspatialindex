@@ -50,3 +50,9 @@ void CountVisitor::visitData(const SpatialIndex::IData& )
 void CountVisitor::visitData(std::vector<const SpatialIndex::IData*>& )
 {
 }
+
+void CountVisitor::visitNodeCost(const SpatialIndex::INode&, size_t)
+{
+
+}
+

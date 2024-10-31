@@ -59,3 +59,8 @@ void ObjVisitor::visitData(std::vector<const SpatialIndex::IData*>& )
 {
 }
 
+void ObjVisitor::visitNodeCost(const SpatialIndex::INode&, size_t)
+{
+}
+
+

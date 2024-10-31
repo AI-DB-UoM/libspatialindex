@@ -98,6 +98,7 @@ namespace SpatialIndex
 
 			id_type writeNode(Node*);
 			NodePtr readNode(id_type page);
+			NodePtr readNode(id_type page, IVisitor& v);
 			void deleteNode(Node*);
 
 			void rangeQuery(RangeQueryType type, const IShape& query, IVisitor& v);

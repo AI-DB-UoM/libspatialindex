@@ -47,4 +47,5 @@ public:
     void visitNode(const SpatialIndex::INode& n);
     void visitData(const SpatialIndex::IData& d);
     void visitData(std::vector<const SpatialIndex::IData*>& v);
+	void visitNodeCost(const SpatialIndex::INode& n, size_t time_cost);
 };

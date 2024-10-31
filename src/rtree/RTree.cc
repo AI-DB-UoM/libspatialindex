@@ -28,6 +28,7 @@
 #include <cstring>
 #include <cmath>
 #include <limits>
+#include <chrono>
 
 // #include <torch/script.h>
 
@@ -460,7 +461,7 @@ void SpatialIndex::RTree::RTree::internalNodesQuery(const IShape& query, IVisito
 	try
 	{
 		std::stack<NodePtr> st;
-		NodePtr root = readNode(m_rootID);
+		NodePtr root = readNode(m_rootID, v);
 		st.push(root);
 
 		while (! st.empty())
@@ -499,7 +500,7 @@ void SpatialIndex::RTree::RTree::internalNodesQuery(const IShape& query, IVisito
 					{
 						for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
 						{
-							st.push(readNode(n->m_pIdentifier[cChild]));
+							st.push(readNode(n->m_pIdentifier[cChild], v));
 						}
 					}
 				}
@@ -520,7 +521,7 @@ void SpatialIndex::RTree::RTree::containsWhatQuery(const IShape& query, IVisitor
 	try
 	{
 		std::stack<NodePtr> st;
-		NodePtr root = readNode(m_rootID);
+		NodePtr root = readNode(m_rootID, v);
 		st.push(root);
 
 		while (! st.empty())
@@ -553,7 +554,7 @@ void SpatialIndex::RTree::RTree::containsWhatQuery(const IShape& query, IVisitor
 
 					for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
 					{
-						st.push(readNode(n->m_pIdentifier[cChild]));
+						st.push(readNode(n->m_pIdentifier[cChild], v));
 					}
 				}
 			}
@@ -603,7 +604,7 @@ void SpatialIndex::RTree::RTree::nearestNeighborQuery(uint32_t k, const IShape& 
 		if (pFirst->m_pEntry == nullptr)
 		{
 			// n is a leaf or an index.
-			NodePtr n = readNode(pFirst->m_id);
+			NodePtr n = readNode(pFirst->m_id, v);
 			v.visitNode(*n);
 
 			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
@@ -1554,7 +1555,6 @@ SpatialIndex::RTree::NodePtr SpatialIndex::RTree::RTree::readNode(id_type page)
 		{
 			m_readNodeCommands[cIndex]->execute(*n);
 		}
-
 		delete[] buffer;
 		return n;
 	}
@@ -1563,6 +1563,16 @@ SpatialIndex::RTree::NodePtr SpatialIndex::RTree::RTree::readNode(id_type page)
 		delete[] buffer;
 		throw;
 	}
+}
+
+SpatialIndex::RTree::NodePtr SpatialIndex::RTree::RTree::readNode(id_type page, IVisitor& v)
+{
+	auto start = std::chrono::high_resolution_clock::now(); 
+	NodePtr n = readNode(page);
+	auto end = std::chrono::high_resolution_clock::now(); 
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+	v.visitNodeCost(*n, duration);
+	return n;
 }
 
 void SpatialIndex::RTree::RTree::deleteNode(Node* n)
@@ -1589,7 +1599,8 @@ void SpatialIndex::RTree::RTree::deleteNode(Node* n)
 void SpatialIndex::RTree::RTree::rangeQuery(RangeQueryType type, const IShape& query, IVisitor& v)
 {
 	std::stack<NodePtr> st;
-	NodePtr root = readNode(m_rootID);
+
+	NodePtr root = readNode(m_rootID, v);
 
 	if (root->m_children > 0 && query.intersectsShape(root->m_nodeMBR)) st.push(root);
 
@@ -1621,7 +1632,7 @@ void SpatialIndex::RTree::RTree::rangeQuery(RangeQueryType type, const IShape& q
 
 			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
 			{
-				if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) st.push(readNode(n->m_pIdentifier[cChild]));
+				if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) st.push(readNode(n->m_pIdentifier[cChild], v));
 			}
 		}
 	}
@@ -1629,8 +1640,8 @@ void SpatialIndex::RTree::RTree::rangeQuery(RangeQueryType type, const IShape& q
 
 void SpatialIndex::RTree::RTree::selfJoinQuery(id_type id1, id_type id2, const Region& r, IVisitor& vis)
 {
-	NodePtr n1 = readNode(id1);
-	NodePtr n2 = readNode(id2);
+	NodePtr n1 = readNode(id1, vis);
+	NodePtr n2 = readNode(id2, vis);
 	vis.visitNode(*n1);
 	vis.visitNode(*n2);
 
@@ -1692,7 +1703,7 @@ void SpatialIndex::RTree::RTree::visitSubTree(NodePtr subTree, IVisitor& v)
 		{
 			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
 			{
-				st.push(readNode(n->m_pIdentifier[cChild]));
+				st.push(readNode(n->m_pIdentifier[cChild], v));
 			}
 		}
 	}

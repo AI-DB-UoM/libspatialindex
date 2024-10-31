@@ -52,6 +52,8 @@ public:
 	}
 
 	void visitData(std::vector<const IData*>& /* v */) override {}
+
+	void visitNodeCost(const INode& n, size_t time_cost) override {}
 };
 
 int main(int argc, char** argv)

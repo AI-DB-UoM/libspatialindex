@@ -169,6 +169,7 @@ namespace SpatialIndex
 		virtual void visitNode(const INode& in) = 0;
 		virtual void visitData(const IData& in) = 0;
 		virtual void visitData(std::vector<const IData*>& v) = 0;
+		virtual void visitNodeCost(const INode& in, size_t time_cost) = 0;
 		virtual ~IVisitor() = default;
 	}; // IVisitor
 

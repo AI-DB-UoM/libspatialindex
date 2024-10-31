@@ -56,9 +56,11 @@ class MyVisitor : public IVisitor
 public:
 	size_t m_indexIO{0};
 	size_t m_leafIO{0};
-	size_t m_nodeTime{0};
 	size_t m_dataTime{0};
 	size_t m_dataCount{0};
+	size_t m_indexTime{0};
+	size_t m_leafTime{0};
+
 
 public:
     MyVisitor() = default;
@@ -105,6 +107,12 @@ public:
 	{
 		cout << v[0]->getIdentifier() << " " << v[1]->getIdentifier() << endl;
 	}
+
+	void visitNodeCost(const INode& n, size_t time_cost) override 
+	{
+		if (n.isLeaf()) m_leafTime += time_cost;
+		else m_indexTime += time_cost;
+	}
 };
 
 // example of a Strategy pattern.
@@ -133,6 +141,15 @@ public:
 		const INode* n = dynamic_cast<const INode*>(&entry);
 
 		// traverse only index nodes at levels 2 and higher.double
+		if (n != nullptr && n->getLevel() > 1)
+		{
+			for (uint32_t cChild = 0; cChild < n->getChildrenCount(); cChild++)
+			{
+				ids.push(n->getChildIdentifier(cChild));
+			}
+		}
+
+		if (! ids.empty())
 		{
 			nextEntry = ids.front(); ids.pop();
 			hasNext = true;
@@ -222,7 +239,9 @@ int main(int argc, char** argv)
 		size_t indexIO = 0;
 		size_t leafIO = 0;
 		size_t dataTime = 0;
-		size_t nodeTime = 0;
+		size_t indexTime = 0;
+		size_t leafTime = 0;
+
 		id_type id;
 		uint32_t op;
 		double x1, x2, y1, y2;
@@ -280,7 +299,8 @@ int main(int argc, char** argv)
 				indexIO += vis.m_indexIO;
 				leafIO += vis.m_leafIO;
 				dataTime += vis.m_dataTime;
-				nodeTime += vis.m_nodeTime;
+				leafTime += vis.m_leafTime;
+				indexTime += vis.m_indexTime;
 				auto end = chrono::high_resolution_clock::now(); 
 				auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
 				queryTimes.push_back(duration); 
@@ -323,8 +343,9 @@ int main(int argc, char** argv)
 		cerr << *tree;
 		cerr << "Index I/O: " << indexIO << endl;
 		cerr << "Leaf I/O: " << leafIO << endl;
-		cerr << "dataTime: " << dataTime << endl;
-		cerr << "nodeTime: " << nodeTime << endl;
+		cerr << "Index Time: " << indexTime << endl;
+		cerr << "Leaf Time: " << leafTime << endl;
+		cerr << "Data Time: " << dataTime << endl;
 		cerr << "Buffer hits: " << file->getHits() << endl;
 
 		size_t totalSum = std::accumulate(dataCounts.begin(), dataCounts.end(), 0ULL);
@@ -344,15 +365,6 @@ int main(int argc, char** argv)
 				variance /= (queryTimes.size() - 1);
 			double stdDev = sqrt(variance);
 	
-			// Query P50
-			// nth_element(queryTimes.begin(), queryTimes.begin() + queryTimes.size() / 2, queryTimes.end());
-			// double p50 = queryTimes[queryTimes.size() / 2];
-
-			// // Query P99
-			// size_t n = queryTimes.size();
-			// nth_element(queryTimes.begin(), queryTimes.begin() + n * 99 / 100, queryTimes.end());
-			// double p99 = queryTimes[n * 99 / 100];
-
 			cerr << "Query num: " << queryTimes.size() << endl;
 			cerr << "Query mean: " << mean << endl;
 			cerr << "Query variance: " << variance << endl;
@@ -365,7 +377,8 @@ int main(int argc, char** argv)
 				nth_element(queryTimes.begin(), queryTimes.begin() + n * p / 100, queryTimes.end());
 				size_t percentile = queryTimes[n * p / 100];
 				size_t dataCount = dataCounts[n * p / 100];
-				cerr << "Query P" << p << ": " << percentile << " || " << dataCount << endl;
+				cerr << "Query P" << p << ": " << percentile << endl;
+				cerr << "Query P" << p << " Count: " << dataCount << endl;
 			}
 		}
 
