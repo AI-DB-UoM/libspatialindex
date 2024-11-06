@@ -119,9 +119,9 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		if (argc != 9)
+		if (argc != 9 || argc != 10)
 		{
-			std::cerr << "Usage: " << argv[0] << "kd_type input_file query_file tree_file capacity utilization pagesize buffer." << std::endl;
+			std::cerr << "Usage: " << argv[0] << "kd_type input_file query_file tree_file leaf_capacity utilization pagesize buffer [index_capacity]." << std::endl;
 			return -1;
 		}
 
@@ -164,8 +164,9 @@ int main(int argc, char** argv)
 		if (myVariant == SpatialIndex::KDTree::KD_NORMAL)
 		{
 			std::cerr << "myVariant: " << myVariant << std::endl;
+
 			tree = KDTree::createNewKDTree(
-				loadMethod, stream, *file, utilization, 2, atoi(argv[5]), 2, myVariant, indexIdentifier);
+				loadMethod, stream, *file, utilization, argc == 10 ? atoi(argv[9]) : 2, atoi(argv[5]), 2, myVariant, indexIdentifier);
 		}
 		else if (myVariant == SpatialIndex::KDTree::KD_GREEDY || myVariant == SpatialIndex::KDTree::QD_NORMAL)
 		{

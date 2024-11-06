@@ -391,6 +391,8 @@ void BulkLoader::partition(
 ) {
     // uint64_t total_entries = es->getTotalEntries();
 	uint64_t total_entries = es.size();
+    uint64_t entries_per_child = total_entries / bindex;
+    uint64_t remainder = total_entries % bindex;
     uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
     uint64_t right_node_en = static_cast<uint64_t>(total_entries - left_node_en);
 
@@ -418,57 +420,87 @@ void BulkLoader::partition(
         pTree->m_stats.m_u32TreeHeight = std::max(pTree->m_stats.m_u32TreeHeight, static_cast<uint32_t>(level));
 
         delete n;
-    } else {
-        // auto left_node_es = std::make_shared<ExternalSorter>(pageSize, numberOfPages);
-        // auto right_node_es = std::make_shared<ExternalSorter>(pageSize, numberOfPages);
-		std::vector<ExternalSorter::Record *> left_node_es;
-		std::vector<ExternalSorter::Record *> right_node_es;
-        ExternalSorter::Record* pR_left;
-        ExternalSorter::Record* pR_right;
+	} else {
+        std::vector<std::vector<ExternalSorter::Record *>> children_es(bindex);
+        ExternalSorter::Record* pR;
 
         uint32_t sort_dim_index = level % dimension;
+        uint64_t index = 0;
 
-        for (uint64_t i = 0; i < left_node_en; ++i) {
-            try { pR_left = es[i]; }
-            catch (Tools::EndOfStreamException&) { break; }
-            pR_left->m_s = sort_dim_index;
-			left_node_es.push_back(pR_left);
-            // left_node_es->insert(pR_left);
+        // multi partition
+        for (uint32_t i = 0; i < bindex; ++i) {
+            uint64_t current_entries = entries_per_child + (i < remainder ? 1 : 0);
+            for (uint64_t j = 0; j < current_entries; ++j) {
+                try { pR = es[index++]; }
+                catch (Tools::EndOfStreamException&) { break; }
+                pR->m_s = sort_dim_index;
+                children_es[i].push_back(pR);
+            }
+            std::sort(children_es[i].begin(), children_es[i].end(), ExternalSorter::Record::SortAscending());
         }
-        // left_node_es->sort();
-		std::sort(left_node_es.begin(), left_node_es.end(), ExternalSorter::Record::SortAscending());
 
-		for (uint64_t i = left_node_en; i < total_entries; ++i) {
-            try { pR_right = es[i]; }
-            catch (Tools::EndOfStreamException&) { break; }
-            pR_right->m_s = sort_dim_index;
-			right_node_es.push_back(pR_right);
-            // right_node_es->insert(pR_right);
+        // recursively partition
+        std::vector<ExternalSorter::Record*> child_records;
+        for (uint32_t i = 0; i < bindex; ++i) {
+            partition(pTree, children_es[i], dimension, bleaf, bindex, level + 1, es2, pageSize, numberOfPages);
+            child_records.push_back(es2.back());
+            es2.pop_back();
         }
-        // right_node_es->sort();
-		std::sort(right_node_es.begin(), right_node_es.end(), ExternalSorter::Record::SortAscending());
 
-        partition(pTree, left_node_es, dimension, bleaf, bindex, level + 1, es2, pageSize, numberOfPages);
-        ExternalSorter::Record* r_left = es2.back();
-		es2.pop_back();
-
-        partition(pTree, right_node_es, dimension, bleaf, bindex, level + 1, es2, pageSize, numberOfPages);
-        ExternalSorter::Record* r_right = es2.back();
-		es2.pop_back();
-
-        std::vector<ExternalSorter::Record*> parent;
-        parent.push_back(r_left);
-        parent.push_back(r_right);
-
-        Node* n_parent = createNode(pTree, parent, pTree->m_stats.m_u32TreeHeight - level);
-
-        parent.clear();
+        // create parrent node
+        Node* n_parent = createNode(pTree, child_records, pTree->m_stats.m_u32TreeHeight - level);
         pTree->writeNode(n_parent);
-
         es2.push_back(new ExternalSorter::Record(n_parent->m_nodeMBR, n_parent->m_identifier, 0, nullptr, 0));
         pTree->m_rootID = n_parent->m_identifier;
-
         delete n_parent;
+		// std::vector<ExternalSorter::Record *> left_node_es;
+		// std::vector<ExternalSorter::Record *> right_node_es;
+        // ExternalSorter::Record* pR_left;
+        // ExternalSorter::Record* pR_right;
+
+        // uint32_t sort_dim_index = level % dimension;
+
+        // for (uint64_t i = 0; i < left_node_en; ++i) {
+        //     try { pR_left = es[i]; }
+        //     catch (Tools::EndOfStreamException&) { break; }
+        //     pR_left->m_s = sort_dim_index;
+		// 	left_node_es.push_back(pR_left);
+        //     // left_node_es->insert(pR_left);
+        // }
+        // // left_node_es->sort();
+		// std::sort(left_node_es.begin(), left_node_es.end(), ExternalSorter::Record::SortAscending());
+
+		// for (uint64_t i = left_node_en; i < total_entries; ++i) {
+        //     try { pR_right = es[i]; }
+        //     catch (Tools::EndOfStreamException&) { break; }
+        //     pR_right->m_s = sort_dim_index;
+		// 	right_node_es.push_back(pR_right);
+        //     // right_node_es->insert(pR_right);
+        // }
+        // // right_node_es->sort();
+		// std::sort(right_node_es.begin(), right_node_es.end(), ExternalSorter::Record::SortAscending());
+
+        // partition(pTree, left_node_es, dimension, bleaf, bindex, level + 1, es2, pageSize, numberOfPages);
+        // ExternalSorter::Record* r_left = es2.back();
+		// es2.pop_back();
+
+        // partition(pTree, right_node_es, dimension, bleaf, bindex, level + 1, es2, pageSize, numberOfPages);
+        // ExternalSorter::Record* r_right = es2.back();
+		// es2.pop_back();
+
+        // std::vector<ExternalSorter::Record*> parent;
+        // parent.push_back(r_left);
+        // parent.push_back(r_right);
+
+        // Node* n_parent = createNode(pTree, parent, pTree->m_stats.m_u32TreeHeight - level);
+
+        // parent.clear();
+        // pTree->writeNode(n_parent);
+
+        // es2.push_back(new ExternalSorter::Record(n_parent->m_nodeMBR, n_parent->m_identifier, 0, nullptr, 0));
+        // pTree->m_rootID = n_parent->m_identifier;
+
+        // delete n_parent;
     }
 }
 
