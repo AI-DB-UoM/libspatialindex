@@ -639,7 +639,7 @@ void BulkLoader::bulkLoadUsingTGS(
 		std::vector<std::shared_ptr<std::vector<ExternalSorter::Record*>>> partitionList;
 		partitionList.push_back(currentState->es);
 		uint32_t currentLevel = currentState->level;
-		uint64_t childSize = bleaf * pow(bindex, currentLevel-1);
+		uint64_t childSize = bleaf * pow(bindex, currentLevel - 1);
 		// uint32_t nChilds = currentState->es->getTotalEntries() / childSize;
 		uint32_t nChilds = ceil(static_cast<double>(currentState->es->size()) / childSize);
 		std::cout << "currentLevel: " << currentLevel << ", childSize: " << childSize << ", nChilds: " << nChilds << "\n";
@@ -658,8 +658,12 @@ void BulkLoader::bulkLoadUsingTGS(
 			std::shared_ptr<std::vector<ExternalSorter::Record*>> currentEs = partitionList[currentIdx];
 			// uint64_t currentTotalEntries = currentEs->getTotalEntries();
 			uint64_t currentTotalEntries = currentEs->size();
+			std::cout << "currentTotalEntries: " << currentTotalEntries << "\n";
+			std::cout << "cutCount: " << cutCount << "\n";
+
 			ExternalSorter::Record* r;
 			std::pair<int, int> currentCut = cutList[cutCount];
+			
 			cutCount++;
 			int dim = currentCut.first;
 			int pos = currentCut.second;
@@ -693,14 +697,18 @@ void BulkLoader::bulkLoadUsingTGS(
 			// 	es2->insert(r);
 			// }
 			// es2->sort();
+			// std::cout << "currentEs->size(): " << currentEs->size() << " \n";
+
 			for (int i = 0; i < pos * childSize; i++) {
 				r = (*currentEs)[i];
 				es1->push_back(r);
 			}
+
 			for (int i = pos * childSize; i < currentEs->size(); i++) {
 				r = (*currentEs)[i];
 				es2->push_back(r);
 			}
+
 			std::vector<std::shared_ptr<std::vector<ExternalSorter::Record*>>>::iterator it;
 			it = partitionList.begin();
 			partitionList.erase(it+currentIdx);
