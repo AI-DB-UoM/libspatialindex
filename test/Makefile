@@ -189,6 +189,45 @@ test-kdtree-Exhaustive/fast:
 .PHONY : test-kdtree-Exhaustive/fast
 
 #=============================================================================
+# Target rules for targets named test-kdtree-KDTreeQuery
+
+# Build rule for target.
+test-kdtree-KDTreeQuery: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeQuery
+.PHONY : test-kdtree-KDTreeQuery
+
+# fast build rule for target.
+test-kdtree-KDTreeQuery/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery.dir/build
+.PHONY : test-kdtree-KDTreeQuery/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-Generator
+
+# Build rule for target.
+test-rtree-Generator: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-Generator
+.PHONY : test-rtree-Generator
+
+# fast build rule for target.
+test-rtree-Generator/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-Generator.dir/build.make CMakeFiles/test-rtree-Generator.dir/build
+.PHONY : test-rtree-Generator/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-RTreeBulkLoad
+
+# Build rule for target.
+test-rtree-RTreeBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeBulkLoad
+.PHONY : test-rtree-RTreeBulkLoad
+
+# fast build rule for target.
+test-rtree-RTreeBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/build
+.PHONY : test-rtree-RTreeBulkLoad/fast
+
+#=============================================================================
 # Target rules for targets named test-rtree-SFCRTreeBulkLoad
 
 # Build rule for target.
@@ -241,6 +280,19 @@ test-geometry-Intersection/fast:
 .PHONY : test-geometry-Intersection/fast
 
 #=============================================================================
+# Target rules for targets named test-rtree-PlatonBulkLoad
+
+# Build rule for target.
+test-rtree-PlatonBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-PlatonBulkLoad
+.PHONY : test-rtree-PlatonBulkLoad
+
+# fast build rule for target.
+test-rtree-PlatonBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad.dir/build
+.PHONY : test-rtree-PlatonBulkLoad/fast
+
+#=============================================================================
 # Target rules for targets named test-kdtree-Generator
 
 # Build rule for target.
@@ -265,45 +317,6 @@ test-kdtree-QDTreeBulkLoad: cmake_check_build_system
 test-kdtree-QDTreeBulkLoad/fast:
 	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build
 .PHONY : test-kdtree-QDTreeBulkLoad/fast
-
-#=============================================================================
-# Target rules for targets named test-rtree-Generator
-
-# Build rule for target.
-test-rtree-Generator: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-Generator
-.PHONY : test-rtree-Generator
-
-# fast build rule for target.
-test-rtree-Generator/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-Generator.dir/build.make CMakeFiles/test-rtree-Generator.dir/build
-.PHONY : test-rtree-Generator/fast
-
-#=============================================================================
-# Target rules for targets named test-rtree-RTreeBulkLoad
-
-# Build rule for target.
-test-rtree-RTreeBulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeBulkLoad
-.PHONY : test-rtree-RTreeBulkLoad
-
-# fast build rule for target.
-test-rtree-RTreeBulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/build
-.PHONY : test-rtree-RTreeBulkLoad/fast
-
-#=============================================================================
-# Target rules for targets named test-kdtree-KDTreeQuery
-
-# Build rule for target.
-test-kdtree-KDTreeQuery: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeQuery
-.PHONY : test-kdtree-KDTreeQuery
-
-# fast build rule for target.
-test-kdtree-KDTreeQuery/fast:
-	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery.dir/build
-.PHONY : test-kdtree-KDTreeQuery/fast
 
 #=============================================================================
 # Target rules for targets named test-kdtree-KDTreeBulkLoad
@@ -566,6 +579,21 @@ rtree/Generator.s:
 .PHONY : rtree/Generator.s
 
 # target to build an object file
+rtree/PlatonBulkLoad.o:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad.dir/rtree/PlatonBulkLoad.o
+.PHONY : rtree/PlatonBulkLoad.o
+
+# target to preprocess a source file
+rtree/PlatonBulkLoad.i:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad.dir/rtree/PlatonBulkLoad.i
+.PHONY : rtree/PlatonBulkLoad.i
+
+# target to generate assembly for a file
+rtree/PlatonBulkLoad.s:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad.dir/rtree/PlatonBulkLoad.s
+.PHONY : rtree/PlatonBulkLoad.s
+
+# target to build an object file
 rtree/RTreeBulkLoad.o:
 	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/rtree/RTreeBulkLoad.o
 .PHONY : rtree/RTreeBulkLoad.o
@@ -639,15 +667,16 @@ help:
 	@echo "... test-learnedindex-Exhaustive"
 	@echo "... test-rtree-Exhaustive"
 	@echo "... test-kdtree-Exhaustive"
+	@echo "... test-kdtree-KDTreeQuery"
+	@echo "... test-rtree-Generator"
+	@echo "... test-rtree-RTreeBulkLoad"
 	@echo "... test-rtree-SFCRTreeBulkLoad"
 	@echo "... test-rtree-RTreeLoad"
 	@echo "... test-rtree-RTreeQuery"
 	@echo "... test-geometry-Intersection"
+	@echo "... test-rtree-PlatonBulkLoad"
 	@echo "... test-kdtree-Generator"
 	@echo "... test-kdtree-QDTreeBulkLoad"
-	@echo "... test-rtree-Generator"
-	@echo "... test-rtree-RTreeBulkLoad"
-	@echo "... test-kdtree-KDTreeQuery"
 	@echo "... test-kdtree-KDTreeBulkLoad"
 	@echo "... test-kdtree-KDTreeLoad"
 	@echo "... libsidxtest"
@@ -692,6 +721,9 @@ help:
 	@echo "... rtree/Generator.o"
 	@echo "... rtree/Generator.i"
 	@echo "... rtree/Generator.s"
+	@echo "... rtree/PlatonBulkLoad.o"
+	@echo "... rtree/PlatonBulkLoad.i"
+	@echo "... rtree/PlatonBulkLoad.s"
 	@echo "... rtree/RTreeBulkLoad.o"
 	@echo "... rtree/RTreeBulkLoad.i"
 	@echo "... rtree/RTreeBulkLoad.s"

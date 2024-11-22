@@ -196,6 +196,164 @@ SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createNewRTree(
 	return ret;
 }
 
+SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createAndBulkLoadNewRTreeLearned(
+	BulkLoadMethod m,
+	IDataStream& stream,
+	SpatialIndex::IStorageManager& sm,
+	double fillFactor,
+	uint32_t indexCapacity,
+	uint32_t leafCapacity,
+	uint32_t dimension,
+	SpatialIndex::RTree::RTreeVariant rv,
+	id_type& indexIdentifier,
+	std::string cutList)
+{
+	SpatialIndex::ISpatialIndex* tree = createNewRTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier, "");
+
+	uint32_t bindex = static_cast<uint32_t>(std::floor(static_cast<double>(indexCapacity * fillFactor)));
+	uint32_t bleaf = static_cast<uint32_t>(std::floor(static_cast<double>(leafCapacity * fillFactor)));
+
+	SpatialIndex::RTree::BulkLoader bl;
+
+	switch (m)
+	{
+	case BLM_TGS:
+		bl.bulkLoadUsingTGS(static_cast<RTree*>(tree), stream, bindex, bleaf, 10000, 100, cutList);
+		break;
+	default:
+		throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Unknown bulk load method.");
+		break;
+	}
+
+	return tree;
+}
+
+SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createAndBulkLoadNewRTreeLearned(
+	BulkLoadMethod m,
+	IDataStream& stream,
+	SpatialIndex::IStorageManager& sm,
+	Tools::PropertySet& ps,
+	id_type& indexIdentifier,
+	std::string cutList)
+{
+	Tools::Variant var;
+	RTreeVariant rv(RV_LINEAR);
+	double fillFactor(0.0);
+	uint32_t indexCapacity(0);
+	uint32_t leafCapacity(0);
+	uint32_t dimension(0);
+	uint32_t pageSize(0);
+	uint32_t numberOfPages(0);
+
+	// tree variant
+	var = ps.getProperty("TreeVariant");
+	if (var.m_varType != Tools::VT_EMPTY)
+	{
+		if (
+			var.m_varType != Tools::VT_LONG ||
+			(var.m_val.lVal != RV_LINEAR &&
+			var.m_val.lVal != RV_QUADRATIC &&
+			var.m_val.lVal != RV_RSTAR))
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property TreeVariant must be Tools::VT_LONG and of RTreeVariant type");
+
+		rv = static_cast<RTreeVariant>(var.m_val.lVal);
+	}
+
+	// fill factor
+	// it cannot be larger than 50%, since linear and quadratic split algorithms
+	// require assigning to both nodes the same number of entries.
+	var = ps.getProperty("FillFactor");
+	if (var.m_varType != Tools::VT_EMPTY)
+	{
+	    if (var.m_varType != Tools::VT_DOUBLE)
+            throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property FillFactor was not of type Tools::VT_DOUBLE");
+
+        if (var.m_val.dblVal <= 0.0)
+            throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property FillFactor was less than 0.0");
+
+        if (((rv == RV_LINEAR || rv == RV_QUADRATIC) && var.m_val.dblVal > 0.5))
+            throw Tools::IllegalArgumentException( "createAndBulkLoadNewRTree: Property FillFactor must be in range (0.0, 0.5) for LINEAR or QUADRATIC index types");
+        if ( var.m_val.dblVal >= 1.0)
+            throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property FillFactor must be in range (0.0, 1.0) for RSTAR index type");
+		fillFactor = var.m_val.dblVal;
+	}
+
+	// index capacity
+	var = ps.getProperty("IndexCapacity");
+	if (var.m_varType != Tools::VT_EMPTY)
+	{
+		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 4)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property IndexCapacity must be Tools::VT_ULONG and >= 4");
+
+		indexCapacity = var.m_val.ulVal;
+	}
+
+	// leaf capacity
+	var = ps.getProperty("LeafCapacity");
+	if (var.m_varType != Tools::VT_EMPTY)
+	{
+		if (var.m_varType != Tools::VT_ULONG || var.m_val.ulVal < 4)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property LeafCapacity must be Tools::VT_ULONG and >= 4");
+
+		leafCapacity = var.m_val.ulVal;
+	}
+
+	// dimension
+	var = ps.getProperty("Dimension");
+	if (var.m_varType != Tools::VT_EMPTY)
+	{
+		if (var.m_varType != Tools::VT_ULONG)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property Dimension must be Tools::VT_ULONG");
+		if (var.m_val.ulVal <= 1)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property Dimension must be greater than 1");
+
+		dimension = var.m_val.ulVal;
+	}
+
+	// page size
+	var = ps.getProperty("ExternalSortBufferPageSize");
+	if (var.m_varType != Tools::VT_EMPTY)
+	{
+		if (var.m_varType != Tools::VT_ULONG)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property ExternalSortBufferPageSize must be Tools::VT_ULONG");
+		if (var.m_val.ulVal <= 1)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property ExternalSortBufferPageSize must be greater than 1");
+
+		pageSize = var.m_val.ulVal;
+	}
+
+	// number of pages
+	var = ps.getProperty("ExternalSortBufferTotalPages");
+	if (var.m_varType != Tools::VT_EMPTY)
+	{
+		if (var.m_varType != Tools::VT_ULONG)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property ExternalSortBufferTotalPages must be Tools::VT_ULONG");
+		if (var.m_val.ulVal <= 1)
+			throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Property ExternalSortBufferTotalPages must be greater than 1");
+
+		numberOfPages = var.m_val.ulVal;
+	}
+
+	SpatialIndex::ISpatialIndex* tree = createNewRTree(sm, fillFactor, indexCapacity, leafCapacity, dimension, rv, indexIdentifier, "");
+
+	uint32_t bindex = static_cast<uint32_t>(std::floor(static_cast<double>(indexCapacity * fillFactor)));
+	uint32_t bleaf = static_cast<uint32_t>(std::floor(static_cast<double>(leafCapacity * fillFactor)));
+
+	SpatialIndex::RTree::BulkLoader bl;
+
+	switch (m)
+	{
+	case BLM_TGS:
+		bl.bulkLoadUsingTGS(static_cast<RTree*>(tree), stream, bindex, bleaf, pageSize, numberOfPages, cutList);
+		break;
+	default:
+		throw Tools::IllegalArgumentException("createAndBulkLoadNewRTree: Unknown bulk load method.");
+		break;
+	}
+
+	return tree;
+}
+
 SpatialIndex::ISpatialIndex* SpatialIndex::RTree::createAndBulkLoadNewRTree(
 	BulkLoadMethod m,
 	IDataStream& stream,

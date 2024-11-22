@@ -204,5 +204,6 @@ namespace SpatialIndex
 				uint32_t level
 			);
 		};
+
 	}
 }

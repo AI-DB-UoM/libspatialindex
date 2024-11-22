@@ -119,8 +119,9 @@ int main(int argc, char** argv)
 {
 	try
 	{
-		if (argc != 9 || argc != 10)
+		if (argc != 9 && argc != 10)
 		{
+			std::cerr << "argc: " << argc << std::endl;
 			std::cerr << "Usage: " << argv[0] << "kd_type input_file query_file tree_file leaf_capacity utilization pagesize buffer [index_capacity]." << std::endl;
 			return -1;
 		}
@@ -138,16 +139,16 @@ int main(int argc, char** argv)
 			myVariant = SpatialIndex::KDTree::KD_NORMAL;
 			loadMethod = SpatialIndex::KDTree::LOAD_KD;
 		}
-		if (strcmp(argv[1], "greedy_kdtree") == 0)
+		if (strcmp(argv[1], "kdgreedy") == 0)
 		{
 			myVariant = SpatialIndex::KDTree::KD_GREEDY;
 			loadMethod = SpatialIndex::KDTree::LOAD_KD_GREEDY;
 		}
-		// if (strcmp(argv[1], "qdtree") == 0)
-		// {
-		// 	myVariant = SpatialIndex::KDTree::QD_NORMAL;
-		// 	loadMethod = SpatialIndex::KDTree::LOAD_QD;
-		// }
+		if (strcmp(argv[1], "qdtree") == 0)
+		{
+			myVariant = SpatialIndex::KDTree::QD_NORMAL;
+			loadMethod = SpatialIndex::KDTree::LOAD_QD;
+		}
 
 		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, pagesize);
 			// Create a new storage manager with the provided base name and a 4K page size.

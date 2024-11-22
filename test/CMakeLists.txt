@@ -43,8 +43,19 @@ set(SOURCES
         Generator
         RTreeBulkLoad
         SFCRTreeBulkLoad
+        PlatonBulkLoad
         RTreeLoad
         RTreeQuery)
+
+# set(SOURCES
+#         Exhaustive
+#         Generator
+#         RTreeBulkLoad
+#         PlatonBulkLoad
+#         SFCRTreeBulkLoad
+#         RTreeLoad
+#         RTreeQuery)
+
 
 
 foreach(test ${SOURCES})
