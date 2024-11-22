@@ -337,6 +337,12 @@ void SpatialIndex::TPRTree::TPRTree::intersectsWithQuery(const IShape& query, IV
 	rangeQuery(IntersectionQuery, query, v);
 }
 
+void SpatialIndex::TPRTree::TPRTree::intersectsWithQueryLearnedIndex(const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high)
+{
+	if (query.getDimension() != m_dimension) throw Tools::IllegalArgumentException("intersectsWithQuery: Shape has the wrong number of dimensions.");
+	rangeQuery(IntersectionQuery, query, v);
+}
+
 void SpatialIndex::TPRTree::TPRTree::pointLocationQuery(const Point& query, IVisitor& v)
 {
 	if (query.m_dimension != m_dimension) throw Tools::IllegalArgumentException("pointLocationQuery: Shape has the wrong number of dimensions.");

@@ -119,46 +119,15 @@ public:
 	std::ifstream m_fin;
 	LearnedIndex::Data* m_pNext;
 };
-(z_order_output_default):
 
-            logger.info(f"{z_order_output_default} NOT exists")
-            transform_command = f"python tools/rank_space_z.py {ablosute_data_file_name} {RANK_SPACE_Z_ORDER_OUTPUT} {bit_num}"
-            elapsed_time_ns_order = execute_command(transform_command)
-
-            query_adapt_command = f"python tools/libspatialindex_zm_query_adapter.py --bits {bit_num} --data {ablosute_data_file_name} --query_list {query_list_str}"
-            execute_command(query_adapt_command)
-
-            format_data_command = f"python tools/libspatialindex_data_adapter.py --type data --input {RANK_SPACE_Z_ORDER_OUTPUT} --output {data_file}"
-            execute_command(format_data_command)
-
-            copy_and_rename(data_file, z_order_output_default)
-
-        else:
-            copy_and_rename(z_order_output_default, data_file)
-
-            elapsed_time_ns_order = 0
-
-        logger.info("build zm")
-
-
-        build_output_path = ZM_BUILD_OUTPUT_PATH.format(
-                        data_file_prefix=data_file_prefix,
-                        bit_num=bit_num,
-                    )
-
-        command = f"test-learnedindex-ZMBulkLoad {data_file} {INDEX_PATH}/zm {page_size} {fill_factor} {BLOCK_SIZE} {BUFFER}"
-        result, elapsed_time_ns_build = execute_command_with_err(command)
-
-    
-        os.makedirs(os.path.dirname(build_output_path), exist_ok=True)
-
-        with open(build_output_path, "w") as f:
-            if result:
-                f.write(result.stderr)
-            f.write(f"Elapsed Learn Time: {elapsed_time_ns_order}\n")
-            f.write(f"Elapsed Build Time: {elapsed_time_ns_build}\n")
-            f.write(f"Tree.dat Size: {os.path.getsize(f'{INDEX_PATH}/zm.dat')}\n")
-            f.write(f"Tree.idx Size: {os.pat
+int main(int argc, char** argv)
+{
+	try
+	{
+		if (argc != 7)
+		{
+			std::cerr << "Usage: " << argv[0] << "input_file tree_file leaf_capacity utilization pagesize buffer." << std::endl;
+			return -1;
 		}
 
 		std::string baseName = argv[2];

@@ -571,7 +571,11 @@ void SpatialIndex::RTree::RTree::intersectsWithQuery(const IShape& query, IVisit
 	if (query.getDimension() != m_dimension) throw Tools::IllegalArgumentException("intersectsWithQuery: Shape has the wrong number of dimensions.");
 	rangeQuery(IntersectionQuery, query, v);
 }
-
+void SpatialIndex::RTree::RTree::intersectsWithQueryLearnedIndex(const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high)
+{
+	if (query.getDimension() != m_dimension) throw Tools::IllegalArgumentException("intersectsWithQuery: Shape has the wrong number of dimensions.");
+	rangeQuery(IntersectionQuery, query, v);
+}
 void SpatialIndex::RTree::RTree::pointLocationQuery(const Point& query, IVisitor& v)
 {
 	if (query.m_dimension != m_dimension) throw Tools::IllegalArgumentException("pointLocationQuery: Shape has the wrong number of dimensions.");

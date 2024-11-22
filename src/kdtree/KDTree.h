@@ -75,6 +75,7 @@ namespace SpatialIndex
 			virtual void internalNodesQuery(const IShape& query, IVisitor& v) ;
 			virtual void containsWhatQuery(const IShape& query, IVisitor& v) ;
 			virtual void intersectsWithQuery(const IShape& query, IVisitor& v) ;
+			virtual void intersectsWithQueryLearnedIndex(const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high) ;
 			virtual void pointLocationQuery(const Point& query, IVisitor& v) ;
 			virtual void nearestNeighborQuery(uint32_t k, const IShape& query, IVisitor& v, INearestNeighborComparator&);
 			virtual void nearestNeighborQuery(uint32_t k, const IShape& query, IVisitor& v);

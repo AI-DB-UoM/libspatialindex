@@ -255,7 +255,7 @@ int main(int argc, char** argv)
 
 		while (fin)
 		{
-			fin >> op >> id >> x1 >> y1 >> x2 >> y2;
+			fin >> op >> id >> x1 >> y1 >> x2 >> y2 >> key_low >> key_high;
 			if (! fin.good()) continue; // skip newlines, etc.
 
 			if (op == QUERY)
@@ -269,7 +269,9 @@ int main(int argc, char** argv)
 				if (queryType == 0)
 				{
 					Region r = Region(plow, phigh, 2);
-					tree->intersectsWithQuery(r, vis, key_low, key_high);
+					// tree->intersectsWithQuery(r, vis);
+					tree->intersectsWithQueryLearnedIndex(r, vis, key_low, key_high);
+
 						// this will find all data that intersect with the query range.
 				}
 				else if (queryType == 1)

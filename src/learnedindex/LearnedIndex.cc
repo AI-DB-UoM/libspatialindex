@@ -439,7 +439,7 @@ void SpatialIndex::LearnedIndex::LearnedIndex::intersectsWithQuery(const IShape&
 	if (query.getDimension() != m_dimension) throw Tools::IllegalArgumentException("intersectsWithQuery: Shape has the wrong number of dimensions.");
 	rangeQuery(IntersectionQuery, query, v);
 }
-void SpatialIndex::LearnedIndex::LearnedIndex::intersectsWithQuery(const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high)
+void SpatialIndex::LearnedIndex::LearnedIndex::intersectsWithQueryLearnedIndex(const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high)
 {
 	if (query.getDimension() != m_dimension) throw Tools::IllegalArgumentException("intersectsWithQuery: Shape has the wrong number of dimensions.");
 	rangeQuery(IntersectionQuery, query, v, key_low, key_high);
@@ -1467,11 +1467,11 @@ void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, c
 			uint32_t predict_high = static_cast<uint32_t>(a * key_high + b);
 			// std::cerr << "prediction a:" << a << " b:" << b << " x:" << x << " y:" << y << " predict_index:" << predict_index << std::endl;
 
-			predict_low = std::max(static_cast<uint32_t>(0), std::min(predict_low, static_cast<uint32_t>(bindex - 1)));
+			predict_low = std::max(static_cast<uint32_t>(0), std::min(predict_low, static_cast<uint32_t>(n->m_children - 1)));
 
-			key_high = std::max(predict_low, std::min(key_high, static_cast<uint32_t>(bindex - 1)));
+			predict_high = std::max(predict_low, std::min(predict_high, static_cast<uint32_t>(n->m_children - 1)));
 
-			for (uint32_t cChild = predict_low; cChild <= key_high; ++cChild)
+			for (uint32_t cChild = predict_low; cChild <= predict_high; ++cChild)
 			{
 				if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) st.push(readNode(n->m_pIdentifier[cChild], v));
 			}

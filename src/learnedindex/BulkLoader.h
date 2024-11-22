@@ -120,7 +120,8 @@ namespace SpatialIndex
 		protected:
 
 			std::vector<double> calculateLinearRegression(
-				std::vector<ExternalSorter::Record*>& es
+				std::vector<ExternalSorter::Record*>& es,
+				uint32_t bindex
 			);
 
 			void createLevelZM(
