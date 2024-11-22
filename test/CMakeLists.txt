@@ -72,6 +72,22 @@ foreach(test ${SOURCES})
     target_link_libraries(test-${DIR}-${test} PRIVATE spatialindex "${TORCH_LIBRARIES}")
 endforeach()
 
+
+set(DIR learnedindex)
+set(SOURCES
+        Exhaustive
+        Generator
+        ZMBulkLoad
+        ZMQuery)
+
+
+foreach(test ${SOURCES})
+    add_executable(test-${DIR}-${test} ${DIR}/${test}.cc)
+    # target_link_libraries(test-${DIR}-${test} spatialindex)
+    target_include_directories(test-${DIR}-${test} PRIVATE ${TORCH_INCLUDE_DIRS})
+    target_link_libraries(test-${DIR}-${test} PRIVATE spatialindex "${TORCH_LIBRARIES}")
+endforeach()
+
 # set(DIR mvrtree)
 # set(SOURCES
 #         Exhaustive

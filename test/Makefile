@@ -111,6 +111,58 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named test-learnedindex-ZMQuery
+
+# Build rule for target.
+test-learnedindex-ZMQuery: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-ZMQuery
+.PHONY : test-learnedindex-ZMQuery
+
+# fast build rule for target.
+test-learnedindex-ZMQuery/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery.dir/build.make CMakeFiles/test-learnedindex-ZMQuery.dir/build
+.PHONY : test-learnedindex-ZMQuery/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-ZMBulkLoad
+
+# Build rule for target.
+test-learnedindex-ZMBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-ZMBulkLoad
+.PHONY : test-learnedindex-ZMBulkLoad
+
+# fast build rule for target.
+test-learnedindex-ZMBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build
+.PHONY : test-learnedindex-ZMBulkLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-Generator
+
+# Build rule for target.
+test-learnedindex-Generator: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-Generator
+.PHONY : test-learnedindex-Generator
+
+# fast build rule for target.
+test-learnedindex-Generator/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Generator.dir/build.make CMakeFiles/test-learnedindex-Generator.dir/build
+.PHONY : test-learnedindex-Generator/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-Exhaustive
+
+# Build rule for target.
+test-learnedindex-Exhaustive: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-Exhaustive
+.PHONY : test-learnedindex-Exhaustive
+
+# fast build rule for target.
+test-learnedindex-Exhaustive/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Exhaustive.dir/build.make CMakeFiles/test-learnedindex-Exhaustive.dir/build
+.PHONY : test-learnedindex-Exhaustive/fast
+
+#=============================================================================
 # Target rules for targets named test-rtree-Exhaustive
 
 # Build rule for target.
@@ -424,6 +476,66 @@ kdtree/QDTreeBulkLoad.s:
 .PHONY : kdtree/QDTreeBulkLoad.s
 
 # target to build an object file
+learnedindex/Exhaustive.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Exhaustive.dir/build.make CMakeFiles/test-learnedindex-Exhaustive.dir/learnedindex/Exhaustive.o
+.PHONY : learnedindex/Exhaustive.o
+
+# target to preprocess a source file
+learnedindex/Exhaustive.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Exhaustive.dir/build.make CMakeFiles/test-learnedindex-Exhaustive.dir/learnedindex/Exhaustive.i
+.PHONY : learnedindex/Exhaustive.i
+
+# target to generate assembly for a file
+learnedindex/Exhaustive.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Exhaustive.dir/build.make CMakeFiles/test-learnedindex-Exhaustive.dir/learnedindex/Exhaustive.s
+.PHONY : learnedindex/Exhaustive.s
+
+# target to build an object file
+learnedindex/Generator.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Generator.dir/build.make CMakeFiles/test-learnedindex-Generator.dir/learnedindex/Generator.o
+.PHONY : learnedindex/Generator.o
+
+# target to preprocess a source file
+learnedindex/Generator.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Generator.dir/build.make CMakeFiles/test-learnedindex-Generator.dir/learnedindex/Generator.i
+.PHONY : learnedindex/Generator.i
+
+# target to generate assembly for a file
+learnedindex/Generator.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Generator.dir/build.make CMakeFiles/test-learnedindex-Generator.dir/learnedindex/Generator.s
+.PHONY : learnedindex/Generator.s
+
+# target to build an object file
+learnedindex/ZMBulkLoad.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad.dir/learnedindex/ZMBulkLoad.o
+.PHONY : learnedindex/ZMBulkLoad.o
+
+# target to preprocess a source file
+learnedindex/ZMBulkLoad.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad.dir/learnedindex/ZMBulkLoad.i
+.PHONY : learnedindex/ZMBulkLoad.i
+
+# target to generate assembly for a file
+learnedindex/ZMBulkLoad.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad.dir/learnedindex/ZMBulkLoad.s
+.PHONY : learnedindex/ZMBulkLoad.s
+
+# target to build an object file
+learnedindex/ZMQuery.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery.dir/build.make CMakeFiles/test-learnedindex-ZMQuery.dir/learnedindex/ZMQuery.o
+.PHONY : learnedindex/ZMQuery.o
+
+# target to preprocess a source file
+learnedindex/ZMQuery.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery.dir/build.make CMakeFiles/test-learnedindex-ZMQuery.dir/learnedindex/ZMQuery.i
+.PHONY : learnedindex/ZMQuery.i
+
+# target to generate assembly for a file
+learnedindex/ZMQuery.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery.dir/build.make CMakeFiles/test-learnedindex-ZMQuery.dir/learnedindex/ZMQuery.s
+.PHONY : learnedindex/ZMQuery.s
+
+# target to build an object file
 rtree/Exhaustive.o:
 	$(MAKE) -f CMakeFiles/test-rtree-Exhaustive.dir/build.make CMakeFiles/test-rtree-Exhaustive.dir/rtree/Exhaustive.o
 .PHONY : rtree/Exhaustive.o
@@ -521,6 +633,10 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... test-learnedindex-ZMQuery"
+	@echo "... test-learnedindex-ZMBulkLoad"
+	@echo "... test-learnedindex-Generator"
+	@echo "... test-learnedindex-Exhaustive"
 	@echo "... test-rtree-Exhaustive"
 	@echo "... test-kdtree-Exhaustive"
 	@echo "... test-rtree-SFCRTreeBulkLoad"
@@ -558,6 +674,18 @@ help:
 	@echo "... kdtree/QDTreeBulkLoad.o"
 	@echo "... kdtree/QDTreeBulkLoad.i"
 	@echo "... kdtree/QDTreeBulkLoad.s"
+	@echo "... learnedindex/Exhaustive.o"
+	@echo "... learnedindex/Exhaustive.i"
+	@echo "... learnedindex/Exhaustive.s"
+	@echo "... learnedindex/Generator.o"
+	@echo "... learnedindex/Generator.i"
+	@echo "... learnedindex/Generator.s"
+	@echo "... learnedindex/ZMBulkLoad.o"
+	@echo "... learnedindex/ZMBulkLoad.i"
+	@echo "... learnedindex/ZMBulkLoad.s"
+	@echo "... learnedindex/ZMQuery.o"
+	@echo "... learnedindex/ZMQuery.i"
+	@echo "... learnedindex/ZMQuery.s"
 	@echo "... rtree/Exhaustive.o"
 	@echo "... rtree/Exhaustive.i"
 	@echo "... rtree/Exhaustive.s"

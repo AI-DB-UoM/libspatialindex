@@ -498,4 +498,17 @@ namespace Tools
 		std::string m_sFile;
 		BufferedFile* m_pFile;
 	};
+
+	// class SIDX_DLL Zorder
+	// {
+	// public:
+	// 	Zorder();
+	// 	Zorder(uint32_t seed, uint16_t xsubi0);
+	// 	virtual ~Zorder();
+
+	// 	int64_t cal_Zvalue(int32_t x, int32_t y);
+
+	// 	int32_t floatToIntBits(float value, int32_t shiftLength, float offset);
+
+	// }; // Zorder
 }

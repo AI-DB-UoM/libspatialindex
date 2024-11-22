@@ -393,8 +393,8 @@ void BulkLoader::partition(
 	uint64_t total_entries = es.size();
     uint64_t entries_per_child = total_entries / bindex;
     uint64_t remainder = total_entries % bindex;
-    uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
-    uint64_t right_node_en = static_cast<uint64_t>(total_entries - left_node_en);
+    // uint64_t left_node_en = static_cast<uint64_t>(total_entries / 2);
+    // uint64_t right_node_en = static_cast<uint64_t>(total_entries - left_node_en);
 
     if (pTree->m_stats.m_nodesInLevel.size() < level) {
         pTree->m_stats.m_nodesInLevel.push_back(0);

@@ -256,9 +256,11 @@ namespace SpatialIndex
 #include "MovingRegion.h"
 #include "RTree.h"
 #include "KDTree.h"
+#include "LearnedIndex.h"
 #include "MVRTree.h"
 #include "TPRTree.h"
 #include "Version.h"
+
 
 
 // typedef SpatialIndex::Tools::PoolPointer<Region> RegionPtr;

@@ -700,6 +700,168 @@ kdtree/Statistics.cc.s:
 	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/kdtree/Statistics.cc.s
 .PHONY : kdtree/Statistics.cc.s
 
+learnedindex/BulkLoader.o: learnedindex/BulkLoader.cc.o
+
+.PHONY : learnedindex/BulkLoader.o
+
+# target to build an object file
+learnedindex/BulkLoader.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/BulkLoader.cc.o
+.PHONY : learnedindex/BulkLoader.cc.o
+
+learnedindex/BulkLoader.i: learnedindex/BulkLoader.cc.i
+
+.PHONY : learnedindex/BulkLoader.i
+
+# target to preprocess a source file
+learnedindex/BulkLoader.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/BulkLoader.cc.i
+.PHONY : learnedindex/BulkLoader.cc.i
+
+learnedindex/BulkLoader.s: learnedindex/BulkLoader.cc.s
+
+.PHONY : learnedindex/BulkLoader.s
+
+# target to generate assembly for a file
+learnedindex/BulkLoader.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/BulkLoader.cc.s
+.PHONY : learnedindex/BulkLoader.cc.s
+
+learnedindex/Index.o: learnedindex/Index.cc.o
+
+.PHONY : learnedindex/Index.o
+
+# target to build an object file
+learnedindex/Index.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Index.cc.o
+.PHONY : learnedindex/Index.cc.o
+
+learnedindex/Index.i: learnedindex/Index.cc.i
+
+.PHONY : learnedindex/Index.i
+
+# target to preprocess a source file
+learnedindex/Index.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Index.cc.i
+.PHONY : learnedindex/Index.cc.i
+
+learnedindex/Index.s: learnedindex/Index.cc.s
+
+.PHONY : learnedindex/Index.s
+
+# target to generate assembly for a file
+learnedindex/Index.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Index.cc.s
+.PHONY : learnedindex/Index.cc.s
+
+learnedindex/Leaf.o: learnedindex/Leaf.cc.o
+
+.PHONY : learnedindex/Leaf.o
+
+# target to build an object file
+learnedindex/Leaf.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Leaf.cc.o
+.PHONY : learnedindex/Leaf.cc.o
+
+learnedindex/Leaf.i: learnedindex/Leaf.cc.i
+
+.PHONY : learnedindex/Leaf.i
+
+# target to preprocess a source file
+learnedindex/Leaf.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Leaf.cc.i
+.PHONY : learnedindex/Leaf.cc.i
+
+learnedindex/Leaf.s: learnedindex/Leaf.cc.s
+
+.PHONY : learnedindex/Leaf.s
+
+# target to generate assembly for a file
+learnedindex/Leaf.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Leaf.cc.s
+.PHONY : learnedindex/Leaf.cc.s
+
+learnedindex/LearnedIndex.o: learnedindex/LearnedIndex.cc.o
+
+.PHONY : learnedindex/LearnedIndex.o
+
+# target to build an object file
+learnedindex/LearnedIndex.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/LearnedIndex.cc.o
+.PHONY : learnedindex/LearnedIndex.cc.o
+
+learnedindex/LearnedIndex.i: learnedindex/LearnedIndex.cc.i
+
+.PHONY : learnedindex/LearnedIndex.i
+
+# target to preprocess a source file
+learnedindex/LearnedIndex.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/LearnedIndex.cc.i
+.PHONY : learnedindex/LearnedIndex.cc.i
+
+learnedindex/LearnedIndex.s: learnedindex/LearnedIndex.cc.s
+
+.PHONY : learnedindex/LearnedIndex.s
+
+# target to generate assembly for a file
+learnedindex/LearnedIndex.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/LearnedIndex.cc.s
+.PHONY : learnedindex/LearnedIndex.cc.s
+
+learnedindex/Node.o: learnedindex/Node.cc.o
+
+.PHONY : learnedindex/Node.o
+
+# target to build an object file
+learnedindex/Node.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Node.cc.o
+.PHONY : learnedindex/Node.cc.o
+
+learnedindex/Node.i: learnedindex/Node.cc.i
+
+.PHONY : learnedindex/Node.i
+
+# target to preprocess a source file
+learnedindex/Node.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Node.cc.i
+.PHONY : learnedindex/Node.cc.i
+
+learnedindex/Node.s: learnedindex/Node.cc.s
+
+.PHONY : learnedindex/Node.s
+
+# target to generate assembly for a file
+learnedindex/Node.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Node.cc.s
+.PHONY : learnedindex/Node.cc.s
+
+learnedindex/Statistics.o: learnedindex/Statistics.cc.o
+
+.PHONY : learnedindex/Statistics.o
+
+# target to build an object file
+learnedindex/Statistics.cc.o:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Statistics.cc.o
+.PHONY : learnedindex/Statistics.cc.o
+
+learnedindex/Statistics.i: learnedindex/Statistics.cc.i
+
+.PHONY : learnedindex/Statistics.i
+
+# target to preprocess a source file
+learnedindex/Statistics.cc.i:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Statistics.cc.i
+.PHONY : learnedindex/Statistics.cc.i
+
+learnedindex/Statistics.s: learnedindex/Statistics.cc.s
+
+.PHONY : learnedindex/Statistics.s
+
+# target to generate assembly for a file
+learnedindex/Statistics.cc.s:
+	cd /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialindex_linux/libspatialindex && $(MAKE) -f src/CMakeFiles/spatialindex.dir/build.make src/CMakeFiles/spatialindex.dir/learnedindex/Statistics.cc.s
+.PHONY : learnedindex/Statistics.cc.s
+
 mvrtree/Index.o: mvrtree/Index.cc.o
 
 .PHONY : mvrtree/Index.o
@@ -1577,6 +1739,24 @@ help:
 	@echo "... kdtree/Statistics.o"
 	@echo "... kdtree/Statistics.i"
 	@echo "... kdtree/Statistics.s"
+	@echo "... learnedindex/BulkLoader.o"
+	@echo "... learnedindex/BulkLoader.i"
+	@echo "... learnedindex/BulkLoader.s"
+	@echo "... learnedindex/Index.o"
+	@echo "... learnedindex/Index.i"
+	@echo "... learnedindex/Index.s"
+	@echo "... learnedindex/Leaf.o"
+	@echo "... learnedindex/Leaf.i"
+	@echo "... learnedindex/Leaf.s"
+	@echo "... learnedindex/LearnedIndex.o"
+	@echo "... learnedindex/LearnedIndex.i"
+	@echo "... learnedindex/LearnedIndex.s"
+	@echo "... learnedindex/Node.o"
+	@echo "... learnedindex/Node.i"
+	@echo "... learnedindex/Node.s"
+	@echo "... learnedindex/Statistics.o"
+	@echo "... learnedindex/Statistics.i"
+	@echo "... learnedindex/Statistics.s"
 	@echo "... mvrtree/Index.o"
 	@echo "... mvrtree/Index.i"
 	@echo "... mvrtree/Index.s"

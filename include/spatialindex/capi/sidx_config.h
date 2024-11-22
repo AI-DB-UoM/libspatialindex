@@ -76,6 +76,7 @@ typedef enum
    RT_MVRTree = 1,
    RT_TPRTree = 2,
    RT_KDTree = 3,
+   RT_LearnedIndex = 4,
    RT_InvalidIndexType = -99
 } RTIndexType;
 

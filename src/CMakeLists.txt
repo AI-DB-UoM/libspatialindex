@@ -55,6 +55,7 @@ set(SIDX_BASE_HPP
   "${SIDX_HEADERS_DIR}/Region.h"
   "${SIDX_HEADERS_DIR}/RTree.h"
   "${SIDX_HEADERS_DIR}/KDTree.h"
+  "${SIDX_HEADERS_DIR}/LearnedIndex.h"
   "${SIDX_HEADERS_DIR}/SpatialIndex.h"
   "${SIDX_HEADERS_DIR}/TimePoint.h"
   "${SIDX_HEADERS_DIR}/TimeRegion.h"
@@ -156,6 +157,23 @@ set(SIDX_KDTREE_CPP
   "${SIDX_SRC_DIR}/kdtree/Statistics.h"
 )
 list(APPEND SIDX_CPP ${SIDX_KDTREE_CPP})
+
+set(SIDX_LEARNEDINDEX_CPP
+  "${SIDX_SRC_DIR}/learnedindex/BulkLoader.cc"
+  "${SIDX_SRC_DIR}/learnedindex/BulkLoader.h"
+  "${SIDX_SRC_DIR}/learnedindex/Index.cc"
+  "${SIDX_SRC_DIR}/learnedindex/Index.h"
+  "${SIDX_SRC_DIR}/learnedindex/Leaf.cc"
+  "${SIDX_SRC_DIR}/learnedindex/Leaf.h"
+  "${SIDX_SRC_DIR}/learnedindex/Node.cc"
+  "${SIDX_SRC_DIR}/learnedindex/Node.h"
+  "${SIDX_SRC_DIR}/learnedindex/PointerPoolNode.h"
+  "${SIDX_SRC_DIR}/learnedindex/LearnedIndex.cc"
+  "${SIDX_SRC_DIR}/learnedindex/LearnedIndex.h"
+  "${SIDX_SRC_DIR}/learnedindex/Statistics.cc"
+  "${SIDX_SRC_DIR}/learnedindex/Statistics.h"
+)
+list(APPEND SIDX_CPP ${SIDX_LEARNEDINDEX_CPP})
 
 set(SIDX_STORAGEMANAGER_CPP
   "${SIDX_SRC_DIR}/storagemanager/Buffer.cc"
