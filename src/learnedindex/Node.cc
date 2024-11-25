@@ -53,14 +53,22 @@ Tools::IObject* Node::clone()
 //
 uint32_t Node::getByteArraySize()
 {
+	uint32_t model_size = 0;
+	if (m_level > 0) {
+		model_size = sizeof(uint32_t);
+	}
+	if (m_modelDataLength > 0) {
+		model_size += m_modelDataLength * sizeof(double);
+	}
 	return
 		(sizeof(uint32_t) +
 		sizeof(uint32_t) +
 		sizeof(uint32_t) +
 		(m_children * (m_pTree->m_dimension * sizeof(double) * 2 + sizeof(id_type) + sizeof(uint32_t))) +
-		m_totalDataLength + 
-		m_modelDataLength * sizeof(double) +  // can be double and m_modelDataLength is normally 2
+		m_totalDataLength +
+		model_size +  // for m_modelDataLength
 		(2 * m_pTree->m_dimension * sizeof(double)));
+
 }
 
 void Node::loadFromByteArray(const uint8_t* ptr)
@@ -110,13 +118,24 @@ void Node::loadFromByteArray(const uint8_t* ptr)
 	ptr += m_pTree->m_dimension * sizeof(double);
 	memcpy(m_nodeMBR.m_pHigh, ptr, m_pTree->m_dimension * sizeof(double));
 	ptr += m_pTree->m_dimension * sizeof(double);
+	
+	if (m_level > 0) {
+		memcpy(&m_modelDataLength, ptr, sizeof(uint32_t));
+		if (m_modelDataLength > 0) {
+			ptr += sizeof(uint32_t);
+			memcpy(m_modelData, ptr, m_modelDataLength * sizeof(double));
+		}
+	}
 
-	memcpy(m_modelData, ptr, m_modelDataLength * sizeof(double));
+	
 }
 
 void Node::storeToByteArray(uint8_t** data, uint32_t& len)
 {
 	len = getByteArraySize();
+
+	// std::cerr << "------------ storeToByteArray len------------" << len << std::endl;
+	// std::cerr << "------------ m_level------------" << m_level << std::endl;
 
 	*data = new uint8_t[len];
 	uint8_t* ptr = *data;
@@ -160,10 +179,19 @@ void Node::storeToByteArray(uint8_t** data, uint32_t& len)
 	memcpy(ptr, m_nodeMBR.m_pHigh, m_pTree->m_dimension * sizeof(double));
 	ptr += m_pTree->m_dimension * sizeof(double);
 
-	memcpy(ptr, m_modelData, m_modelDataLength * sizeof(double));
-	// ptr += m_modelDataLength * sizeof(double);
+	// std::cerr << "------------ m_modelDataLength------------" << m_modelDataLength << std::endl;
+	
+	if (m_level > 0) {
+		
+		memcpy(ptr, &m_modelDataLength, sizeof(uint32_t));
+		ptr += sizeof(uint32_t);
+		memcpy(ptr, m_modelData, m_modelDataLength * sizeof(double));
+		ptr += m_modelDataLength * sizeof(double);
+	}
+	// std::cerr << " len:" << len << " (ptr - *data):" << (ptr - *data) << std::endl;
 
-	assert(len == (ptr - *data) + m_pTree->m_dimension * sizeof(double) * 2);
+	assert(len == (ptr - *data));
+
 }
 
 //
