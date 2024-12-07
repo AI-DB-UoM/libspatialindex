@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 
 		id_type indexIdentifier;
 		ISpatialIndex* tree = LearnedIndex::createAndBulkLoadNewLearnedIndex(
-			SpatialIndex::LearnedIndex::LOAD_ZM, stream, *file, utilization, atoi(argv[3]), atoi(argv[3]), 2, 
+			SpatialIndex::LearnedIndex::LOAD_ZM, stream, *file, utilization, atoi(argv[3]), atoi(argv[3]) * 100, 2, 
 			SpatialIndex::LearnedIndex::LI_ZM, indexIdentifier);
 	
 		
