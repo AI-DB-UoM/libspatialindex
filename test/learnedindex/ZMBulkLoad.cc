@@ -1,8 +1,6 @@
 /******************************************************************************
  * Project:  libspatialindex - A C++ library for spatial indexing
- * Author:   Guanli Liu, liuguanli22@gmail.com
  ******************************************************************************
- * Copyright (c) 2024, Guanli Liu
  *
  * All rights reserved.
  * 
