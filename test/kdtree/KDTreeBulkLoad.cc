@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 			myVariant = SpatialIndex::KDTree::KD_NORMAL;
 			loadMethod = SpatialIndex::KDTree::LOAD_KD;
 		}
-		if (strcmp(argv[1], "kdgreedy") == 0)
+		if (strcmp(argv[1], "greedy_kdtree") == 0)
 		{
 			myVariant = SpatialIndex::KDTree::KD_GREEDY;
 			loadMethod = SpatialIndex::KDTree::LOAD_KD_GREEDY;
@@ -162,13 +162,14 @@ int main(int argc, char** argv)
 		// the StorageManager.
 		if (myVariant == SpatialIndex::KDTree::KD_NORMAL)
 		{
-			std::cerr << "myVariant: " << myVariant << std::endl;
+			std::cerr << "KDTree myVariant: " << myVariant << std::endl;
 
 			tree = KDTree::createNewKDTree(
 				loadMethod, stream, *file, utilization, argc == 10 ? atoi(argv[9]) : 2, atoi(argv[5]), 2, myVariant, indexIdentifier);
 		}
 		else if (myVariant == SpatialIndex::KDTree::KD_GREEDY || myVariant == SpatialIndex::KDTree::QD_NORMAL)
 		{
+			std::cerr << "KD_GREEDY myVariant: " << myVariant << std::endl;
 			MyDataStream queryStream(argv[3]);
 			tree = KDTree::createNewKDTree(
 				loadMethod, stream, *file, utilization, 2, atoi(argv[5]), 2, myVariant, indexIdentifier, queryStream);
