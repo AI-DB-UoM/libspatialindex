@@ -366,7 +366,7 @@ bool Node::insertData(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type 
 	{
 		NodePtr left;
 		NodePtr right;
-		
+
 		split(dataLength, pData, mbr, id, left, right);
 
 		if (pathBuffer.empty())
@@ -438,15 +438,12 @@ bool Node::insertData(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type 
 			m_pTree->writeNode(ptrR.get());
 			// std::cerr << " After write ptrR->m_identifier " << ptrR->m_identifier << std::endl;
 
-
 			id_type cParent = pathBuffer.top(); pathBuffer.pop();
 			NodePtr ptrN = m_pTree->readNode(cParent);
 			Index* p = static_cast<Index*>(ptrN.get());
 			// std::cerr << " p->m_identifier " << p->m_identifier << std::endl;
 			// std::cerr << " p->m_pIdentifier left " << p->m_pIdentifier[0] << std::endl;
 			// std::cerr << " p->m_pIdentifier right " << p->m_pIdentifier[1] << std::endl;
-
-
 
 			if (m_identifier == p->m_pIdentifier[0]) 
 			{

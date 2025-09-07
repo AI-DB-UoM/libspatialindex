@@ -45,6 +45,75 @@ Leaf::Leaf(SpatialIndex::LearnedIndex::LearnedIndex* pTree, id_type id): Node(pT
 }
 
 
+NodePtr Leaf::chooseSubtree(const Region&,  uint32_t, std::stack<id_type>&)
+{
+	// should make sure to relinquish other PoolPointer lists that might be pointing to the
+	// same leaf.
+	return NodePtr(this, &(m_pTree->m_leafPool));
+}
+
+// NodePtr Leaf::findLeaf(const Region& mbr, id_type id, std::stack<id_type>&)
+// {
+// 	for (uint32_t cChild = 0; cChild < m_children; ++cChild)
+// 	{
+// 		// should make sure to relinquish other PoolPointer lists that might be pointing to the
+// 		// same leaf.
+// 		if (m_pIdentifier[cChild] == id && mbr == *(m_ptrMBR[cChild])) return NodePtr(this, &(m_pTree->m_leafPool));
+// 	}
+
+// 	return NodePtr();
+// }
+
+// void Leaf::split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, NodePtr& pLeft, NodePtr& pRight)
+// {
+
+// 	++(m_pTree->m_stats.m_u64Splits);
+
+// 	std::vector<uint32_t> g1, g2;
+
+	// switch (m_pTree->m_treeVariant)
+	// {
+	// 	case RV_LINEAR:
+	// 	case RV_QUADRATIC:
+	// 		rtreeSplit(dataLength, pData, mbr, id, g1, g2);
+	// 		break;
+	// 	case RV_RSTAR:
+	// 		rstarSplit(dataLength, pData, mbr, id, g1, g2);
+	// 		break;
+	// 	case RV_RLRTREE:
+	// 		rlrtreeSplit(dataLength, pData, mbr, id, g1, g2);
+	// 		break;
+	// 	default:
+	// 		throw Tools::NotSupportedException("Leaf::split: Tree variant not supported: " + std::to_string(m_pTree->m_treeVariant));
+	// }
+
+	// pLeft = m_pTree->m_leafPool.acquire();
+	// pRight = m_pTree->m_leafPool.acquire();
+
+	// if (pLeft.get() == nullptr) pLeft = NodePtr(new Leaf(m_pTree, -1), &(m_pTree->m_leafPool));
+	// if (pRight.get() == nullptr) pRight = NodePtr(new Leaf(m_pTree, -1), &(m_pTree->m_leafPool));
+
+	// pLeft->m_nodeMBR = m_pTree->m_infiniteRegion;
+	// pRight->m_nodeMBR = m_pTree->m_infiniteRegion;
+
+	// uint32_t cIndex;
+
+	// for (cIndex = 0; cIndex < g1.size(); ++cIndex)
+	// {
+	// 	pLeft->insertEntry(m_pDataLength[g1[cIndex]], m_pData[g1[cIndex]], *(m_ptrMBR[g1[cIndex]]), m_pIdentifier[g1[cIndex]]);
+	// 	// we don't want to delete the data array from this node's destructor!
+	// 	m_pData[g1[cIndex]] = nullptr;
+	// }
+
+	// for (cIndex = 0; cIndex < g2.size(); ++cIndex)
+	// {
+	// 	pRight->insertEntry(m_pDataLength[g2[cIndex]], m_pData[g2[cIndex]], *(m_ptrMBR[g2[cIndex]]), m_pIdentifier[g2[cIndex]]);
+	// 	// we don't want to delete the data array from this node's destructor!
+	// 	m_pData[g2[cIndex]] = nullptr;
+	// }
+// }
+
+
 void Leaf::deleteData(const Region& mbr, id_type id, std::stack<id_type>& pathBuffer)
 {
 	uint32_t child;

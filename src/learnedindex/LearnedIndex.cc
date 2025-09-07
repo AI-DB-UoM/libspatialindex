@@ -215,7 +215,7 @@ SpatialIndex::ISpatialIndex* SpatialIndex::LearnedIndex::createAndBulkLoadNewLea
 		bl.bulkLoadUsingZM(static_cast<LearnedIndex*>(tree), stream, bindex, bleaf, 10000, 100);
 		break;
 	case LOAD_LISA:
-		bl.bulkLoadUsingZM(static_cast<LearnedIndex*>(tree), stream, bindex, bleaf, 10000, 100);
+		bl.bulkLoadUsingLISA(static_cast<LearnedIndex*>(tree), stream, bindex, bleaf, 10000, 1000);
 		break;
 	default:
 		throw Tools::IllegalArgumentException("createNewLearnedIndex: Unknown bulk load method.");
@@ -245,7 +245,7 @@ SpatialIndex::LearnedIndex::LearnedIndex::LearnedIndex(IStorageManager& sm, Tool
 	m_treeVariant(LI_ZM),
 	m_fillFactor(0.7),
 	m_indexCapacity(100),
-	m_leafCapacity(100),
+	m_leafCapacity(10000),
 	m_nearMinimumOverlapFactor(32),
 	m_splitDistributionFactor(0.4),
 	m_reinsertFactor(0.3),
@@ -285,6 +285,7 @@ SpatialIndex::LearnedIndex::LearnedIndex::~LearnedIndex()
 // ISpatialIndex interface
 //
 
+// Invoke by Test files
 void SpatialIndex::LearnedIndex::LearnedIndex::insertData(uint32_t len, const uint8_t* pData, const IShape& shape, id_type id)
 {
 
@@ -439,7 +440,7 @@ void SpatialIndex::LearnedIndex::LearnedIndex::intersectsWithQuery(const IShape&
 	if (query.getDimension() != m_dimension) throw Tools::IllegalArgumentException("intersectsWithQuery: Shape has the wrong number of dimensions.");
 	rangeQuery(IntersectionQuery, query, v);
 }
-void SpatialIndex::LearnedIndex::LearnedIndex::intersectsWithQueryLearnedIndex(const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high)
+void SpatialIndex::LearnedIndex::LearnedIndex::intersectsWithQueryLearnedIndex(const IShape& query, IVisitor& v, double key_low, double key_high)
 {
 	if (query.getDimension() != m_dimension) throw Tools::IllegalArgumentException("intersectsWithQuery: Shape has the wrong number of dimensions.");
 	rangeQuery(IntersectionQuery, query, v, key_low, key_high);
@@ -644,6 +645,7 @@ bool SpatialIndex::LearnedIndex::LearnedIndex::isIndexValid()
 	if (root->m_level != m_stats.m_u32TreeHeight - 1)
 	{
 		std::cerr << "Invalid tree height." << std::endl;
+		std::cerr << "root->m_level." << root->m_level << " m_stats.m_u32TreeHeight: " << m_stats.m_u32TreeHeight - 1 << std::endl;
 		return false;
 	}
 
@@ -711,6 +713,8 @@ bool SpatialIndex::LearnedIndex::LearnedIndex::isIndexValid()
 	{
 		if (nodesInLevel[cLevel] != m_stats.m_nodesInLevel[cLevel])
 		{
+			std::cerr << "cLevel: " << cLevel << " m_stats.m_u32TreeHeight: " << m_stats.m_u32TreeHeight << std::endl;
+			std::cerr << "nodesInLevel[cLevel]: " << nodesInLevel[cLevel] << " m_stats.m_nodesInLevel[cLevel]: " << m_stats.m_nodesInLevel[cLevel] << std::endl;
 			std::cerr << "Invalid nodesInLevel information." << std::endl;
 			ret = false;
 		}
@@ -739,35 +743,35 @@ void SpatialIndex::LearnedIndex::LearnedIndex::flush()
 
 bool SpatialIndex::LearnedIndex::LearnedIndex::isModelAvailable()
 {
-	if (isSplitModelLoaded && isChooseSubtreeModelLoaded)
-		return true;
+	// if (isSplitModelLoaded && isChooseSubtreeModelLoaded)
+	// 	return true;
 	
-	torch::Device device(torch::kCPU);
-	std::string modelPath = "benchmark/model";
+	// torch::Device device(torch::kCPU);
+	// std::string modelPath = "benchmark/model";
 
-	try
-	{
-		m_splitModel = torch::jit::load(modelPath + "/split.pth");
-		m_splitModel.to(device);
-		isSplitModelLoaded = true;
-	}
-	catch(const std::exception& e)
-	{
-		throw Tools::IllegalArgumentException("Split Model path is empty, exiting.");
-	}
-	try
-	{
-		m_chooseSubtreeModel = torch::jit::load(modelPath + "/choose_subtree.pth");
-		m_chooseSubtreeModel.to(device);
-		isChooseSubtreeModelLoaded = true;
-	}
-	catch(const std::exception& e)
-	{
-		throw Tools::IllegalArgumentException("ChooseSubtree Model path is empty, exiting.");
-	}
+	// try
+	// {
+	// 	m_splitModel = torch::jit::load(modelPath + "/split.pth");
+	// 	m_splitModel.to(device);
+	// 	isSplitModelLoaded = true;
+	// }
+	// catch(const std::exception& e)
+	// {
+	// 	throw Tools::IllegalArgumentException("Split Model path is empty, exiting.");
+	// }
+	// try
+	// {
+	// 	m_chooseSubtreeModel = torch::jit::load(modelPath + "/choose_subtree.pth");
+	// 	m_chooseSubtreeModel.to(device);
+	// 	isChooseSubtreeModelLoaded = true;
+	// }
+	// catch(const std::exception& e)
+	// {
+	// 	throw Tools::IllegalArgumentException("ChooseSubtree Model path is empty, exiting.");
+	// }
 
-	if (isSplitModelLoaded && isChooseSubtreeModelLoaded)
-		return true;
+	// if (isSplitModelLoaded && isChooseSubtreeModelLoaded)
+	// 	return true;
 
 	return false; 
 }
@@ -813,7 +817,7 @@ void SpatialIndex::LearnedIndex::LearnedIndex::initNew(Tools::PropertySet& ps)
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
-			(var.m_val.lVal != LI_ZM))
+			(var.m_val.lVal != LI_ZM && var.m_val.lVal != LI_LISA) )
 			throw Tools::IllegalArgumentException("initNew: Property TreeVariant must be Tools::VT_LONG and of LearnedIndexVariant type");
 		m_treeVariant = static_cast<LearnedIndexVariant>(var.m_val.lVal);
 	}
@@ -988,42 +992,42 @@ void SpatialIndex::LearnedIndex::LearnedIndex::initOld(Tools::PropertySet& ps)
 	{
 		if (
 			var.m_varType != Tools::VT_LONG ||
-			(var.m_val.lVal != LI_ZM))
+			(var.m_val.lVal != LI_ZM && var.m_val.lVal != LI_LISA))
 			throw Tools::IllegalArgumentException("initOld: Property TreeVariant must be Tools::VT_LONG and of LearnedIndexVariant type");
 		m_treeVariant = static_cast<LearnedIndexVariant>(var.m_val.lVal);
 
-		if (var.m_val.lVal == LI_ZM)
-		{
-			var = ps.getProperty("RLRModelPath");
-			std::string modelPath("");
-			modelPath = std::string(var.m_val.pcVal);
-			if (modelPath.empty())
-			{
-				throw Tools::IllegalArgumentException("Model path is empty, exiting.");
-			}
-			torch::Device device(torch::kCPU);
+		// if (var.m_val.lVal == LI_ZM)
+		// {
+		// 	var = ps.getProperty("RLRModelPath");
+		// 	std::string modelPath("");
+		// 	modelPath = std::string(var.m_val.pcVal);
+		// 	if (modelPath.empty())
+		// 	{
+		// 		throw Tools::IllegalArgumentException("Model path is empty, exiting.");
+		// 	}
+		// 	torch::Device device(torch::kCPU);
 
-			try
-			{
-				m_splitModel = torch::jit::load(modelPath + "/split.pth");
-				m_splitModel.to(device);
-			}
-			catch(const std::exception& e)
-			{
-				throw Tools::IllegalArgumentException("Split Model path is empty, exiting.");
-			}
+		// 	try
+		// 	{
+		// 		m_splitModel = torch::jit::load(modelPath + "/split.pth");
+		// 		m_splitModel.to(device);
+		// 	}
+		// 	catch(const std::exception& e)
+		// 	{
+		// 		throw Tools::IllegalArgumentException("Split Model path is empty, exiting.");
+		// 	}
 
-			try
-			{
-				m_chooseSubtreeModel = torch::jit::load(modelPath + "/choose_subtree.pth");
-				m_chooseSubtreeModel.to(device);
-			}
-			catch(const std::exception& e)
-			{
-				throw Tools::IllegalArgumentException("ChooseSubtree Model path is empty, exiting.");
-			}
+		// 	try
+		// 	{
+		// 		m_chooseSubtreeModel = torch::jit::load(modelPath + "/choose_subtree.pth");
+		// 		m_chooseSubtreeModel.to(device);
+		// 	}
+		// 	catch(const std::exception& e)
+		// 	{
+		// 		throw Tools::IllegalArgumentException("ChooseSubtree Model path is empty, exiting.");
+		// 	}
 
-		}
+		// }
 
 	}
 
@@ -1217,38 +1221,49 @@ void SpatialIndex::LearnedIndex::LearnedIndex::loadHeader()
 	delete[] header;
 }
 
+// invoke by index
 void SpatialIndex::LearnedIndex::LearnedIndex::insertData_impl(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id)
 {
 	assert(mbr.getDimension() == m_dimension);
 
 	std::stack<id_type> pathBuffer;
 	uint8_t* overflowTable = nullptr;
+	uint32_t child = 0;
+	try
+	{
+		NodePtr root = readNode(m_rootID);
+		overflowTable = new uint8_t[root->m_level];
+		memset(overflowTable, 0, root->m_level);
+        for (uint32_t cChild = 0; cChild < root->m_children; ++cChild)
+        {
+            if (root->m_ptrMBR[cChild]->intersectsRegion(mbr) || root->m_ptrMBR[cChild]->touchesRegion(mbr))
+            {
+                child = cChild;
+                break;
+            }
+        }
+		pathBuffer.push(root->m_pIdentifier[child]);
+		NodePtr n = readNode(root->m_pIdentifier[child]);
+		NodePtr l = n->chooseSubtree(mbr, 0, pathBuffer);
+		if (l.get() == root.get())
+		{
+			assert(root.unique());
+			root.relinquish();
+		}
+		// Invoke Node insert
+		l->insertData(dataLength, pData, mbr, id, pathBuffer, overflowTable);
 
-	// try
-	// {
-	// 	NodePtr root = readNode(m_rootID);
-
-	// 	overflowTable = new uint8_t[root->m_level];
-	// 	memset(overflowTable, 0, root->m_level);
-
-	// 	NodePtr l = root->chooseSubtree(mbr, 0, pathBuffer);
-	// 	if (l.get() == root.get())
-	// 	{
-	// 		assert(root.unique());
-	// 		root.relinquish();
-	// 	}
-	// 	l->insertData(dataLength, pData, mbr, id, pathBuffer, overflowTable);
-
-	// 	delete[] overflowTable;
-	// 	++(m_stats.m_u64Data);
-	// }
-	// catch (...)
-	// {
-	// 	delete[] overflowTable;
-	// 	throw;
-	// }
+		delete[] overflowTable;
+		++(m_stats.m_u64Data);
+	}
+	catch (...)
+	{
+		delete[] overflowTable;
+		throw;
+	}
 }
 
+// invoke by node
 void SpatialIndex::LearnedIndex::LearnedIndex::insertData_impl(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, uint32_t level, uint8_t* overflowTable)
 {
 	assert(mbr.getDimension() == m_dimension);
@@ -1425,11 +1440,13 @@ void SpatialIndex::LearnedIndex::LearnedIndex::deleteNode(Node* n)
 	}
 }
 
-void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high)
+// For LISA
+void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, const IShape& query, IVisitor& v, double key_low, double key_high)
 {
 	std::stack<NodePtr> st;
 
 	NodePtr root = readNode(m_rootID, v);
+	uint32_t root_level = root->m_level;
 
 	if (root->m_children > 0 && query.intersectsShape(root->m_nodeMBR)) st.push(root);
 
@@ -1437,10 +1454,11 @@ void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, c
 	{
 		NodePtr n = st.top(); st.pop();
 
+		v.visitNode(*n);
+
+
 		if (n->m_level == 0)
 		{
-			v.visitNode(*n);
-
 			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
 			{
 				bool b;
@@ -1457,27 +1475,82 @@ void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, c
 		}
 		else
 		{
-			v.visitNode(*n);
+			uint32_t predict_low = 0;
+			uint32_t predict_high = n->m_children - 1;
 
 			double a = n->m_modelData[0];
 			double b = n->m_modelData[1];
-
-			uint32_t predict_low = static_cast<uint32_t>(a * key_low + b);
-
-			uint32_t predict_high = static_cast<uint32_t>(a * key_high + b);
-			// std::cerr << "prediction a:" << a << " b:" << b << " x:" << x << " y:" << y << " predict_index:" << predict_index << std::endl;
-
-			predict_low = std::max(static_cast<uint32_t>(0), std::min(predict_low, static_cast<uint32_t>(n->m_children - 1)));
-
-			predict_high = std::max(predict_low, std::min(predict_high, static_cast<uint32_t>(n->m_children - 1)));
+			if (n->m_level != root_level) {
+				predict_low = static_cast<uint32_t>(a * key_low + b);
+				predict_high = static_cast<uint32_t>(a * key_high + b);
+				// std::cerr << "prediction a:" << a << " b:" << b << " key_low:" << key_low << " key_high:" << key_high << " predict_low:" << predict_low << " predict_high:" << predict_high << std::endl;
+				predict_low = std::max(static_cast<uint32_t>(0), std::min(predict_low, static_cast<uint32_t>(n->m_children - 1)));
+				predict_high = std::max(predict_low, std::min(predict_high, static_cast<uint32_t>(n->m_children - 1)));
+			}
 
 			for (uint32_t cChild = predict_low; cChild <= predict_high; ++cChild)
 			{
 				if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) st.push(readNode(n->m_pIdentifier[cChild], v));
 			}
+
 		}
 	}
 }
+
+
+// void SpatialIndex::LearnedIndex::LearnedIndex::rangeQueryLISA(RangeQueryType type, const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high)
+// {
+// 	std::stack<NodePtr> st;
+
+// 	NodePtr root = readNode(m_rootID, v);
+
+// 	if (root->m_children > 0 && query.intersectsShape(root->m_nodeMBR)) st.push(root);
+
+// 	while (! st.empty())
+// 	{
+// 		NodePtr n = st.top(); st.pop();
+
+// 		if (n->m_level == 0)
+// 		{
+// 			v.visitNode(*n);
+
+// 			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
+// 			{
+// 				bool b;
+// 				if (type == ContainmentQuery) b = query.containsShape(*(n->m_ptrMBR[cChild]));
+// 				else b = query.intersectsShape(*(n->m_ptrMBR[cChild]));
+
+// 				if (b)
+// 				{
+// 					Data data = Data(n->m_pDataLength[cChild], n->m_pData[cChild], *(n->m_ptrMBR[cChild]), n->m_pIdentifier[cChild]);
+// 					v.visitData(data);
+// 					++(m_stats.m_u64QueryResults);
+// 				}
+// 			}
+// 		}
+// 		else
+// 		{
+// 			v.visitNode(*n);
+
+// 			double a = n->m_modelData[0];
+// 			double b = n->m_modelData[1];
+
+// 			uint32_t predict_low = static_cast<uint32_t>(a * key_low + b);
+
+// 			uint32_t predict_high = static_cast<uint32_t>(a * key_high + b);
+// 			// std::cerr << "prediction a:" << a << " b:" << b << " x:" << x << " y:" << y << " predict_index:" << predict_index << std::endl;
+
+// 			predict_low = std::max(static_cast<uint32_t>(0), std::min(predict_low, static_cast<uint32_t>(n->m_children - 1)));
+
+// 			predict_high = std::max(predict_low, std::min(predict_high, static_cast<uint32_t>(n->m_children - 1)));
+
+// 			for (uint32_t cChild = predict_low; cChild <= predict_high; ++cChild)
+// 			{
+// 				if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) st.push(readNode(n->m_pIdentifier[cChild], v));
+// 			}
+// 		}
+// 	}
+// }
 
 void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, const IShape& query, IVisitor& v)
 {

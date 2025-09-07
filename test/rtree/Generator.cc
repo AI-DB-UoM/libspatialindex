@@ -69,8 +69,6 @@ int main(int argc, char** argv)
 		double y = rnd.nextUniformDouble();
 		double y_ = std::pow(y, skewness); 
 
-
-
 		// double dx = rnd.nextUniformDouble(0.0001, 0.1);
 		// double dy = rnd.nextUniformDouble(0.0001, 0.1);
 		// Region r = Region(x, y, x + dx, y + dy);

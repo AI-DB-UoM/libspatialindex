@@ -75,7 +75,7 @@ namespace SpatialIndex
 			virtual void internalNodesQuery(const IShape& query, IVisitor& v) ;
 			virtual void containsWhatQuery(const IShape& query, IVisitor& v) ;
 			virtual void intersectsWithQuery(const IShape& query, IVisitor& v) ;
-			virtual void intersectsWithQueryLearnedIndex(const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high) ;
+			virtual void intersectsWithQueryLearnedIndex(const IShape& query, IVisitor& v, double key_low, double key_high) ;
 			virtual void pointLocationQuery(const Point& query, IVisitor& v) ;
 			virtual void nearestNeighborQuery(uint32_t k, const IShape& query, IVisitor& v, INearestNeighborComparator&);
 			virtual void nearestNeighborQuery(uint32_t k, const IShape& query, IVisitor& v);
@@ -102,7 +102,7 @@ namespace SpatialIndex
 			NodePtr readNode(id_type page, IVisitor& v);
 			void deleteNode(Node*);
 
-			void rangeQuery(RangeQueryType type, const IShape& query, IVisitor& v, uint64_t key_low, uint64_t key_high);
+			void rangeQuery(RangeQueryType type, const IShape& query, IVisitor& v, double key_low, double key_high);
 			void rangeQuery(RangeQueryType type, const IShape& query, IVisitor& v);
 			void selfJoinQuery(id_type id1, id_type id2, const Region& r, IVisitor& vis);
 			void visitSubTree(NodePtr subTree, IVisitor& v);

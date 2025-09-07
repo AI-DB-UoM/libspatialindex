@@ -43,53 +43,39 @@ Index::Index(SpatialIndex::LearnedIndex::LearnedIndex* pTree, id_type id, uint32
 {
 }
 
-// NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::stack<id_type>& pathBuffer)
-// {
-// 	if (m_level == insertionLevel) return NodePtr(this, &(m_pTree->m_indexPool));
+NodePtr Index::chooseSubtree(const Region& mbr, uint32_t insertionLevel, std::stack<id_type>& pathBuffer)
+{
+	if (m_level == insertionLevel) return NodePtr(this, &(m_pTree->m_indexPool));
 
-// 	pathBuffer.push(m_identifier);
+	pathBuffer.push(m_identifier);
 
-// 	uint32_t child = 0;
+	uint32_t child = 0;
 
-// 	switch (m_pTree->m_treeVariant)
-// 	{
-// 		case RV_LINEAR:
-// 		case RV_QUADRATIC:
-// 			child = findLeastEnlargement(mbr);
-// 			break;
-// 		case RV_RLLearnedIndex:
-// 			if (m_pTree->isModelAvailable())
-// 			{
-// 				// child = findRLRLeastEnlargement(mbr);
-// 				// if (child == 0)
-// 				child = findLeastEnlargement(mbr);
-// 			}
-// 			else
-// 				child = findLeastEnlargement(mbr);
-// 			break;
-// 		case RV_RSTAR:
-// 			if (m_level == 1)
-// 			{
-// 				// if this node points to leaves...
-// 				child = findLeastOverlap(mbr);
-// 			}
-// 			else
-// 			{
-// 				child = findLeastEnlargement(mbr);
-// 			}
-// 		break;
-// 		default:
-// 			throw Tools::NotSupportedException("Index::chooseSubtree: Tree variant not supported.");
-// 	}
-// 	assert(child != std::numeric_limits<uint32_t>::max());
+    // if (is_root) 
+    // {
+    //     for (uint32_t cChild = 0; cChild < m_children; ++cChild)
+    //     {
+    //         if (m_ptrMBR[cChild]->intersectsRegion(mbr) || m_ptrMBR[cChild]->touchesRegion(mbr))
+    //         {
+    //             child = cChild;
+    //             break;
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    double key = (mbr.m_pLow[1] + mbr.m_pHigh[1]) / 2;
+    child = static_cast<uint32_t>(m_modelData[0] * key + m_modelData[1]);
+    child = std::max(static_cast<uint32_t>(0), std::min(child, static_cast<uint32_t>(m_capacity - 1)));
+    // }
 
-// 	NodePtr n = m_pTree->readNode(m_pIdentifier[child]);
-// 	NodePtr ret = n->chooseSubtree(mbr, insertionLevel, pathBuffer);
-// 	assert(n.unique());
-// 	if (ret.get() == n.get()) n.relinquish();
+    NodePtr n = m_pTree->readNode(m_pIdentifier[child]);
+    NodePtr ret = n->chooseSubtree(mbr, insertionLevel, pathBuffer);
+    assert(n.unique());
+    if (ret.get() == n.get()) n.relinquish();
 
-// 	return ret;
-// }
+    return ret;
+}
 
 // NodePtr Index::findLeaf(const Region& mbr, id_type id, std::stack<id_type>& pathBuffer)
 // {

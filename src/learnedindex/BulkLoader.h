@@ -47,6 +47,8 @@ namespace SpatialIndex
 
 				void storeToFile(Tools::TemporaryFile& f);
 				void loadFromFile(Tools::TemporaryFile& f);
+				
+				double get_val();
 
 				struct SortAscending
 				{
@@ -117,6 +119,15 @@ namespace SpatialIndex
 				uint32_t numberOfPages // The total number of pages to use.
 			);
 
+			void bulkLoadUsingLISA(
+				LearnedIndex* pTree,
+				IDataStream& stream,
+				uint32_t bindex,
+				uint32_t bleaf,
+				uint32_t pageSize, // The number of node entries per page.
+				uint32_t numberOfPages // The total number of pages to use.
+			);
+
 		protected:
 
 			std::vector<double> calculateLinearRegression(
@@ -124,7 +135,24 @@ namespace SpatialIndex
 				uint32_t bindex
 			);
 
+			std::vector<double> calculateLinearRegression(
+				std::vector<double>& keys, 
+				uint32_t bindex
+			);
+
 			void createLevelZM(
+				SpatialIndex::LearnedIndex::LearnedIndex* pTree,
+				std::vector<ExternalSorter::Record *> es,
+				uint32_t dimension,
+				uint32_t bleaf,
+				uint32_t bindex,
+				uint32_t level,
+				std::vector<ExternalSorter::Record *>& es2,
+				uint32_t pageSize,
+				uint32_t numberOfPages
+			);
+
+			void createGridLISA(
 				SpatialIndex::LearnedIndex::LearnedIndex* pTree,
 				std::vector<ExternalSorter::Record *> es,
 				uint32_t dimension,
@@ -141,6 +169,16 @@ namespace SpatialIndex
 				std::vector<ExternalSorter::Record*>& e,
 				uint32_t level
 			);
+
+			// uint32_t findPartition(
+			// 	const std::vector<double>& borders, 
+			// 	double x
+			// );
+
+			// double getMappedKey(
+			// 	double y, 
+			// 	uint32_t idx
+			// );
 		};
 	}
 }

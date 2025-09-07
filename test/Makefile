@@ -111,6 +111,32 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named test-learnedindex-LISAQuery
+
+# Build rule for target.
+test-learnedindex-LISAQuery: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-LISAQuery
+.PHONY : test-learnedindex-LISAQuery
+
+# fast build rule for target.
+test-learnedindex-LISAQuery/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery.dir/build.make CMakeFiles/test-learnedindex-LISAQuery.dir/build
+.PHONY : test-learnedindex-LISAQuery/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-LISABulkLoad
+
+# Build rule for target.
+test-learnedindex-LISABulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-LISABulkLoad
+.PHONY : test-learnedindex-LISABulkLoad
+
+# fast build rule for target.
+test-learnedindex-LISABulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad.dir/build
+.PHONY : test-learnedindex-LISABulkLoad/fast
+
+#=============================================================================
 # Target rules for targets named test-learnedindex-ZMQuery
 
 # Build rule for target.
@@ -519,6 +545,36 @@ learnedindex/Generator.s:
 .PHONY : learnedindex/Generator.s
 
 # target to build an object file
+learnedindex/LISABulkLoad.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad.dir/learnedindex/LISABulkLoad.o
+.PHONY : learnedindex/LISABulkLoad.o
+
+# target to preprocess a source file
+learnedindex/LISABulkLoad.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad.dir/learnedindex/LISABulkLoad.i
+.PHONY : learnedindex/LISABulkLoad.i
+
+# target to generate assembly for a file
+learnedindex/LISABulkLoad.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad.dir/learnedindex/LISABulkLoad.s
+.PHONY : learnedindex/LISABulkLoad.s
+
+# target to build an object file
+learnedindex/LISAQuery.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery.dir/build.make CMakeFiles/test-learnedindex-LISAQuery.dir/learnedindex/LISAQuery.o
+.PHONY : learnedindex/LISAQuery.o
+
+# target to preprocess a source file
+learnedindex/LISAQuery.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery.dir/build.make CMakeFiles/test-learnedindex-LISAQuery.dir/learnedindex/LISAQuery.i
+.PHONY : learnedindex/LISAQuery.i
+
+# target to generate assembly for a file
+learnedindex/LISAQuery.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery.dir/build.make CMakeFiles/test-learnedindex-LISAQuery.dir/learnedindex/LISAQuery.s
+.PHONY : learnedindex/LISAQuery.s
+
+# target to build an object file
 learnedindex/ZMBulkLoad.o:
 	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad.dir/learnedindex/ZMBulkLoad.o
 .PHONY : learnedindex/ZMBulkLoad.o
@@ -661,6 +717,8 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... test-learnedindex-LISAQuery"
+	@echo "... test-learnedindex-LISABulkLoad"
 	@echo "... test-learnedindex-ZMQuery"
 	@echo "... test-learnedindex-ZMBulkLoad"
 	@echo "... test-learnedindex-Generator"
@@ -709,6 +767,12 @@ help:
 	@echo "... learnedindex/Generator.o"
 	@echo "... learnedindex/Generator.i"
 	@echo "... learnedindex/Generator.s"
+	@echo "... learnedindex/LISABulkLoad.o"
+	@echo "... learnedindex/LISABulkLoad.i"
+	@echo "... learnedindex/LISABulkLoad.s"
+	@echo "... learnedindex/LISAQuery.o"
+	@echo "... learnedindex/LISAQuery.i"
+	@echo "... learnedindex/LISAQuery.s"
 	@echo "... learnedindex/ZMBulkLoad.o"
 	@echo "... learnedindex/ZMBulkLoad.i"
 	@echo "... learnedindex/ZMBulkLoad.s"

@@ -34,6 +34,7 @@
 #include "LearnedIndex.h"
 #include "Node.h"
 #include "Index.h"
+#include "Leaf.h"
 
 // #include <torch/script.h>
 
@@ -317,7 +318,6 @@ Node::~Node()
 	delete[] m_ptrMBR;
 	delete[] m_pIdentifier;
 	delete[] m_modelData;
-
 }
 
 Node& Node::operator=(const Node&)
@@ -328,18 +328,60 @@ Node& Node::operator=(const Node&)
 void Node::insertEntry(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id)
 {
 	assert(m_children < m_capacity);
-
 	m_pDataLength[m_children] = dataLength;
 	m_pData[m_children] = pData;
 	m_ptrMBR[m_children] = m_pTree->m_regionPool.acquire();
 	*(m_ptrMBR[m_children]) = mbr;
 	m_pIdentifier[m_children] = id;
-
 	m_totalDataLength += dataLength;
 	++m_children;
-
 	m_nodeMBR.combineRegion(mbr);
 }
+
+// void Node::insertEntry(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id)
+// {
+// 	std::cerr << ">> insertEntry called\n";
+// 	std::cerr << "  m_children = " << m_children << ", m_capacity = " << m_capacity << "\n";
+// 	std::cerr << "  dataLength = " << dataLength << ", id = " << id << "\n";
+// 	std::cerr << "  pData ptr  = " << static_cast<void*>(pData) << "\n";
+// 	std::cerr << "  m_pTree    = " << m_pTree << "\n";
+
+// 	if (m_children >= m_capacity) {
+// 		std::cerr << "[Error] Node over capacity!\n";
+// 		std::abort();
+// 	}
+
+// 	if (!m_pDataLength || !m_pData || !m_ptrMBR || !m_pIdentifier) {
+// 		std::cerr << "[Error] One or more internal arrays are null!\n";
+// 		std::abort();
+// 	}
+
+// 	m_pDataLength[m_children] = dataLength;
+// 	m_pData[m_children] = pData;
+
+// 	// m_ptrMBR[m_children] = m_pTree->m_regionPool.acquire();
+// 	// if (!m_pTree->m_regionPool.acquire()) {
+// 	// 	std::cerr << "[Error] RegionPool returned nullptr!\n";
+// 	// 	std::abort();
+// 	// }
+// 	// Region* acquired = m_pTree->m_regionPool.acquire();
+
+// 	std::cerr << "  Region acquired at " << acquired << ", assigning value...\n";
+// 	*acquired = mbr;  // Potential crash here
+
+// 	m_pIdentifier[m_children] = id;
+
+// 	m_totalDataLength += dataLength;
+// 	++m_children;
+
+// 	std::cerr << "  Total data length now = " << m_totalDataLength << "\n";
+
+// 	std::cerr << "  Updating m_nodeMBR...\n";
+// 	m_nodeMBR.combineRegion(mbr);  // Optional crash point if mbr has issues
+
+// 	std::cerr << "<< insertEntry done\n";
+// }
+
 
 void Node::insertModel(const std::vector<double>& newModelParams)
 {
@@ -399,196 +441,255 @@ void Node::deleteEntry(uint32_t index)
 
 bool Node::insertData(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::stack<id_type>& pathBuffer, uint8_t* overflowTable)
 {
-	if (m_children < m_capacity)
-	{
-		bool adjusted = false;
+	if (m_children >= m_capacity)
+    {
+		++(m_pTree->m_stats.m_u64Splits);
 
-		// this has to happen before insertEntry modifies m_nodeMBR.
-		bool b = m_nodeMBR.containsRegion(mbr);
+        // Copy all current + new entry into dataMid
+        std::vector<std::unique_ptr<RstarSplitEntry>> dataMid;
+        dataMid.reserve(m_capacity + 1);
 
-		insertEntry(dataLength, pData, mbr, id);
-		m_pTree->writeNode(this);
+        for (uint32_t i = 0; i < m_children; ++i) {
+            dataMid.emplace_back(std::make_unique<RstarSplitEntry>(
+                m_ptrMBR[i].get(), i, m_pDataLength[i], m_pData[i], 1));
+        }
 
-		if ((! b) && (! pathBuffer.empty()))
-		{
-			id_type cParent = pathBuffer.top(); pathBuffer.pop();
-			NodePtr ptrN = m_pTree->readNode(cParent);
-			Index* p = static_cast<Index*>(ptrN.get());
-			// p->adjustTree(this, pathBuffer);
-			// adjusted = true;
-		}
+        RegionPtr newRegion = m_pTree->m_regionPool.acquire();
+        *newRegion = mbr;
+        dataMid.emplace_back(std::make_unique<RstarSplitEntry>(
+            newRegion.get(), m_capacity, dataLength, pData, 1));
 
-		return adjusted;
-	}
-	else if ((! pathBuffer.empty()) && overflowTable[m_level] == 0)
-	{
-		overflowTable[m_level] = 1;
+        // Temporarily store the new entry
+        std::vector<double> keys;
+        keys.reserve(dataMid.size());
 
-		std::vector<uint32_t> vReinsert, vKeep;
-		// reinsertData(dataLength, pData, mbr, id, vReinsert, vKeep);
+        for (const auto& entry : dataMid) {
+            auto* r = entry->m_pRegion;
+            keys.push_back((r->m_pLow[1] + r->m_pHigh[1]) / 2.0);
+        }
 
-		uint32_t lReinsert = static_cast<uint32_t>(vReinsert.size());
-		uint32_t lKeep = static_cast<uint32_t>(vKeep.size());
+        // Fit linear regression
+        double mean_x = 0.0, mean_y = 0.0, covariance = 0.0, variance = 0.0;
+        uint64_t n = 0;
+        double scale = 1.0 * m_capacity / keys.size();
 
-		uint8_t** reinsertdata = nullptr;
-		RegionPtr* reinsertmbr = nullptr;
-		id_type* reinsertid = nullptr;
-		uint32_t* reinsertlen = nullptr;
-		uint8_t** keepdata = nullptr;
-		RegionPtr* keepmbr = nullptr;
-		id_type* keepid = nullptr;
-		uint32_t* keeplen = nullptr;
+        for (size_t i = 0; i < keys.size(); ++i) {
+            double x = keys[i];
+            double y = static_cast<double>(i * scale);
 
-		try
-		{
-			reinsertdata = new uint8_t*[lReinsert];
-			reinsertmbr = new RegionPtr[lReinsert];
-			reinsertid = new id_type[lReinsert];
-			reinsertlen = new uint32_t[lReinsert];
+            ++n;
+            double dx = x - mean_x;
+            mean_x += dx / static_cast<double>(n);
+            mean_y += (y - mean_y) / static_cast<double>(n);
+            covariance += dx * (y - mean_y);
+            variance += dx * (x - mean_x);
+        }
 
-			keepdata = new uint8_t*[m_capacity + 1];
-			keepmbr = new RegionPtr[m_capacity + 1];
-			keepid = new id_type[m_capacity + 1];
-			keeplen = new uint32_t[m_capacity + 1];
-		}
-		catch (...)
-		{
-			delete[] reinsertdata;
-			delete[] reinsertmbr;
-			delete[] reinsertid;
-			delete[] reinsertlen;
-			delete[] keepdata;
-			delete[] keepmbr;
-			delete[] keepid;
-			delete[] keeplen;
-			throw;
-		}
+        covariance /= static_cast<double>(n - 1);
+        variance /= static_cast<double>(n - 1);
 
-		uint32_t cIndex;
+        double slope = (variance == 0.0) ? 0.0 : covariance / variance;
+        double intercept = mean_y - slope * mean_x;
 
-		for (cIndex = 0; cIndex < lReinsert; ++cIndex)
-		{
-			reinsertlen[cIndex] = m_pDataLength[vReinsert[cIndex]];
-			reinsertdata[cIndex] = m_pData[vReinsert[cIndex]];
-			reinsertmbr[cIndex] = m_ptrMBR[vReinsert[cIndex]];
-			reinsertid[cIndex] = m_pIdentifier[vReinsert[cIndex]];
-		}
+        std::vector<std::vector<RstarSplitEntry*>> children_se(m_capacity);
 
-		for (cIndex = 0; cIndex < lKeep; ++cIndex)
-		{
-			keeplen[cIndex] = m_pDataLength[vKeep[cIndex]];
-			keepdata[cIndex] = m_pData[vKeep[cIndex]];
-			keepmbr[cIndex] = m_ptrMBR[vKeep[cIndex]];
-			keepid[cIndex] = m_pIdentifier[vKeep[cIndex]];
-		}
+        for (const auto& entry : dataMid) {
+            double x = (entry->m_pRegion->m_pLow[1] + entry->m_pRegion->m_pHigh[1]) / 2.0;
+            double y = slope * x + intercept;
+            uint32_t predict_index = std::clamp(static_cast<uint32_t>(y), 0U, m_capacity - 1);
+            children_se[predict_index].push_back(entry.get());
+        }
 
-		delete[] m_pDataLength;
-		delete[] m_pData;
-		delete[] m_ptrMBR;
-		delete[] m_pIdentifier;
+        m_children = 0;
+        for (uint32_t j = 0; j < m_capacity; ++j) {
+            if (children_se[j].empty()) continue;
 
-		m_pDataLength = keeplen;
-		m_pData = keepdata;
-		m_ptrMBR = keepmbr;
-		m_pIdentifier = keepid;
-		m_children = lKeep;
-		m_totalDataLength = 0;
+            NodePtr n(new Leaf(m_pTree, -1), &m_pTree->m_leafPool);
 
-		for (uint32_t u32Child = 0; u32Child < m_children; ++u32Child) m_totalDataLength += m_pDataLength[u32Child];
+            for (auto* entry : children_se[j]) {
+                Region r = *entry->m_pRegion;
+                uint8_t* copied = new uint8_t[entry->m_len];
+                std::memcpy(copied, entry->m_pData, entry->m_len);
+                n->insertEntry(entry->m_len, copied, r, entry->m_id);
+            }
 
-		for (uint32_t cDim = 0; cDim < m_nodeMBR.m_dimension; ++cDim)
-		{
-			m_nodeMBR.m_pLow[cDim] = std::numeric_limits<double>::max();
-			m_nodeMBR.m_pHigh[cDim] = -std::numeric_limits<double>::max();
+            m_pTree->writeNode(n.get());
+            insertEntry(0, nullptr, n->m_nodeMBR, n->m_identifier);
+        }
 
-			for (uint32_t u32Child = 0; u32Child < m_children; ++u32Child)
-			{
-				m_nodeMBR.m_pLow[cDim] = std::min(m_nodeMBR.m_pLow[cDim], m_ptrMBR[u32Child]->m_pLow[cDim]);
-				m_nodeMBR.m_pHigh[cDim] = std::max(m_nodeMBR.m_pHigh[cDim], m_ptrMBR[u32Child]->m_pHigh[cDim]);
-			}
-		}
+        insertModel({slope, intercept});
+        m_pTree->writeNode(this);
+    }
+    else
+    {
+        insertEntry(dataLength, pData, mbr, id);
+        m_pTree->writeNode(this);
+    }
+    return true;
+	// if (m_children >= m_capacity)
+	// {
+	// 	std::cerr << " insertData m_children >= m_capacity" << std::endl;
 
-		m_pTree->writeNode(this);
+	// 	// use all points to train a model
+	// 	RstarSplitEntry** dataMid = nullptr;
+	// 	try
+	// 	{
+	// 		dataMid = new RstarSplitEntry*[m_capacity + 1];
+	// 	}
+	// 	catch (...)
+	// 	{
+	// 		throw;
+	// 	}
 
-		// Divertion from R*-Tree algorithm here. First adjust
-		// the path to the root, then start reinserts, to avoid complicated handling
-		// of changes to the same node from multiple insertions.
-		id_type cParent = pathBuffer.top(); pathBuffer.pop();
-		NodePtr ptrN = m_pTree->readNode(cParent);
-		Index* p = static_cast<Index*>(ptrN.get());
-		// p->adjustTree(this, pathBuffer, true);
+	// 	m_pDataLength[m_capacity] = dataLength;
+	// 	m_pData[m_capacity] = pData;
+	// 	m_ptrMBR[m_capacity] = m_pTree->m_regionPool.acquire();
+	// 	*(m_ptrMBR[m_capacity]) = mbr;
+	// 	m_pIdentifier[m_capacity] = id;
 
-		for (cIndex = 0; cIndex < lReinsert; ++cIndex)
-		{
-			m_pTree->insertData_impl(
-				reinsertlen[cIndex], reinsertdata[cIndex],
-				*(reinsertmbr[cIndex]), reinsertid[cIndex],
-				m_level, overflowTable);
-		}
+	// 	uint32_t u32Child = 0, cDim, cIndex;
 
-		delete[] reinsertdata;
-		delete[] reinsertmbr;
-		delete[] reinsertid;
-		delete[] reinsertlen;
+	// 	for (u32Child = 0; u32Child <= m_capacity; ++u32Child)
+	// 	{
+	// 		try
+	// 		{
+	// 			// Region* pr, uint32_t index, uint32_t len, uint8_t* pData, uint32_t dimension):
+	// 			dataMid[u32Child] = new RstarSplitEntry(m_ptrMBR[u32Child].get(), u32Child, m_pDataLength[u32Child], m_pData[u32Child], 1);
+	// 		}
+	// 		catch (...)
+	// 		{
+	// 			for (uint32_t i = 0; i < u32Child; ++i) delete dataMid[i];
+	// 			delete[] dataMid;
+	// 			throw;
+	// 		}
+	// 	}
 
-		return true;
-	}
-	else
-	{
-		NodePtr n;
-		NodePtr nn;
-		// split(dataLength, pData, mbr, id, n, nn);
+	// 	::qsort(dataMid, m_capacity + 1, sizeof(RstarSplitEntry*), RstarSplitEntry::compareMid);
+	// 	// std::cerr << " after sort" << std::endl;
+		
+	// 	std::vector<double> keys;
+	
+	// 	for(uint64_t j = 0; j <= m_capacity; j++) {
+	// 		double y = (m_ptrMBR[j]->m_pLow[1] + m_ptrMBR[j]->m_pHigh[1]) / 2;
+	// 		keys.push_back(y);
+	// 	}
+	// 	// std::cerr << " keys.size(): " << keys.size() << std::endl;
+	// 	double mean_x = 0.0, mean_y = 0.0, covariance = 0.0, variance = 0.0;
+	// 	uint64_t n = 0;  // Count of elements
+	// 	int data_size = keys.size();
+	// 	double scale = 1.0 * m_capacity / data_size;
 
-		if (pathBuffer.empty())
-		{
-			n->m_level = m_level;
-			nn->m_level = m_level;
-			n->m_identifier = -1;
-			nn->m_identifier = -1;
-			m_pTree->writeNode(n.get());
-			m_pTree->writeNode(nn.get());
+	// 	for (int i = 0; i < data_size; ++i) {
+	// 		double x = keys[i];
+	// 		double y = static_cast<double>(i * scale);
 
-			NodePtr ptrR = m_pTree->m_indexPool.acquire();
-			if (ptrR.get() == nullptr)
-			{
-				ptrR = NodePtr(new Index(m_pTree, m_pTree->m_rootID, m_level + 1), &(m_pTree->m_indexPool));
-			}
-			else
-			{
-				//ptrR->m_pTree = m_pTree;
-				ptrR->m_identifier = m_pTree->m_rootID;
-				ptrR->m_level = m_level + 1;
-				ptrR->m_nodeMBR = m_pTree->m_infiniteRegion;
-			}
+	// 		++n;
 
-			ptrR->insertEntry(0, nullptr, n->m_nodeMBR, n->m_identifier);
-			ptrR->insertEntry(0, nullptr, nn->m_nodeMBR, nn->m_identifier);
+	// 		// Update means
+	// 		double dx = x - mean_x;
+	// 		mean_x += dx / static_cast<double>(n);
+	// 		mean_y += (y - mean_y) / static_cast<double>(n);
 
-			m_pTree->writeNode(ptrR.get());
+	// 		// Update covariance and variance
+	// 		covariance += dx * (y - mean_y);
+	// 		variance += dx * (x - mean_x);
+	// 	}
 
-			m_pTree->m_stats.m_nodesInLevel[m_level] = 2;
-			m_pTree->m_stats.m_nodesInLevel.push_back(1);
-			m_pTree->m_stats.m_u32TreeHeight = m_level + 2;
-		}
-		else
-		{
-			n->m_level = m_level;
-			nn->m_level = m_level;
-			n->m_identifier = m_identifier;
-			nn->m_identifier = -1;
 
-			m_pTree->writeNode(n.get());
-			m_pTree->writeNode(nn.get());
+	// 	variance /= static_cast<double>(n - 1);
+	// 	covariance /= static_cast<double>(n - 1);
 
-			id_type cParent = pathBuffer.top(); pathBuffer.pop();
-			NodePtr ptrN = m_pTree->readNode(cParent);
-			Index* p = static_cast<Index*>(ptrN.get());
-			// p->adjustTree(n.get(), nn.get(), pathBuffer, overflowTable);
-		}
+	// 	double slope = 0;
+	// 	double intercept = 0;
+	// 	if (variance == 0.0) {
+	// 		slope = mean_y;  // No variation in x
+	// 	} else {
+	// 		slope = covariance / variance;  // Slope
+	// 		intercept = mean_y - slope * mean_x;  // Intercept
+	// 	}
 
-		return true;
-	}
+	// 	// std::cerr << " slope: " << slope << " intercept: " << intercept << std::endl;
+
+	// 	std::vector<double> regressionParams = {slope, intercept};
+
+	// 	std::vector<std::vector<RstarSplitEntry *>> children_se(m_capacity);
+	// 	RstarSplitEntry* pR;
+
+	// 	uint64_t i = 0;
+	// 	while (i < m_capacity) {
+	// 		try { 
+	// 			pR = dataMid[i]; 
+	// 		}
+	// 		catch (Tools::EndOfStreamException&) { break; }
+	// 		double x = (dataMid[i]->m_pRegion->m_pLow[1] + dataMid[i]->m_pRegion->m_pHigh[1]) / 2;
+	// 		double y = slope * x + intercept;
+	
+	// 		uint32_t predict_index = static_cast<uint32_t>(y);
+	// 		// std::cerr << "partition[i]->m_r.m_pLow[1]: " << partition[i]->m_r.m_pLow[1] << " partition[i]->m_r.m_pHigh[1]:" << partition[i]->m_r.m_pHigh[1] << std::endl;
+	// 		// std::cerr << "prediction a:" << a << " b:" << b << " x:" << x << " y:" << y << " predict_index:" << predict_index << std::endl;
+	
+	// 		predict_index = std::max(static_cast<uint32_t>(0), std::min(predict_index, static_cast<uint32_t>(m_capacity - 1)));
+	// 		// uint64_t predict_index = i / entries_per_child;
+	// 		children_se[predict_index].push_back(pR);
+	// 		i++;
+	// 	}
+
+	// 	// std::cerr << " assign to list: " << std::endl;
+
+	// 	m_children = 0;
+	// 	for (uint32_t j = 0; j < m_capacity; ++j) {
+	// 		// Node* n = createNode(m_pTree, children_se[j], 0);
+	// 		NodePtr n;
+	// 		n = NodePtr(new Leaf(m_pTree, -1), &(m_pTree->m_leafPool));
+
+	// 		// std::cerr << "create new leaf n->m_children:" << n->m_children << std::endl;
+	// 		// std::cerr << "create new leaf n->m_capacity:" << n->m_capacity << std::endl;
+	// 		// std::cerr << "create new leaf children_se[j].size():" << children_se[j].size() << std::endl;
+
+	// 		// Node(SpatialIndex::LearnedIndex::LearnedIndex* pTree, id_type id, uint32_t level, uint32_t capacity) :
+	// 		for (size_t cChild = 0; cChild < children_se[j].size(); ++cChild)
+	// 		{
+	// 			auto* entry = children_se[j][cChild];
+	// 			try 
+	// 			{ 
+	// 				n->insertEntry(entry->m_len, entry->m_pData, *(entry->m_pRegion), entry->m_id);
+	// 			// n->insertEntry(children_se[j][cChild]->m_len, children_se[j][cChild]->m_pData, *children_se[j][cChild]->m_pRegion, children_se[j][cChild]->m_id);
+	// 			}
+	// 			catch (Tools::EndOfStreamException&) { break; }
+	// 		}
+	// 		// std::cerr << "insertEntry n->m_identifier:" << n->m_identifier << std::endl;
+
+	// 		// children_se[j].clear();
+	// 		// std::cerr << "writeNode " << std::endl;
+
+	// 		m_pTree->writeNode(n.get());
+	// 		// std::cerr << "writeNode finish" << std::endl;
+
+	// 		// m_pTree->m_rootID = n->m_identifier;
+	// 		// m_pTree->m_stats.m_u32TreeHeight = std::max(m_pTree->m_stats.m_u32TreeHeight, static_cast<uint32_t>(level));
+	// 		insertEntry(0, nullptr, n->m_nodeMBR, n->m_identifier);
+	// 		// std::cerr << "insertEntry leaf" << std::endl;
+
+	// 		// delete n;
+	// 	}
+
+	// 	insertModel(regressionParams);
+	// 	// std::cerr << "m_identifiert: " << m_identifier << std::endl;
+
+	// 	m_pTree->writeNode(this);
+	// }
+	// else
+	// {
+	// 	// std::cerr << "insertEntry(dataLength, pData, mbr, id) id= " << id << " m_identifier:" << m_identifier << std::endl;
+
+	// 	insertEntry(dataLength, pData, mbr, m_identifier);
+	// 	// std::cerr << "directly insert m_identifiert: " << m_identifier << std::endl;
+ 
+	// 	m_pTree->writeNode(this);
+	// }
+	// return true;
 }
+
 
 void Node::reinsertData(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, std::vector<uint32_t>& reinsert, std::vector<uint32_t>& keep)
 {

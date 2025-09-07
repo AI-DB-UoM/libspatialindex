@@ -107,7 +107,7 @@ namespace SpatialIndex
 
 			virtual void condenseTree(std::stack<NodePtr>& toReinsert, std::stack<id_type>& pathBuffer, NodePtr& ptrThis);
 
-			// virtual NodePtr chooseSubtree(const Region& mbr, uint32_t level, std::stack<id_type>& pathBuffer) = 0;
+			virtual NodePtr chooseSubtree(const Region& mbr, uint32_t level, std::stack<id_type>& pathBuffer) = 0;
 			// virtual NodePtr findLeaf(const Region& mbr, id_type id, std::stack<id_type>& pathBuffer) = 0;
 
 			// virtual void split(uint32_t dataLength, uint8_t* pData, Region& mbr, id_type id, NodePtr& left, NodePtr& right) = 0;
@@ -154,6 +154,22 @@ namespace SpatialIndex
 				uint32_t m_index;
 				uint32_t m_sortDim;
 
+				// Region m_r;
+				id_type m_id;
+				uint32_t m_len;
+				uint8_t* m_pData{nullptr};
+
+				RstarSplitEntry(Region* pr, uint32_t index, uint32_t len, uint8_t* pData, uint32_t dimension)
+					: m_index(index), m_len(len), m_pData(pData), m_sortDim(dimension)
+				{
+					if (!pr) throw std::invalid_argument("RstarSplitEntry: pr is nullptr.");
+					m_pRegion = new Region(*pr); 
+				}
+
+				~RstarSplitEntry() {
+					delete m_pRegion;
+				}
+
 				RstarSplitEntry(Region* pr, uint32_t index, uint32_t dimension) :
 					m_pRegion(pr), m_index(index), m_sortDim(dimension) {}
 
@@ -178,6 +194,18 @@ namespace SpatialIndex
 
 					if (pe1->m_pRegion->m_pHigh[pe1->m_sortDim] < pe2->m_pRegion->m_pHigh[pe2->m_sortDim]) return -1;
 					if (pe1->m_pRegion->m_pHigh[pe1->m_sortDim] > pe2->m_pRegion->m_pHigh[pe2->m_sortDim]) return 1;
+					return 0;
+				}
+
+				static int compareMid(const void* pv1, const void* pv2)
+				{
+					RstarSplitEntry* pe1 = * (RstarSplitEntry**) pv1;
+					RstarSplitEntry* pe2 = * (RstarSplitEntry**) pv2;
+
+					assert(pe1->m_sortDim == pe2->m_sortDim);
+
+					if (pe1->m_pRegion->m_pHigh[pe1->m_sortDim] + pe1->m_pRegion->m_pLow[pe1->m_sortDim] < pe2->m_pRegion->m_pHigh[pe2->m_sortDim] + pe2->m_pRegion->m_pLow[pe2->m_sortDim]) return -1;
+					if (pe1->m_pRegion->m_pHigh[pe1->m_sortDim] + pe1->m_pRegion->m_pLow[pe1->m_sortDim] > pe2->m_pRegion->m_pHigh[pe2->m_sortDim] + pe2->m_pRegion->m_pLow[pe2->m_sortDim]) return 1;
 					return 0;
 				}
 			}; // RstarSplitEntry

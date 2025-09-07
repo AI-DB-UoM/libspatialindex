@@ -89,7 +89,9 @@ set(SOURCES
         Exhaustive
         Generator
         ZMBulkLoad
-        ZMQuery)
+        ZMQuery
+        LISABulkLoad
+        LISAQuery)
 
 
 foreach(test ${SOURCES})

@@ -242,8 +242,8 @@ int main(int argc, char** argv)
 		uint32_t op;
 		double x1, x2, y1, y2;
 		double plow[2], phigh[2];
-		uint64_t key_low;
-		uint64_t key_high;
+		double key_low;
+		double key_high;
 
 		vector<double> queryTimes; 
 		vector<double> insertTimes; 

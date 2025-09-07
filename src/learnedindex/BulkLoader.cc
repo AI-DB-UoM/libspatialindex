@@ -61,15 +61,15 @@ ExternalSorter::Record::~Record()
 
 bool ExternalSorter::Record::operator<(const Record& r) const
 {
-	int result = std::memcmp(m_pData, r.m_pData, r.m_len);
-	return result < 0;
-	// if (m_s != r.m_s)
-	// 	throw Tools::IllegalStateException("ExternalSorter::Record::operator<: Incompatible sorting dimensions.");
+	// int result = std::memcmp(m_pData, r.m_pData, r.m_len);
+	// return result < 0;
+	if (m_s != r.m_s)
+		throw Tools::IllegalStateException("ExternalSorter::Record::operator<: Incompatible sorting dimensions.");
 
-	// if (m_r.m_pHigh[m_s] + m_r.m_pLow[m_s] < r.m_r.m_pHigh[m_s] + r.m_r.m_pLow[m_s])
-	// 	return true;
-	// else
-	// 	return false;
+	if (m_r.m_pHigh[m_s] + m_r.m_pLow[m_s] < r.m_r.m_pHigh[m_s] + r.m_r.m_pLow[m_s])
+		return true;
+	else
+		return false;
 }
 
 void ExternalSorter::Record::storeToFile(Tools::TemporaryFile& f)
@@ -86,6 +86,11 @@ void ExternalSorter::Record::storeToFile(Tools::TemporaryFile& f)
 
 	f.write(m_len);
 	if (m_len > 0) f.write(m_len, m_pData);
+}
+
+double ExternalSorter::Record::get_val()
+{
+	return (m_r.m_pLow[m_s] + m_r.m_pHigh[m_s]) / 2;
 }
 
 void ExternalSorter::Record::loadFromFile(Tools::TemporaryFile& f)
@@ -384,91 +389,6 @@ void BulkLoader::bulkLoadUsingZM(
 	pTree->storeHeader();
 }
 
-
-// std::vector<double> BulkLoader::calculateLinearRegression(std::vector<ExternalSorter::Record*>& es) {
-//     if (es.empty()) {
-//         return {0.0, 0.0};  // No data
-//     }
-
-//     uint64_t min_x = std::numeric_limits<uint64_t>::max();
-//     uint64_t max_x = std::numeric_limits<uint64_t>::min();
-//     double min_y = 0.0, max_y = 0.0;
-
-//     for (int i = 0; i < es.size(); ++i) {
-//         const auto& record = es[i];
-//         uint64_t x;
-//         std::memcpy(&x, record->m_pData, sizeof(uint64_t));
-
-//         if (x < min_x) {
-//             min_x = x;
-//             min_y = static_cast<double>(i);
-//         }
-//         if (x > max_x) {
-//             max_x = x;
-//             max_y = static_cast<double>(i);
-//         }
-//     }
-
-//     if (min_x == max_x) {
-//         return {min_y, 0.0};  // All x values are the same, slope is zero
-//     }
-
-//     double slope = (max_y - min_y) / static_cast<double>(max_x - min_x);
-//     double intercept = min_y - slope * static_cast<double>(min_x);
-
-//     return {slope, intercept};
-// }
-
-
-std::vector<double> BulkLoader::calculateLinearRegression(std::vector<ExternalSorter::Record*>& es, uint32_t bindex) {
-    double mean_x = 0.0, mean_y = 0.0, covariance = 0.0, variance = 0.0;
-    uint64_t n = 0;  // Count of elements
-    int data_size = es.size();
-	double scale = 1.0 * bindex / data_size;
-
-    for (int i = 0; i < data_size; ++i) {
-        const auto& record = es[i];
-        
-        uint64_t x;
-        std::memcpy(&x, record->m_pData, sizeof(uint64_t));
-        double y = static_cast<double>(i * scale);
-
-        ++n;
-
-        // Update means
-        double dx = x - mean_x;
-        mean_x += dx / static_cast<double>(n);
-        mean_y += (y - mean_y) / static_cast<double>(n);
-
-        // Update covariance and variance
-        covariance += dx * (y - mean_y);
-        variance += dx * (x - mean_x);
-    }
-
-    // Handle edge cases
-    if (data_size == 0) {
-        return {0.0, 0.0};  // No data
-    }
-
-    if (data_size == 1) {
-        return {mean_y, 0.0};  // Only one data point
-    }
-
-    variance /= static_cast<double>(n - 1);
-    covariance /= static_cast<double>(n - 1);
-
-    if (variance == 0.0) {
-        return {mean_y, 0.0};  // No variation in x
-    }
-
-    // Calculate regression coefficients
-    double slope = covariance / variance;  // Slope
-    double intercept = mean_y - slope * mean_x;  // Intercept
-
-    return {slope, intercept};
-}
-
-
 void BulkLoader::createLevelZM(
 	SpatialIndex::LearnedIndex::LearnedIndex* pTree,
 	std::vector<ExternalSorter::Record *> es,
@@ -503,7 +423,6 @@ void BulkLoader::createLevelZM(
 	} else {
 		std::vector<std::vector<ExternalSorter::Record *>> children_es(bindex);
         ExternalSorter::Record* pR;
-
 
 		uint64_t i = 0;
 		// entries_per_child = entries_per_child + (remainder > 0 ? 1 : 0);
@@ -559,6 +478,310 @@ Node* BulkLoader::createNode(SpatialIndex::LearnedIndex::LearnedIndex* li, std::
 		e[cChild]->m_pData = nullptr;
 		delete e[cChild];
 	}
-
 	return n;
+}
+
+
+//
+// BulkLoader
+//
+void BulkLoader::bulkLoadUsingLISA(
+	SpatialIndex::LearnedIndex::LearnedIndex* pTree,
+	IDataStream& stream,
+	uint32_t bindex,
+	uint32_t bleaf,
+	uint32_t pageSize,
+	uint32_t numberOfPages
+) {
+	if (! stream.hasNext())
+		throw Tools::IllegalArgumentException(
+			"LearnedIndex::BulkLoader::bulkLoadUsingLISA: Empty data stream given."
+		);
+
+	std::cerr << "bulkLoadUsingLISA." << std::endl;
+
+	NodePtr n = pTree->readNode(pTree->m_rootID);
+	pTree->deleteNode(n.get());
+
+	#ifndef NDEBUG
+	std::cerr << "LearnedIndex::BulkLoader: Sorting data." << std::endl;
+	#endif
+
+	std::vector<ExternalSorter::Record*> es;
+
+	Region rootMBR;
+
+	while (stream.hasNext())
+	{
+		Data* d = reinterpret_cast<Data*>(stream.getNext());
+		if (d == nullptr)
+			throw Tools::IllegalArgumentException(
+				"bulkLoadUsingSFC: LearnedIndex bulk load expects SpatialIndex::LearnedIndex::Data entries."
+			);
+		es.push_back(new ExternalSorter::Record(d->m_region, d->m_id, d->m_dataLength, d->m_pData, 0));
+
+		// std::cerr << "rootMBR.rootMBR" << rootMBR.m_dimension << std::endl;
+		// std::cerr << "d->m_region.rootMBR" << d->m_region.m_dimension << std::endl;
+		if (rootMBR.m_dimension == 0) {
+			rootMBR = d->m_region;
+		}
+
+		rootMBR.combineRegion(d->m_region);
+		d->m_pData = nullptr;
+		delete d;
+	}
+
+	pTree->m_stats.m_u64Data = es.size();
+	pTree->m_stats.m_nodesInLevel.push_back(0);
+
+	uint64_t total_entries = es.size();
+    uint64_t partition_size = total_entries / bindex;
+	std::vector<double> borders;
+	std::vector<uint64_t> split_idxes;
+	std::vector<double> mapping_keys;
+
+	std::sort(es.begin(), es.end(), ExternalSorter::Record::SortAscending());
+
+	std::vector<ExternalSorter::Record*> partitionNodes;
+
+	for(uint32_t i = 1; i < bindex; i++) {
+		uint64_t idx = i * partition_size - 1;
+		double x = es[idx]->get_val();
+		while (x == es[idx + 1]->get_val()) {
+			idx++;
+		}
+		x = es[idx]->get_val();
+		borders.push_back(x);
+		split_idxes.push_back(idx + 1);
+	}
+
+	pTree->m_stats.m_nodesInLevel.push_back(0);
+
+	split_idxes.push_back(total_entries);
+
+	uint64_t start = 0;
+	uint64_t end = 0;
+
+	std::vector<ExternalSorter::Record *> es2;
+
+	for(uint32_t i = 0; i < split_idxes.size(); i++) {
+		// Region nodeMBR;
+		std::vector<ExternalSorter::Record *> partition;
+        ExternalSorter::Record* pR;
+		end = split_idxes[i];
+
+		for(uint64_t j = start; j < end; j++) {
+			pR = es[j];
+			pR->m_s = 1;
+			partition.push_back(pR);
+			// rootMBR.combineRegion(pR->m_region);
+		}
+
+		start = end;
+		createGridLISA(pTree, partition, pTree->m_dimension, bleaf, bindex, 2, es2, pageSize, numberOfPages);
+	}
+	Node* n_parent = createNode(pTree, es2, pTree->m_stats.m_u32TreeHeight - 1);
+
+	pTree->writeNode(n_parent);
+	// es2.push_back(new ExternalSorter::Record(n_parent->m_nodeMBR, n_parent->m_identifier, 0, nullptr, 0));
+	pTree->m_rootID = n_parent->m_identifier;
+
+	pTree->storeHeader();
+}
+
+
+void BulkLoader::createGridLISA(
+	SpatialIndex::LearnedIndex::LearnedIndex* pTree,
+	std::vector<ExternalSorter::Record *> partition,
+	uint32_t dimension,
+	uint32_t bleaf,
+	uint32_t bindex,
+	uint32_t level,
+	std::vector<ExternalSorter::Record *>& es2,
+	uint32_t pageSize,
+	uint32_t numberOfPages
+) {
+
+	// std::cerr << "createGridLISA." << std::endl;
+
+	uint64_t total_entries = partition.size();
+
+    // if (pTree->m_stats.m_nodesInLevel.size() < level) {
+    //     pTree->m_stats.m_nodesInLevel.push_back(0);
+    // }
+	std::sort(partition.begin(), partition.end(), ExternalSorter::Record::SortAscending());
+
+	if (total_entries <= bleaf) {
+
+		Node* n = createNode(pTree, partition, 0);
+
+		// std::cerr << "create LeafNode. level: " << level << std::endl;
+        partition.clear();
+        pTree->writeNode(n);
+        es2.push_back(new ExternalSorter::Record(n->m_nodeMBR, n->m_identifier, 0, nullptr, 0));
+        pTree->m_rootID = n->m_identifier;
+        pTree->m_stats.m_u32TreeHeight = std::max(pTree->m_stats.m_u32TreeHeight, static_cast<uint32_t>(level));
+
+        delete n;
+	} else {
+		std::vector<double> keys;
+		std::vector<double> values;
+	
+		for(uint64_t j = 0; j < partition.size(); j++) {
+			// double x = (partition[j]->m_r.m_pLow[0] + partition[j]->m_r.m_pHigh[0]) / 2;
+			double y = partition[j]->get_val();
+			// int partition_index = findPartition(borders, x);
+			// double mapped_key = getMappedKey(y, partition_index);
+			// mapped_keys.push_back(mapped_key);
+			keys.push_back(y);
+		}
+	
+		std::vector<double> regressionParams = calculateLinearRegression(keys, bindex);
+		std::vector<std::vector<ExternalSorter::Record *>> children_es(bindex);
+		ExternalSorter::Record* pR;
+	
+		uint64_t i = 0;
+		while (i < total_entries) {
+			try { 
+				pR = partition[i]; 
+                pR->m_s = 1;
+			}
+			catch (Tools::EndOfStreamException&) { break; }
+			double x = (partition[i]->m_r.m_pLow[1] + partition[i]->m_r.m_pHigh[1]) / 2;
+			double a = regressionParams[0];
+			double b = regressionParams[1];
+			double y = a * x + b;
+	
+			uint32_t predict_index = static_cast<uint32_t>(y);
+			// std::cerr << "partition[i]->m_r.m_pLow[1]: " << partition[i]->m_r.m_pLow[1] << " partition[i]->m_r.m_pHigh[1]:" << partition[i]->m_r.m_pHigh[1] << std::endl;
+			// std::cerr << "prediction a:" << a << " b:" << b << " x:" << x << " y:" << y << " predict_index:" << predict_index << std::endl;
+	
+			predict_index = std::max(static_cast<uint32_t>(0), std::min(predict_index, static_cast<uint32_t>(bindex - 1)));
+			// uint64_t predict_index = i / entries_per_child;
+			children_es[predict_index].push_back(pR);
+			i++;
+		}
+	
+		std::vector<ExternalSorter::Record*> child_records;
+
+		for (uint32_t j = 0; j < bindex; ++j) {
+			createGridLISA(pTree, children_es[j], dimension, bleaf, bindex, level + 1, es2, pageSize, numberOfPages);
+			child_records.push_back(es2.back());
+			es2.pop_back();
+		}
+
+		Node* n_parent = createNode(pTree, child_records, pTree->m_stats.m_u32TreeHeight - level);
+
+		n_parent->insertModel(regressionParams);
+
+		pTree->writeNode(n_parent);
+		es2.push_back(new ExternalSorter::Record(n_parent->m_nodeMBR, n_parent->m_identifier, 0, nullptr, 0));
+		pTree->m_rootID = n_parent->m_identifier;
+		delete n_parent;
+	}
+
+}
+
+// uint32_t BulkLoader::findPartition(const std::vector<double>& borders, double x) {
+//     auto it = std::upper_bound(borders.begin(), borders.end(), x);
+//     return std::max(0, static_cast<int>(std::distance(borders.begin(), it) - 1));
+// }
+
+// double BulkLoader::getMappedKey(double y, uint32_t idx) {
+// 	double mapped_val = y + idx * 2;
+// 	return mapped_val;
+// }
+
+std::vector<double> BulkLoader::calculateLinearRegression(std::vector<ExternalSorter::Record*>& es, uint32_t bindex) {
+    double mean_x = 0.0, mean_y = 0.0, covariance = 0.0, variance = 0.0;
+    uint64_t n = 0;  // Count of elements
+    int data_size = es.size();
+	double scale = 1.0 * bindex / data_size;
+
+    for (int i = 0; i < data_size; ++i) {
+        const auto& record = es[i];
+        
+        uint64_t x;
+        std::memcpy(&x, record->m_pData, sizeof(uint64_t));
+        double y = static_cast<double>(i * scale);
+
+        ++n;
+
+        // Update means
+        double dx = x - mean_x;
+        mean_x += dx / static_cast<double>(n);
+        mean_y += (y - mean_y) / static_cast<double>(n);
+
+        // Update covariance and variance
+        covariance += dx * (y - mean_y);
+        variance += dx * (x - mean_x);
+    }
+
+    // Handle edge cases
+    if (data_size == 0) {
+        return {0.0, 0.0};  // No data
+    }
+
+    if (data_size == 1) {
+        return {mean_y, 0.0};  // Only one data point
+    }
+
+    variance /= static_cast<double>(n - 1);
+    covariance /= static_cast<double>(n - 1);
+
+    if (variance == 0.0) {
+        return {mean_y, 0.0};  // No variation in x
+    }
+
+    // Calculate regression coefficients
+    double slope = covariance / variance;  // Slope
+    double intercept = mean_y - slope * mean_x;  // Intercept
+
+    return {slope, intercept};
+}
+
+std::vector<double> BulkLoader::calculateLinearRegression(std::vector<double>& keys, uint32_t bindex) {
+
+    double mean_x = 0.0, mean_y = 0.0, covariance = 0.0, variance = 0.0;
+    uint64_t n = 0;  // Count of elements
+    int data_size = keys.size();
+	double scale = 1.0 * bindex / data_size;
+
+    for (int i = 0; i < data_size; ++i) {
+        double x = keys[i];
+        double y = static_cast<double>(i * scale);
+
+        ++n;
+
+        // Update means
+        double dx = x - mean_x;
+        mean_x += dx / static_cast<double>(n);
+        mean_y += (y - mean_y) / static_cast<double>(n);
+
+        // Update covariance and variance
+        covariance += dx * (y - mean_y);
+        variance += dx * (x - mean_x);
+    }
+
+    // Handle edge cases
+    if (data_size == 0) {
+        return {0.0, 0.0};  // No data
+    }
+
+    if (data_size == 1) {
+        return {mean_y, 0.0};  // Only one data point
+    }
+
+    variance /= static_cast<double>(n - 1);
+    covariance /= static_cast<double>(n - 1);
+
+    if (variance == 0.0) {
+        return {mean_y, 0.0};  // No variation in x
+    }
+
+    // Calculate regression coefficients
+    double slope = covariance / variance;  // Slope
+    double intercept = mean_y - slope * mean_x;  // Intercept
+
+    return {slope, intercept};
 }
