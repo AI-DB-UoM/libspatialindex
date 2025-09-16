@@ -43,9 +43,13 @@ set(SOURCES
         Generator
         RTreeBulkLoad
         SFCRTreeBulkLoad
+        SFCRTreeBulkLoad3d
         PlatonBulkLoad
+        PlatonBulkLoad3d
         RTreeLoad
-        RTreeQuery)
+        RTreeLoad3d
+        RTreeQuery
+        RTreeQuery3d)
 
 # set(SOURCES
 #         Exhaustive
@@ -71,9 +75,13 @@ set(SOURCES
         Exhaustive
         Generator
         KDTreeBulkLoad
+        KDTreeBulkLoad3d
         KDTreeLoad
+        KDTreeLoad3d
         QDTreeBulkLoad
-        KDTreeQuery)
+        QDTreeBulkLoad3d
+        KDTreeQuery
+        KDTreeQuery3d)
 
 
 foreach(test ${SOURCES})
@@ -89,9 +97,13 @@ set(SOURCES
         Exhaustive
         Generator
         ZMBulkLoad
+        ZMBulkLoad3d
         ZMQuery
+        ZMQuery3d
         LISABulkLoad
-        LISAQuery)
+        LISABulkLoad3d
+        LISAQuery
+        LISAQuery3d)
 
 
 foreach(test ${SOURCES})

@@ -274,6 +274,7 @@ SpatialIndex::LearnedIndex::LearnedIndex::LearnedIndex(IStorageManager& sm, Tool
 		var.m_val.llVal = m_headerID;
 		ps.setProperty("IndexIdentifier", var);
 	}
+	std::cerr << "LearnedIndex::LearnedIndex load finish" << std::endl;
 }
 
 SpatialIndex::LearnedIndex::LearnedIndex::~LearnedIndex()
@@ -331,11 +332,13 @@ void SpatialIndex::LearnedIndex::LearnedIndex::internalNodesQuery(const IShape& 
 	{
 		std::stack<NodePtr> st;
 		NodePtr root = readNode(m_rootID, v);
+		if (root.get() == nullptr) return;
 		st.push(root);
 
 		while (! st.empty())
 		{
 			NodePtr n = st.top(); st.pop();
+			if (n.get() == nullptr) continue;
 
 			if(query.containsShape(n->m_nodeMBR))
 			{
@@ -369,7 +372,8 @@ void SpatialIndex::LearnedIndex::LearnedIndex::internalNodesQuery(const IShape& 
 					{
 						for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
 						{
-							st.push(readNode(n->m_pIdentifier[cChild], v));
+							NodePtr child = readNode(n->m_pIdentifier[cChild], v);
+							if (child.get() != nullptr) st.push(child);
 						}
 					}
 				}
@@ -391,11 +395,13 @@ void SpatialIndex::LearnedIndex::LearnedIndex::containsWhatQuery(const IShape& q
 	{
 		std::stack<NodePtr> st;
 		NodePtr root = readNode(m_rootID, v);
+		if (root.get() == nullptr) return;
 		st.push(root);
 
 		while (! st.empty())
 		{
 			NodePtr n = st.top(); st.pop();
+			if (n.get() == nullptr) continue;
 
 			if(n->m_level == 0)
 			{
@@ -421,10 +427,11 @@ void SpatialIndex::LearnedIndex::LearnedIndex::containsWhatQuery(const IShape& q
 				{
 					v.visitNode(*n);
 
-					for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
-					{
-						st.push(readNode(n->m_pIdentifier[cChild], v));
-					}
+						for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
+						{
+							NodePtr child = readNode(n->m_pIdentifier[cChild], v);
+							if (child.get() != nullptr) st.push(child);
+						}
 				}
 			}
 		}
@@ -477,8 +484,9 @@ void SpatialIndex::LearnedIndex::LearnedIndex::nearestNeighborQuery(uint32_t k, 
 		if (pFirst->m_pEntry == nullptr)
 		{
 			// n is a leaf or an index.
-			NodePtr n = readNode(pFirst->m_id, v);
-			v.visitNode(*n);
+				NodePtr n = readNode(pFirst->m_id, v);
+				if (n.get() == nullptr) { delete pFirst; continue; }
+				v.visitNode(*n);
 
 			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
 			{
@@ -535,14 +543,15 @@ void SpatialIndex::LearnedIndex::LearnedIndex::selfJoinQuery(const IShape& query
 
 void SpatialIndex::LearnedIndex::LearnedIndex::queryStrategy(IQueryStrategy& qs)
 {
-	id_type next = m_rootID;
-	bool hasNext = true;
+    id_type next = m_rootID;
+    bool hasNext = true;
 
-	while (hasNext)
-	{
-		NodePtr n = readNode(next);
-		qs.getNextEntry(*n, next, hasNext);
-	}
+    while (hasNext)
+    {
+        NodePtr n = readNode(next);
+        if (n.get() == nullptr) return;
+        qs.getNextEntry(*n, next, hasNext);
+    }
 }
 
 void SpatialIndex::LearnedIndex::LearnedIndex::getIndexProperties(Tools::PropertySet& out) const
@@ -638,9 +647,10 @@ void SpatialIndex::LearnedIndex::LearnedIndex::addCommand(ICommand* pCommand, Co
 
 bool SpatialIndex::LearnedIndex::LearnedIndex::isIndexValid()
 {
-	bool ret = true;
-	std::stack<ValidateEntry> st;
-	NodePtr root = readNode(m_rootID);
+    bool ret = true;
+    std::stack<ValidateEntry> st;
+    NodePtr root = readNode(m_rootID);
+    if (root.get() == nullptr) return false;
 
 	if (root->m_level != m_stats.m_u32TreeHeight - 1)
 	{
@@ -687,10 +697,11 @@ bool SpatialIndex::LearnedIndex::LearnedIndex::isIndexValid()
 
 		if (e.m_pNode->m_level != 0)
 		{
-			for (uint32_t cChild = 0; cChild < e.m_pNode->m_children; ++cChild)
-			{
-				NodePtr ptrN = readNode(e.m_pNode->m_pIdentifier[cChild]);
-				ValidateEntry tmpEntry(*(e.m_pNode->m_ptrMBR[cChild]), ptrN);
+            for (uint32_t cChild = 0; cChild < e.m_pNode->m_children; ++cChild)
+            {
+                NodePtr ptrN = readNode(e.m_pNode->m_pIdentifier[cChild]);
+                if (ptrN.get() == nullptr) continue;
+                ValidateEntry tmpEntry(*(e.m_pNode->m_ptrMBR[cChild]), ptrN);
 
 				std::map<uint32_t, uint32_t>::iterator itNodes = nodesInLevel.find(tmpEntry.m_pNode->m_level);
 
@@ -1369,7 +1380,8 @@ SpatialIndex::LearnedIndex::NodePtr SpatialIndex::LearnedIndex::LearnedIndex::re
 	catch (InvalidPageException& e)
 	{
 		std::cerr << e.what() << std::endl;
-		throw;
+		return NodePtr();
+		// throw;
 	}
 
 	try
@@ -1415,6 +1427,8 @@ SpatialIndex::LearnedIndex::NodePtr SpatialIndex::LearnedIndex::LearnedIndex::re
 	NodePtr n = readNode(page);
 	auto end = std::chrono::high_resolution_clock::now(); 
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+	// Guard against invalid/empty nodes to avoid dereferencing a null pointer.
+	if (n.get() == nullptr) return n;
 	v.visitNodeCost(*n, duration);
 	return n;
 }
@@ -1445,14 +1459,16 @@ void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, c
 {
 	std::stack<NodePtr> st;
 
-	NodePtr root = readNode(m_rootID, v);
-	uint32_t root_level = root->m_level;
+		NodePtr root = readNode(m_rootID, v);
+		if (root.get() == nullptr) return;
+		uint32_t root_level = root->m_level;
 
 	if (root->m_children > 0 && query.intersectsShape(root->m_nodeMBR)) st.push(root);
 
-	while (! st.empty())
-	{
-		NodePtr n = st.top(); st.pop();
+		while (! st.empty())
+		{
+			NodePtr n = st.top(); st.pop();
+			if (n.get() == nullptr) continue;
 
 		v.visitNode(*n);
 
@@ -1488,10 +1504,13 @@ void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, c
 				predict_high = std::max(predict_low, std::min(predict_high, static_cast<uint32_t>(n->m_children - 1)));
 			}
 
-			for (uint32_t cChild = predict_low; cChild <= predict_high; ++cChild)
-			{
-				if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) st.push(readNode(n->m_pIdentifier[cChild], v));
-			}
+				for (uint32_t cChild = predict_low; cChild <= predict_high; ++cChild)
+				{
+					if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) {
+						NodePtr child = readNode(n->m_pIdentifier[cChild], v);
+						if (child.get() != nullptr) st.push(child);
+					}
+				}
 
 		}
 	}
@@ -1557,16 +1576,18 @@ void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, c
 	std::stack<NodePtr> st;
 
 	NodePtr root = readNode(m_rootID, v);
+	if (root.get() == nullptr) return;
 
 	if (root->m_children > 0 && query.intersectsShape(root->m_nodeMBR)) st.push(root);
 
 	while (! st.empty())
 	{
 		NodePtr n = st.top(); st.pop();
+		if (n.get() == nullptr) continue;
 
 		if (n->m_level == 0)
 		{
-			v.visitNode(*n);
+				v.visitNode(*n);
 
 			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
 			{
@@ -1586,20 +1607,38 @@ void SpatialIndex::LearnedIndex::LearnedIndex::rangeQuery(RangeQueryType type, c
 		{
 			v.visitNode(*n);
 
-			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
-			{
-				if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) st.push(readNode(n->m_pIdentifier[cChild], v));
-			}
+				for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
+				{
+					if (query.intersectsShape(*(n->m_ptrMBR[cChild]))) {
+						NodePtr child = readNode(n->m_pIdentifier[cChild], v);
+						if (child.get() != nullptr) st.push(child);
+					}
+				}
 		}
 	}
 }
 
 void SpatialIndex::LearnedIndex::LearnedIndex::selfJoinQuery(id_type id1, id_type id2, const Region& r, IVisitor& vis)
 {
+	// std::cerr << "id1: " << id1 << "id2: " << id2 << std::endl;
+
 	NodePtr n1 = readNode(id1, vis);
+	if (n1.get() == nullptr) {
+		return; // skip this page
+	}
+	// std::cerr << "readNode id1" << std::endl;
+
 	NodePtr n2 = readNode(id2, vis);
+	if (n2.get() == nullptr) {
+		return; // skip this page
+	}
+	// std::cerr << "readNode id2" << std::endl;
+
 	vis.visitNode(*n1);
+	// std::cerr << "visitNode id1" << std::endl;
+
 	vis.visitNode(*n2);
+	// std::cerr << "visitNode id2" << std::endl;
 
 	for (uint32_t cChild1 = 0; cChild1 < n1->m_children; ++cChild1)
 	{
@@ -1617,12 +1656,15 @@ void SpatialIndex::LearnedIndex::LearnedIndex::selfJoinQuery(id_type id1, id_typ
 						{
 							assert(n2->m_level == 0);
 
-							std::vector<const IData*> v;
+							// std::vector<const IData*> v;
 							Data e1(n1->m_pDataLength[cChild1], n1->m_pData[cChild1], *(n1->m_ptrMBR[cChild1]), n1->m_pIdentifier[cChild1]);
 							Data e2(n2->m_pDataLength[cChild2], n2->m_pData[cChild2], *(n2->m_ptrMBR[cChild2]), n2->m_pIdentifier[cChild2]);
-							v.push_back(&e1);
-							v.push_back(&e2);
-							vis.visitData(v);
+							// v.push_back(&e1);
+							// v.push_back(&e2);
+							// vis.visitData(v);
+
+							vis.visitData(e1);
+							vis.visitData(e2);
 						}
 					}
 					else
@@ -1638,13 +1680,15 @@ void SpatialIndex::LearnedIndex::LearnedIndex::selfJoinQuery(id_type id1, id_typ
 
 void SpatialIndex::LearnedIndex::LearnedIndex::visitSubTree(NodePtr subTree, IVisitor& v)
 {
-	std::stack<NodePtr> st;
-	st.push(subTree);
+    std::stack<NodePtr> st;
+    if (subTree.get() == nullptr) return;
+    st.push(subTree);
 
-	while (! st.empty())
-	{
-		NodePtr n = st.top(); st.pop();
-		v.visitNode(*n);
+    while (! st.empty())
+    {
+        NodePtr n = st.top(); st.pop();
+        if (n.get() == nullptr) continue;
+        v.visitNode(*n);
 
 		if(n->m_level == 0)
 		{
@@ -1655,14 +1699,15 @@ void SpatialIndex::LearnedIndex::LearnedIndex::visitSubTree(NodePtr subTree, IVi
 				++(m_stats.m_u64QueryResults);
 			}
 		}
-		else
-		{
-			for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
-			{
-				st.push(readNode(n->m_pIdentifier[cChild], v));
-			}
-		}
-	}
+        else
+        {
+            for (uint32_t cChild = 0; cChild < n->m_children; ++cChild)
+            {
+                NodePtr child = readNode(n->m_pIdentifier[cChild], v);
+                if (child.get() != nullptr) st.push(child);
+            }
+        }
+    }
 }
 
 std::ostream& SpatialIndex::LearnedIndex::operator<<(std::ostream& os, const LearnedIndex& t)

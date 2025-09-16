@@ -282,6 +282,7 @@ int main(int argc, char** argv)
 				}
 				else
 				{
+					cerr << "------------self join------------" << endl;
 					Region r = Region(plow, phigh, 2);
 					tree->selfJoinQuery(r, vis);
 				}

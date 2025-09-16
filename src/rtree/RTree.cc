@@ -1687,7 +1687,8 @@ SpatialIndex::RTree::NodePtr SpatialIndex::RTree::RTree::readNode(id_type page)
 	catch (InvalidPageException& e)
 	{
 		std::cerr << e.what() << std::endl;
-		throw;
+		return NodePtr();
+		// throw;
 	}
 
 	try
@@ -1733,6 +1734,7 @@ SpatialIndex::RTree::NodePtr SpatialIndex::RTree::RTree::readNode(id_type page, 
 	NodePtr n = readNode(page);
 	auto end = std::chrono::high_resolution_clock::now(); 
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+	if (n.get() == nullptr) return n;
 	v.visitNodeCost(*n, duration);
 	return n;
 }
@@ -1823,12 +1825,15 @@ void SpatialIndex::RTree::RTree::selfJoinQuery(id_type id1, id_type id2, const R
 						{
 							assert(n2->m_level == 0);
 
-							std::vector<const IData*> v;
+							// std::vector<const IData*> v;
 							Data e1(n1->m_pDataLength[cChild1], n1->m_pData[cChild1], *(n1->m_ptrMBR[cChild1]), n1->m_pIdentifier[cChild1]);
 							Data e2(n2->m_pDataLength[cChild2], n2->m_pData[cChild2], *(n2->m_ptrMBR[cChild2]), n2->m_pIdentifier[cChild2]);
-							v.push_back(&e1);
-							v.push_back(&e2);
-							vis.visitData(v);
+							// v.push_back(&e1);
+							// v.push_back(&e2);
+							// vis.visitData(v);
+
+							vis.visitData(e1);
+							vis.visitData(e2);
 						}
 					}
 					else

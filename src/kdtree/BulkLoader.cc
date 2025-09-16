@@ -943,7 +943,7 @@ bool BulkLoader::modelPartition(
 		delete n;
 		return can_split;
 	}
-	// std::cerr << "KDTree::modelPartition: ----node----" << " level: " << level << std::endl;
+	std::cerr << "KDTree::modelPartition: ----node----" << " level: " << level << std::endl;
 
 	std::vector<ExternalSorter::Record *> bestLeftData;
 	std::vector<ExternalSorter::Record *> bestRightData;
@@ -961,20 +961,26 @@ bool BulkLoader::modelPartition(
 		state.insert(state.end(), high_bits.begin(), high_bits.end());
 	}
 
-
+	std::cerr << "KDTree::  ----pTree->m_dimension----" << state.size() << std::endl;
 
 	double randomValue = distribution(generator);
 	uint32_t action = 0;
+	std::cerr << "KDTree::modelPartition: ----randomValue----" << randomValue << std::endl;
 
 	if (randomValue >= 0.5) 
 	{
 		std::uniform_int_distribution<uint32_t> actionDistribution(0, candidateCutPos.size() - 1);
 		action = actionDistribution(generator);
+		std::cerr << "KDTree::modelPartition: ----actionDistribution action----" << action << std::endl;
+
 	}
 	else
 	{
 		action = pTree->splitModelForward(state);
+		std::cerr << "KDTree::modelPartition: ----predict action----" << action << std::endl;
+
 	}
+
 
 	uint32_t splitDimension = candidateCutPos[action].first;
 	double splitValue = candidateCutPos[action].second;

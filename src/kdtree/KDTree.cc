@@ -1514,7 +1514,8 @@ SpatialIndex::KDTree::NodePtr SpatialIndex::KDTree::KDTree::readNode(id_type pag
 	catch (InvalidPageException& e)
 	{
 		std::cerr << e.what() << std::endl;
-		throw;
+		return NodePtr();
+		// throw;
 	}
 
 	try
@@ -1560,6 +1561,7 @@ SpatialIndex::KDTree::NodePtr SpatialIndex::KDTree::KDTree::readNode(id_type pag
 	NodePtr n = readNode(page);
 	auto end = std::chrono::high_resolution_clock::now(); 
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+	if (n.get() == nullptr) return n;
 	v.visitNodeCost(*n, duration);
 	return n;
 }
@@ -1630,7 +1632,13 @@ void SpatialIndex::KDTree::KDTree::rangeQuery(RangeQueryType type, const IShape&
 void SpatialIndex::KDTree::KDTree::selfJoinQuery(id_type id1, id_type id2, const Region& r, IVisitor& vis)
 {
 	NodePtr n1 = readNode(id1, vis);
+	if (n1.get() == nullptr) {
+		return; // skip this page
+	}
 	NodePtr n2 = readNode(id2, vis);
+	if (n2.get() == nullptr) {
+		return; // skip this page
+	}
 	vis.visitNode(*n1);
 	vis.visitNode(*n2);
 
@@ -1650,12 +1658,15 @@ void SpatialIndex::KDTree::KDTree::selfJoinQuery(id_type id1, id_type id2, const
 						{
 							assert(n2->m_level == 0);
 
-							std::vector<const IData*> v;
+							// std::vector<const IData*> v;
 							Data e1(n1->m_pDataLength[cChild1], n1->m_pData[cChild1], *(n1->m_ptrMBR[cChild1]), n1->m_pIdentifier[cChild1]);
 							Data e2(n2->m_pDataLength[cChild2], n2->m_pData[cChild2], *(n2->m_ptrMBR[cChild2]), n2->m_pIdentifier[cChild2]);
-							v.push_back(&e1);
-							v.push_back(&e2);
-							vis.visitData(v);
+							// v.push_back(&e1);
+							// v.push_back(&e2);
+							// vis.visitData(v);
+
+							vis.visitData(e1);
+							vis.visitData(e2);
 						}
 					}
 					else

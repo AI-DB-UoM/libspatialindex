@@ -1,0 +1,247 @@
+/******************************************************************************
+ * Project:  libspatialindex - A C++ library for spatial indexing
+ * Author:   Marios Hadjieleftheriou, mhadji@gmail.com
+ ******************************************************************************
+ * Copyright (c) 2002, Marios Hadjieleftheriou
+ *
+ * All rights reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+******************************************************************************/
+
+// NOTE: Please read README.txt before browsing this code.
+
+#include <cstring>
+
+// include library header file.
+#include <spatialindex/SpatialIndex.h>
+
+
+using namespace SpatialIndex;
+
+#define INSERT 1
+#define DELETE 0
+#define QUERY 2
+
+// example of a Visitor pattern.
+// see RTreeQuery for a more elaborate example.
+class MyVisitor : public IVisitor
+{
+public:
+	void visitNode(const INode& /* n */) override {}
+
+	void visitData(const IData& d) override
+	{
+		std::cout << d.getIdentifier() << std::endl;
+			// the ID of this data entry is an answer to the query. I will just print it to stdout.
+	}
+
+	void visitData(std::vector<const IData*>& /* v */) override {}
+
+	void visitNodeCost(const INode& n, size_t time_cost) override {}
+};
+
+int main(int argc, char** argv)
+{
+	try
+	{
+		// if (argc != 5)
+		// {
+		// 	std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity query_type [intersection | 10NN | selfjoin | contains]." << std::endl;
+		// 	return -1;
+		// }
+
+		if (argc != 8 && strcmp(argv[5], "rlrtree"))
+		{
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type pagesize buffer" << std::endl;
+			return -1;
+		}
+
+		if (!strcmp(argv[5], "rlrtree") && argc != 9)
+		{
+			std::cerr << "Usage: " << argv[0] << " input_file tree_file capacity fillFactor rtree_type [RLRTree model path] pagesize buffer" << std::endl;
+			return -1;
+		}
+
+		// uint32_t queryType = 0;
+
+		// if (strcmp(argv[4], "intersection") == 0) queryType = 0;
+		// else if (strcmp(argv[4], "10NN") == 0) queryType = 1;
+		// else if (strcmp(argv[4], "selfjoin") == 0) queryType = 2;
+		// else if (strcmp(argv[4], "contains") == 0) queryType = 3;
+		// else
+		// {
+		// 	std::cerr << "Unknown query type." << std::endl;
+		// 	return -1;
+		// }
+
+		std::ifstream fin(argv[1]);
+		double fillFactor = atof(argv[4]);
+		SpatialIndex::RTree::RTreeVariant myVariant = SpatialIndex::RTree::RV_RSTAR;
+		std::string modelPath = "";
+		std::string chooseSubtreeModelPath = "";
+		std::string splitModelPath = "";
+		int pagesize = 4096;
+		int mainMemoryRandomBuffer = 10;
+		if (strcmp(argv[5], "linear") == 0)
+		{
+			myVariant = SpatialIndex::RTree::RV_LINEAR;
+			pagesize = atof(argv[6]);
+			mainMemoryRandomBuffer = atof(argv[7]);
+		}
+		if (strcmp(argv[5], "quadratic") == 0)
+		{
+			myVariant = SpatialIndex::RTree::RV_QUADRATIC;
+			pagesize = atof(argv[6]);
+			mainMemoryRandomBuffer = atof(argv[7]);
+		}
+		if (strcmp(argv[5], "rlrtree") == 0)
+		{
+			myVariant = SpatialIndex::RTree::RV_RLRTREE;
+			modelPath = argv[6];
+			chooseSubtreeModelPath = modelPath + "/choose_subtree.pth";
+			splitModelPath = modelPath + "/split.pth";
+			std::cerr << "modelPath " << modelPath << std::endl;
+			pagesize = atof(argv[7]);
+			mainMemoryRandomBuffer = atof(argv[8]);
+		}
+
+		if (! fin)
+		{
+			std::cerr << "Cannot open data file " << argv[1] << "." << std::endl;
+			return -1;
+		}
+
+
+		// // Create a new storage manager with the provided base name and a 4K page size.
+		std::string baseName = argv[2];
+		IStorageManager* diskfile = StorageManager::createNewDiskStorageManager(baseName, pagesize);
+
+		StorageManager::IBuffer* file = StorageManager::createNewRandomEvictionsBuffer(*diskfile, mainMemoryRandomBuffer, true);
+			// applies a main memory random buffer on top of the persistent storage manager
+			// (LRU buffer, etc can be created the same way).
+
+		// Create a new, empty, RTree with dimensionality 2, minimum load 70%, using "file" as
+		// the StorageManager and the RSTAR splitting policy.
+		id_type indexIdentifier;
+		ISpatialIndex* tree = RTree::createNewRTree(*file, fillFactor, atoi(argv[3]), atoi(argv[3]), 3, myVariant, indexIdentifier, modelPath);
+
+		size_t count = 0;
+		id_type id;
+		uint32_t op;
+		double x1, x2, x3, y1, y2, y3;
+		double plow[3], phigh[3];
+
+		while (fin)
+		{
+			// fin >> op >> id >> x1 >> y1 >> x2 >> y2 >> x3 >> y3;
+			fin >> op >> id >> plow[0] >> plow[1] >> plow[2] >> phigh[0] >> phigh[1] >> phigh[2];
+
+			if (! fin.good()) continue; // skip newlines, etc.
+
+			if (op == INSERT)
+			{
+				// plow[0] = x1; plow[1] = y1;
+				// phigh[0] = x2; phigh[1] = y2;
+				Region r = Region(plow, phigh, 3);
+
+				std::ostringstream os;
+				os << r;
+				std::string data = os.str();
+
+				tree->insertData((uint32_t)(data.size() + 1), reinterpret_cast<const uint8_t*>(data.c_str()), r, id);
+				//tree->insertData(0, 0, r, id);
+					// example of passing zero size and a null pointer as the associated data.
+			}
+			else if (op == DELETE)
+			{
+				// plow[0] = x1; plow[1] = y1;
+				// phigh[0] = x2; phigh[1] = y2;
+				Region r = Region(plow, phigh, 3);
+
+				if (tree->deleteData(r, id) == false)
+				{
+					std::cerr << "******ERROR******" << std::endl;
+					std::cerr << "Cannot delete id: " << id << " , count: " << count << std::endl;
+					return -1;
+				}
+			}
+			// else if (op == QUERY)
+			// {
+			// 	plow[0] = x1; plow[1] = y1;
+			// 	phigh[0] = x2; phigh[1] = y2;
+
+			// 	MyVisitor vis;
+
+			// 	if (queryType == 0)
+			// 	{
+			// 		Region r = Region(plow, phigh, 2);
+			// 		tree->intersectsWithQuery(r, vis);
+			// 			// this will find all data that intersect with the query range.
+			// 	}
+			// 	else if (queryType == 1)
+			// 	{
+			// 		Point p = Point(plow, 2);
+			// 		tree->nearestNeighborQuery(10, p, vis);
+			// 			// this will find the 10 nearest neighbors.
+			// 	}
+			// 	else if(queryType == 2)
+			// 	{
+			// 		Region r = Region(plow, phigh, 2);
+			// 		tree->selfJoinQuery(r, vis);
+			// 	}
+			// 	else
+			// 	{
+			// 		Region r = Region(plow, phigh, 2);
+			// 		tree->containsWhatQuery(r, vis);
+			// 			// this will find all data that is contained by the query range.
+			// 	}
+			// }
+
+			// if ((count % 1000) == 0)
+			// 	std::cerr << count << std::endl;
+
+			count++;
+		}
+
+		std::cerr << "Operations: " << count << std::endl;
+		std::cerr << *tree;
+		std::cerr << "Buffer hits: " << file->getHits() << std::endl;
+		std::cerr << "Index ID: " << indexIdentifier << std::endl;
+
+		bool ret = tree->isIndexValid();
+		if (ret == false) std::cerr << "ERROR: Structure is invalid!" << std::endl;
+		else std::cerr << "The stucture seems O.K." << std::endl;
+
+		delete tree;
+		delete file;
+		delete diskfile;
+			// delete the buffer first, then the storage manager
+			// (otherwise the the buffer will fail trying to write the dirty entries).
+	}
+	catch (Tools::Exception& e)
+	{
+		std::cerr << "******ERROR******" << std::endl;
+		std::string s = e.what();
+		std::cerr << s << std::endl;
+		return -1;
+	}
+
+	return 0;
+}

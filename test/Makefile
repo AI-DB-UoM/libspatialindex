@@ -56,17 +56,6 @@ CMAKE_BINARY_DIR = /home/research/Dropbox/PostDoc/topics/RLSpatial/libspatialind
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
@@ -77,6 +66,17 @@ edit_cache:
 edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -111,173 +111,30 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named test-learnedindex-LISAQuery
+# Target rules for targets named test-learnedindex-LISAQuery3d
 
 # Build rule for target.
-test-learnedindex-LISAQuery: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-LISAQuery
-.PHONY : test-learnedindex-LISAQuery
+test-learnedindex-LISAQuery3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-LISAQuery3d
+.PHONY : test-learnedindex-LISAQuery3d
 
 # fast build rule for target.
-test-learnedindex-LISAQuery/fast:
-	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery.dir/build.make CMakeFiles/test-learnedindex-LISAQuery.dir/build
-.PHONY : test-learnedindex-LISAQuery/fast
+test-learnedindex-LISAQuery3d/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery3d.dir/build.make CMakeFiles/test-learnedindex-LISAQuery3d.dir/build
+.PHONY : test-learnedindex-LISAQuery3d/fast
 
 #=============================================================================
-# Target rules for targets named test-learnedindex-LISABulkLoad
+# Target rules for targets named test-learnedindex-LISABulkLoad3d
 
 # Build rule for target.
-test-learnedindex-LISABulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-LISABulkLoad
-.PHONY : test-learnedindex-LISABulkLoad
+test-learnedindex-LISABulkLoad3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-LISABulkLoad3d
+.PHONY : test-learnedindex-LISABulkLoad3d
 
 # fast build rule for target.
-test-learnedindex-LISABulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad.dir/build
-.PHONY : test-learnedindex-LISABulkLoad/fast
-
-#=============================================================================
-# Target rules for targets named test-learnedindex-ZMQuery
-
-# Build rule for target.
-test-learnedindex-ZMQuery: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-ZMQuery
-.PHONY : test-learnedindex-ZMQuery
-
-# fast build rule for target.
-test-learnedindex-ZMQuery/fast:
-	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery.dir/build.make CMakeFiles/test-learnedindex-ZMQuery.dir/build
-.PHONY : test-learnedindex-ZMQuery/fast
-
-#=============================================================================
-# Target rules for targets named test-learnedindex-ZMBulkLoad
-
-# Build rule for target.
-test-learnedindex-ZMBulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-ZMBulkLoad
-.PHONY : test-learnedindex-ZMBulkLoad
-
-# fast build rule for target.
-test-learnedindex-ZMBulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build
-.PHONY : test-learnedindex-ZMBulkLoad/fast
-
-#=============================================================================
-# Target rules for targets named test-learnedindex-Generator
-
-# Build rule for target.
-test-learnedindex-Generator: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-Generator
-.PHONY : test-learnedindex-Generator
-
-# fast build rule for target.
-test-learnedindex-Generator/fast:
-	$(MAKE) -f CMakeFiles/test-learnedindex-Generator.dir/build.make CMakeFiles/test-learnedindex-Generator.dir/build
-.PHONY : test-learnedindex-Generator/fast
-
-#=============================================================================
-# Target rules for targets named test-learnedindex-Exhaustive
-
-# Build rule for target.
-test-learnedindex-Exhaustive: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-Exhaustive
-.PHONY : test-learnedindex-Exhaustive
-
-# fast build rule for target.
-test-learnedindex-Exhaustive/fast:
-	$(MAKE) -f CMakeFiles/test-learnedindex-Exhaustive.dir/build.make CMakeFiles/test-learnedindex-Exhaustive.dir/build
-.PHONY : test-learnedindex-Exhaustive/fast
-
-#=============================================================================
-# Target rules for targets named test-rtree-Exhaustive
-
-# Build rule for target.
-test-rtree-Exhaustive: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-Exhaustive
-.PHONY : test-rtree-Exhaustive
-
-# fast build rule for target.
-test-rtree-Exhaustive/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-Exhaustive.dir/build.make CMakeFiles/test-rtree-Exhaustive.dir/build
-.PHONY : test-rtree-Exhaustive/fast
-
-#=============================================================================
-# Target rules for targets named test-kdtree-Exhaustive
-
-# Build rule for target.
-test-kdtree-Exhaustive: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-Exhaustive
-.PHONY : test-kdtree-Exhaustive
-
-# fast build rule for target.
-test-kdtree-Exhaustive/fast:
-	$(MAKE) -f CMakeFiles/test-kdtree-Exhaustive.dir/build.make CMakeFiles/test-kdtree-Exhaustive.dir/build
-.PHONY : test-kdtree-Exhaustive/fast
-
-#=============================================================================
-# Target rules for targets named test-kdtree-KDTreeQuery
-
-# Build rule for target.
-test-kdtree-KDTreeQuery: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeQuery
-.PHONY : test-kdtree-KDTreeQuery
-
-# fast build rule for target.
-test-kdtree-KDTreeQuery/fast:
-	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery.dir/build
-.PHONY : test-kdtree-KDTreeQuery/fast
-
-#=============================================================================
-# Target rules for targets named test-rtree-Generator
-
-# Build rule for target.
-test-rtree-Generator: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-Generator
-.PHONY : test-rtree-Generator
-
-# fast build rule for target.
-test-rtree-Generator/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-Generator.dir/build.make CMakeFiles/test-rtree-Generator.dir/build
-.PHONY : test-rtree-Generator/fast
-
-#=============================================================================
-# Target rules for targets named test-rtree-RTreeBulkLoad
-
-# Build rule for target.
-test-rtree-RTreeBulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeBulkLoad
-.PHONY : test-rtree-RTreeBulkLoad
-
-# fast build rule for target.
-test-rtree-RTreeBulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/build
-.PHONY : test-rtree-RTreeBulkLoad/fast
-
-#=============================================================================
-# Target rules for targets named test-rtree-SFCRTreeBulkLoad
-
-# Build rule for target.
-test-rtree-SFCRTreeBulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-SFCRTreeBulkLoad
-.PHONY : test-rtree-SFCRTreeBulkLoad
-
-# fast build rule for target.
-test-rtree-SFCRTreeBulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build
-.PHONY : test-rtree-SFCRTreeBulkLoad/fast
-
-#=============================================================================
-# Target rules for targets named test-rtree-RTreeLoad
-
-# Build rule for target.
-test-rtree-RTreeLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeLoad
-.PHONY : test-rtree-RTreeLoad
-
-# fast build rule for target.
-test-rtree-RTreeLoad/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad.dir/build.make CMakeFiles/test-rtree-RTreeLoad.dir/build
-.PHONY : test-rtree-RTreeLoad/fast
+test-learnedindex-LISABulkLoad3d/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad3d.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad3d.dir/build
+.PHONY : test-learnedindex-LISABulkLoad3d/fast
 
 #=============================================================================
 # Target rules for targets named test-rtree-RTreeQuery
@@ -293,30 +150,43 @@ test-rtree-RTreeQuery/fast:
 .PHONY : test-rtree-RTreeQuery/fast
 
 #=============================================================================
-# Target rules for targets named test-geometry-Intersection
+# Target rules for targets named test-rtree-RTreeLoad
 
 # Build rule for target.
-test-geometry-Intersection: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-geometry-Intersection
-.PHONY : test-geometry-Intersection
+test-rtree-RTreeLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeLoad
+.PHONY : test-rtree-RTreeLoad
 
 # fast build rule for target.
-test-geometry-Intersection/fast:
-	$(MAKE) -f CMakeFiles/test-geometry-Intersection.dir/build.make CMakeFiles/test-geometry-Intersection.dir/build
-.PHONY : test-geometry-Intersection/fast
+test-rtree-RTreeLoad/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad.dir/build.make CMakeFiles/test-rtree-RTreeLoad.dir/build
+.PHONY : test-rtree-RTreeLoad/fast
 
 #=============================================================================
-# Target rules for targets named test-rtree-PlatonBulkLoad
+# Target rules for targets named test-rtree-RTreeQuery3d
 
 # Build rule for target.
-test-rtree-PlatonBulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-PlatonBulkLoad
-.PHONY : test-rtree-PlatonBulkLoad
+test-rtree-RTreeQuery3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeQuery3d
+.PHONY : test-rtree-RTreeQuery3d
 
 # fast build rule for target.
-test-rtree-PlatonBulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad.dir/build
-.PHONY : test-rtree-PlatonBulkLoad/fast
+test-rtree-RTreeQuery3d/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery3d.dir/build.make CMakeFiles/test-rtree-RTreeQuery3d.dir/build
+.PHONY : test-rtree-RTreeQuery3d/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-ZMQuery3d
+
+# Build rule for target.
+test-learnedindex-ZMQuery3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-ZMQuery3d
+.PHONY : test-learnedindex-ZMQuery3d
+
+# fast build rule for target.
+test-learnedindex-ZMQuery3d/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery3d.dir/build.make CMakeFiles/test-learnedindex-ZMQuery3d.dir/build
+.PHONY : test-learnedindex-ZMQuery3d/fast
 
 #=============================================================================
 # Target rules for targets named test-kdtree-Generator
@@ -332,17 +202,121 @@ test-kdtree-Generator/fast:
 .PHONY : test-kdtree-Generator/fast
 
 #=============================================================================
-# Target rules for targets named test-kdtree-QDTreeBulkLoad
+# Target rules for targets named test-kdtree-Exhaustive
 
 # Build rule for target.
-test-kdtree-QDTreeBulkLoad: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-QDTreeBulkLoad
-.PHONY : test-kdtree-QDTreeBulkLoad
+test-kdtree-Exhaustive: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-Exhaustive
+.PHONY : test-kdtree-Exhaustive
 
 # fast build rule for target.
-test-kdtree-QDTreeBulkLoad/fast:
-	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build
-.PHONY : test-kdtree-QDTreeBulkLoad/fast
+test-kdtree-Exhaustive/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-Exhaustive.dir/build.make CMakeFiles/test-kdtree-Exhaustive.dir/build
+.PHONY : test-kdtree-Exhaustive/fast
+
+#=============================================================================
+# Target rules for targets named test-geometry-Intersection
+
+# Build rule for target.
+test-geometry-Intersection: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-geometry-Intersection
+.PHONY : test-geometry-Intersection
+
+# fast build rule for target.
+test-geometry-Intersection/fast:
+	$(MAKE) -f CMakeFiles/test-geometry-Intersection.dir/build.make CMakeFiles/test-geometry-Intersection.dir/build
+.PHONY : test-geometry-Intersection/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-RTreeBulkLoad
+
+# Build rule for target.
+test-rtree-RTreeBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeBulkLoad
+.PHONY : test-rtree-RTreeBulkLoad
+
+# fast build rule for target.
+test-rtree-RTreeBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/build
+.PHONY : test-rtree-RTreeBulkLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-Generator
+
+# Build rule for target.
+test-rtree-Generator: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-Generator
+.PHONY : test-rtree-Generator
+
+# fast build rule for target.
+test-rtree-Generator/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-Generator.dir/build.make CMakeFiles/test-rtree-Generator.dir/build
+.PHONY : test-rtree-Generator/fast
+
+#=============================================================================
+# Target rules for targets named test-kdtree-KDTreeQuery
+
+# Build rule for target.
+test-kdtree-KDTreeQuery: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeQuery
+.PHONY : test-kdtree-KDTreeQuery
+
+# fast build rule for target.
+test-kdtree-KDTreeQuery/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery.dir/build
+.PHONY : test-kdtree-KDTreeQuery/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-SFCRTreeBulkLoad
+
+# Build rule for target.
+test-rtree-SFCRTreeBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-SFCRTreeBulkLoad
+.PHONY : test-rtree-SFCRTreeBulkLoad
+
+# fast build rule for target.
+test-rtree-SFCRTreeBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build
+.PHONY : test-rtree-SFCRTreeBulkLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-Exhaustive
+
+# Build rule for target.
+test-rtree-Exhaustive: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-Exhaustive
+.PHONY : test-rtree-Exhaustive
+
+# fast build rule for target.
+test-rtree-Exhaustive/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-Exhaustive.dir/build.make CMakeFiles/test-rtree-Exhaustive.dir/build
+.PHONY : test-rtree-Exhaustive/fast
+
+#=============================================================================
+# Target rules for targets named test-kdtree-KDTreeBulkLoad3d
+
+# Build rule for target.
+test-kdtree-KDTreeBulkLoad3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeBulkLoad3d
+.PHONY : test-kdtree-KDTreeBulkLoad3d
+
+# fast build rule for target.
+test-kdtree-KDTreeBulkLoad3d/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeBulkLoad3d.dir/build.make CMakeFiles/test-kdtree-KDTreeBulkLoad3d.dir/build
+.PHONY : test-kdtree-KDTreeBulkLoad3d/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-RTreeLoad3d
+
+# Build rule for target.
+test-rtree-RTreeLoad3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-RTreeLoad3d
+.PHONY : test-rtree-RTreeLoad3d
+
+# fast build rule for target.
+test-rtree-RTreeLoad3d/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad3d.dir/build.make CMakeFiles/test-rtree-RTreeLoad3d.dir/build
+.PHONY : test-rtree-RTreeLoad3d/fast
 
 #=============================================================================
 # Target rules for targets named test-kdtree-KDTreeBulkLoad
@@ -369,6 +343,188 @@ test-kdtree-KDTreeLoad: cmake_check_build_system
 test-kdtree-KDTreeLoad/fast:
 	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad.dir/build
 .PHONY : test-kdtree-KDTreeLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-LISAQuery
+
+# Build rule for target.
+test-learnedindex-LISAQuery: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-LISAQuery
+.PHONY : test-learnedindex-LISAQuery
+
+# fast build rule for target.
+test-learnedindex-LISAQuery/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery.dir/build.make CMakeFiles/test-learnedindex-LISAQuery.dir/build
+.PHONY : test-learnedindex-LISAQuery/fast
+
+#=============================================================================
+# Target rules for targets named test-kdtree-QDTreeBulkLoad
+
+# Build rule for target.
+test-kdtree-QDTreeBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-QDTreeBulkLoad
+.PHONY : test-kdtree-QDTreeBulkLoad
+
+# fast build rule for target.
+test-kdtree-QDTreeBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build
+.PHONY : test-kdtree-QDTreeBulkLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-PlatonBulkLoad
+
+# Build rule for target.
+test-rtree-PlatonBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-PlatonBulkLoad
+.PHONY : test-rtree-PlatonBulkLoad
+
+# fast build rule for target.
+test-rtree-PlatonBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad.dir/build
+.PHONY : test-rtree-PlatonBulkLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-kdtree-KDTreeLoad3d
+
+# Build rule for target.
+test-kdtree-KDTreeLoad3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeLoad3d
+.PHONY : test-kdtree-KDTreeLoad3d
+
+# fast build rule for target.
+test-kdtree-KDTreeLoad3d/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad3d.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad3d.dir/build
+.PHONY : test-kdtree-KDTreeLoad3d/fast
+
+#=============================================================================
+# Target rules for targets named test-kdtree-QDTreeBulkLoad3d
+
+# Build rule for target.
+test-kdtree-QDTreeBulkLoad3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-QDTreeBulkLoad3d
+.PHONY : test-kdtree-QDTreeBulkLoad3d
+
+# fast build rule for target.
+test-kdtree-QDTreeBulkLoad3d/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad3d.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad3d.dir/build
+.PHONY : test-kdtree-QDTreeBulkLoad3d/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-Exhaustive
+
+# Build rule for target.
+test-learnedindex-Exhaustive: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-Exhaustive
+.PHONY : test-learnedindex-Exhaustive
+
+# fast build rule for target.
+test-learnedindex-Exhaustive/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Exhaustive.dir/build.make CMakeFiles/test-learnedindex-Exhaustive.dir/build
+.PHONY : test-learnedindex-Exhaustive/fast
+
+#=============================================================================
+# Target rules for targets named test-kdtree-KDTreeQuery3d
+
+# Build rule for target.
+test-kdtree-KDTreeQuery3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-kdtree-KDTreeQuery3d
+.PHONY : test-kdtree-KDTreeQuery3d
+
+# fast build rule for target.
+test-kdtree-KDTreeQuery3d/fast:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery3d.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery3d.dir/build
+.PHONY : test-kdtree-KDTreeQuery3d/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-Generator
+
+# Build rule for target.
+test-learnedindex-Generator: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-Generator
+.PHONY : test-learnedindex-Generator
+
+# fast build rule for target.
+test-learnedindex-Generator/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-Generator.dir/build.make CMakeFiles/test-learnedindex-Generator.dir/build
+.PHONY : test-learnedindex-Generator/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-ZMBulkLoad
+
+# Build rule for target.
+test-learnedindex-ZMBulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-ZMBulkLoad
+.PHONY : test-learnedindex-ZMBulkLoad
+
+# fast build rule for target.
+test-learnedindex-ZMBulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad.dir/build
+.PHONY : test-learnedindex-ZMBulkLoad/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-SFCRTreeBulkLoad3d
+
+# Build rule for target.
+test-rtree-SFCRTreeBulkLoad3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-SFCRTreeBulkLoad3d
+.PHONY : test-rtree-SFCRTreeBulkLoad3d
+
+# fast build rule for target.
+test-rtree-SFCRTreeBulkLoad3d/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad3d.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad3d.dir/build
+.PHONY : test-rtree-SFCRTreeBulkLoad3d/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-ZMBulkLoad3d
+
+# Build rule for target.
+test-learnedindex-ZMBulkLoad3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-ZMBulkLoad3d
+.PHONY : test-learnedindex-ZMBulkLoad3d
+
+# fast build rule for target.
+test-learnedindex-ZMBulkLoad3d/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad3d.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad3d.dir/build
+.PHONY : test-learnedindex-ZMBulkLoad3d/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-ZMQuery
+
+# Build rule for target.
+test-learnedindex-ZMQuery: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-ZMQuery
+.PHONY : test-learnedindex-ZMQuery
+
+# fast build rule for target.
+test-learnedindex-ZMQuery/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery.dir/build.make CMakeFiles/test-learnedindex-ZMQuery.dir/build
+.PHONY : test-learnedindex-ZMQuery/fast
+
+#=============================================================================
+# Target rules for targets named test-rtree-PlatonBulkLoad3d
+
+# Build rule for target.
+test-rtree-PlatonBulkLoad3d: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-rtree-PlatonBulkLoad3d
+.PHONY : test-rtree-PlatonBulkLoad3d
+
+# fast build rule for target.
+test-rtree-PlatonBulkLoad3d/fast:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad3d.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad3d.dir/build
+.PHONY : test-rtree-PlatonBulkLoad3d/fast
+
+#=============================================================================
+# Target rules for targets named test-learnedindex-LISABulkLoad
+
+# Build rule for target.
+test-learnedindex-LISABulkLoad: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test-learnedindex-LISABulkLoad
+.PHONY : test-learnedindex-LISABulkLoad
+
+# fast build rule for target.
+test-learnedindex-LISABulkLoad/fast:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad.dir/build
+.PHONY : test-learnedindex-LISABulkLoad/fast
 
 #=============================================================================
 # Target rules for targets named libsidxtest
@@ -470,6 +626,21 @@ kdtree/KDTreeBulkLoad.s:
 .PHONY : kdtree/KDTreeBulkLoad.s
 
 # target to build an object file
+kdtree/KDTreeBulkLoad3d.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeBulkLoad3d.dir/build.make CMakeFiles/test-kdtree-KDTreeBulkLoad3d.dir/kdtree/KDTreeBulkLoad3d.o
+.PHONY : kdtree/KDTreeBulkLoad3d.o
+
+# target to preprocess a source file
+kdtree/KDTreeBulkLoad3d.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeBulkLoad3d.dir/build.make CMakeFiles/test-kdtree-KDTreeBulkLoad3d.dir/kdtree/KDTreeBulkLoad3d.i
+.PHONY : kdtree/KDTreeBulkLoad3d.i
+
+# target to generate assembly for a file
+kdtree/KDTreeBulkLoad3d.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeBulkLoad3d.dir/build.make CMakeFiles/test-kdtree-KDTreeBulkLoad3d.dir/kdtree/KDTreeBulkLoad3d.s
+.PHONY : kdtree/KDTreeBulkLoad3d.s
+
+# target to build an object file
 kdtree/KDTreeLoad.o:
 	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad.dir/kdtree/KDTreeLoad.o
 .PHONY : kdtree/KDTreeLoad.o
@@ -483,6 +654,21 @@ kdtree/KDTreeLoad.i:
 kdtree/KDTreeLoad.s:
 	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad.dir/kdtree/KDTreeLoad.s
 .PHONY : kdtree/KDTreeLoad.s
+
+# target to build an object file
+kdtree/KDTreeLoad3d.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad3d.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad3d.dir/kdtree/KDTreeLoad3d.o
+.PHONY : kdtree/KDTreeLoad3d.o
+
+# target to preprocess a source file
+kdtree/KDTreeLoad3d.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad3d.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad3d.dir/kdtree/KDTreeLoad3d.i
+.PHONY : kdtree/KDTreeLoad3d.i
+
+# target to generate assembly for a file
+kdtree/KDTreeLoad3d.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeLoad3d.dir/build.make CMakeFiles/test-kdtree-KDTreeLoad3d.dir/kdtree/KDTreeLoad3d.s
+.PHONY : kdtree/KDTreeLoad3d.s
 
 # target to build an object file
 kdtree/KDTreeQuery.o:
@@ -500,6 +686,21 @@ kdtree/KDTreeQuery.s:
 .PHONY : kdtree/KDTreeQuery.s
 
 # target to build an object file
+kdtree/KDTreeQuery3d.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery3d.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery3d.dir/kdtree/KDTreeQuery3d.o
+.PHONY : kdtree/KDTreeQuery3d.o
+
+# target to preprocess a source file
+kdtree/KDTreeQuery3d.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery3d.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery3d.dir/kdtree/KDTreeQuery3d.i
+.PHONY : kdtree/KDTreeQuery3d.i
+
+# target to generate assembly for a file
+kdtree/KDTreeQuery3d.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-KDTreeQuery3d.dir/build.make CMakeFiles/test-kdtree-KDTreeQuery3d.dir/kdtree/KDTreeQuery3d.s
+.PHONY : kdtree/KDTreeQuery3d.s
+
+# target to build an object file
 kdtree/QDTreeBulkLoad.o:
 	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/kdtree/QDTreeBulkLoad.o
 .PHONY : kdtree/QDTreeBulkLoad.o
@@ -513,6 +714,21 @@ kdtree/QDTreeBulkLoad.i:
 kdtree/QDTreeBulkLoad.s:
 	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad.dir/kdtree/QDTreeBulkLoad.s
 .PHONY : kdtree/QDTreeBulkLoad.s
+
+# target to build an object file
+kdtree/QDTreeBulkLoad3d.o:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad3d.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad3d.dir/kdtree/QDTreeBulkLoad3d.o
+.PHONY : kdtree/QDTreeBulkLoad3d.o
+
+# target to preprocess a source file
+kdtree/QDTreeBulkLoad3d.i:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad3d.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad3d.dir/kdtree/QDTreeBulkLoad3d.i
+.PHONY : kdtree/QDTreeBulkLoad3d.i
+
+# target to generate assembly for a file
+kdtree/QDTreeBulkLoad3d.s:
+	$(MAKE) -f CMakeFiles/test-kdtree-QDTreeBulkLoad3d.dir/build.make CMakeFiles/test-kdtree-QDTreeBulkLoad3d.dir/kdtree/QDTreeBulkLoad3d.s
+.PHONY : kdtree/QDTreeBulkLoad3d.s
 
 # target to build an object file
 learnedindex/Exhaustive.o:
@@ -560,6 +776,21 @@ learnedindex/LISABulkLoad.s:
 .PHONY : learnedindex/LISABulkLoad.s
 
 # target to build an object file
+learnedindex/LISABulkLoad3d.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad3d.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad3d.dir/learnedindex/LISABulkLoad3d.o
+.PHONY : learnedindex/LISABulkLoad3d.o
+
+# target to preprocess a source file
+learnedindex/LISABulkLoad3d.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad3d.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad3d.dir/learnedindex/LISABulkLoad3d.i
+.PHONY : learnedindex/LISABulkLoad3d.i
+
+# target to generate assembly for a file
+learnedindex/LISABulkLoad3d.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISABulkLoad3d.dir/build.make CMakeFiles/test-learnedindex-LISABulkLoad3d.dir/learnedindex/LISABulkLoad3d.s
+.PHONY : learnedindex/LISABulkLoad3d.s
+
+# target to build an object file
 learnedindex/LISAQuery.o:
 	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery.dir/build.make CMakeFiles/test-learnedindex-LISAQuery.dir/learnedindex/LISAQuery.o
 .PHONY : learnedindex/LISAQuery.o
@@ -573,6 +804,21 @@ learnedindex/LISAQuery.i:
 learnedindex/LISAQuery.s:
 	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery.dir/build.make CMakeFiles/test-learnedindex-LISAQuery.dir/learnedindex/LISAQuery.s
 .PHONY : learnedindex/LISAQuery.s
+
+# target to build an object file
+learnedindex/LISAQuery3d.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery3d.dir/build.make CMakeFiles/test-learnedindex-LISAQuery3d.dir/learnedindex/LISAQuery3d.o
+.PHONY : learnedindex/LISAQuery3d.o
+
+# target to preprocess a source file
+learnedindex/LISAQuery3d.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery3d.dir/build.make CMakeFiles/test-learnedindex-LISAQuery3d.dir/learnedindex/LISAQuery3d.i
+.PHONY : learnedindex/LISAQuery3d.i
+
+# target to generate assembly for a file
+learnedindex/LISAQuery3d.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-LISAQuery3d.dir/build.make CMakeFiles/test-learnedindex-LISAQuery3d.dir/learnedindex/LISAQuery3d.s
+.PHONY : learnedindex/LISAQuery3d.s
 
 # target to build an object file
 learnedindex/ZMBulkLoad.o:
@@ -590,6 +836,21 @@ learnedindex/ZMBulkLoad.s:
 .PHONY : learnedindex/ZMBulkLoad.s
 
 # target to build an object file
+learnedindex/ZMBulkLoad3d.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad3d.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad3d.dir/learnedindex/ZMBulkLoad3d.o
+.PHONY : learnedindex/ZMBulkLoad3d.o
+
+# target to preprocess a source file
+learnedindex/ZMBulkLoad3d.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad3d.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad3d.dir/learnedindex/ZMBulkLoad3d.i
+.PHONY : learnedindex/ZMBulkLoad3d.i
+
+# target to generate assembly for a file
+learnedindex/ZMBulkLoad3d.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMBulkLoad3d.dir/build.make CMakeFiles/test-learnedindex-ZMBulkLoad3d.dir/learnedindex/ZMBulkLoad3d.s
+.PHONY : learnedindex/ZMBulkLoad3d.s
+
+# target to build an object file
 learnedindex/ZMQuery.o:
 	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery.dir/build.make CMakeFiles/test-learnedindex-ZMQuery.dir/learnedindex/ZMQuery.o
 .PHONY : learnedindex/ZMQuery.o
@@ -603,6 +864,21 @@ learnedindex/ZMQuery.i:
 learnedindex/ZMQuery.s:
 	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery.dir/build.make CMakeFiles/test-learnedindex-ZMQuery.dir/learnedindex/ZMQuery.s
 .PHONY : learnedindex/ZMQuery.s
+
+# target to build an object file
+learnedindex/ZMQuery3d.o:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery3d.dir/build.make CMakeFiles/test-learnedindex-ZMQuery3d.dir/learnedindex/ZMQuery3d.o
+.PHONY : learnedindex/ZMQuery3d.o
+
+# target to preprocess a source file
+learnedindex/ZMQuery3d.i:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery3d.dir/build.make CMakeFiles/test-learnedindex-ZMQuery3d.dir/learnedindex/ZMQuery3d.i
+.PHONY : learnedindex/ZMQuery3d.i
+
+# target to generate assembly for a file
+learnedindex/ZMQuery3d.s:
+	$(MAKE) -f CMakeFiles/test-learnedindex-ZMQuery3d.dir/build.make CMakeFiles/test-learnedindex-ZMQuery3d.dir/learnedindex/ZMQuery3d.s
+.PHONY : learnedindex/ZMQuery3d.s
 
 # target to build an object file
 rtree/Exhaustive.o:
@@ -650,6 +926,21 @@ rtree/PlatonBulkLoad.s:
 .PHONY : rtree/PlatonBulkLoad.s
 
 # target to build an object file
+rtree/PlatonBulkLoad3d.o:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad3d.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad3d.dir/rtree/PlatonBulkLoad3d.o
+.PHONY : rtree/PlatonBulkLoad3d.o
+
+# target to preprocess a source file
+rtree/PlatonBulkLoad3d.i:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad3d.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad3d.dir/rtree/PlatonBulkLoad3d.i
+.PHONY : rtree/PlatonBulkLoad3d.i
+
+# target to generate assembly for a file
+rtree/PlatonBulkLoad3d.s:
+	$(MAKE) -f CMakeFiles/test-rtree-PlatonBulkLoad3d.dir/build.make CMakeFiles/test-rtree-PlatonBulkLoad3d.dir/rtree/PlatonBulkLoad3d.s
+.PHONY : rtree/PlatonBulkLoad3d.s
+
+# target to build an object file
 rtree/RTreeBulkLoad.o:
 	$(MAKE) -f CMakeFiles/test-rtree-RTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-RTreeBulkLoad.dir/rtree/RTreeBulkLoad.o
 .PHONY : rtree/RTreeBulkLoad.o
@@ -680,6 +971,21 @@ rtree/RTreeLoad.s:
 .PHONY : rtree/RTreeLoad.s
 
 # target to build an object file
+rtree/RTreeLoad3d.o:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad3d.dir/build.make CMakeFiles/test-rtree-RTreeLoad3d.dir/rtree/RTreeLoad3d.o
+.PHONY : rtree/RTreeLoad3d.o
+
+# target to preprocess a source file
+rtree/RTreeLoad3d.i:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad3d.dir/build.make CMakeFiles/test-rtree-RTreeLoad3d.dir/rtree/RTreeLoad3d.i
+.PHONY : rtree/RTreeLoad3d.i
+
+# target to generate assembly for a file
+rtree/RTreeLoad3d.s:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeLoad3d.dir/build.make CMakeFiles/test-rtree-RTreeLoad3d.dir/rtree/RTreeLoad3d.s
+.PHONY : rtree/RTreeLoad3d.s
+
+# target to build an object file
 rtree/RTreeQuery.o:
 	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery.dir/build.make CMakeFiles/test-rtree-RTreeQuery.dir/rtree/RTreeQuery.o
 .PHONY : rtree/RTreeQuery.o
@@ -693,6 +999,21 @@ rtree/RTreeQuery.i:
 rtree/RTreeQuery.s:
 	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery.dir/build.make CMakeFiles/test-rtree-RTreeQuery.dir/rtree/RTreeQuery.s
 .PHONY : rtree/RTreeQuery.s
+
+# target to build an object file
+rtree/RTreeQuery3d.o:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery3d.dir/build.make CMakeFiles/test-rtree-RTreeQuery3d.dir/rtree/RTreeQuery3d.o
+.PHONY : rtree/RTreeQuery3d.o
+
+# target to preprocess a source file
+rtree/RTreeQuery3d.i:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery3d.dir/build.make CMakeFiles/test-rtree-RTreeQuery3d.dir/rtree/RTreeQuery3d.i
+.PHONY : rtree/RTreeQuery3d.i
+
+# target to generate assembly for a file
+rtree/RTreeQuery3d.s:
+	$(MAKE) -f CMakeFiles/test-rtree-RTreeQuery3d.dir/build.make CMakeFiles/test-rtree-RTreeQuery3d.dir/rtree/RTreeQuery3d.s
+.PHONY : rtree/RTreeQuery3d.s
 
 # target to build an object file
 rtree/SFCRTreeBulkLoad.o:
@@ -709,34 +1030,61 @@ rtree/SFCRTreeBulkLoad.s:
 	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad.dir/rtree/SFCRTreeBulkLoad.s
 .PHONY : rtree/SFCRTreeBulkLoad.s
 
+# target to build an object file
+rtree/SFCRTreeBulkLoad3d.o:
+	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad3d.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad3d.dir/rtree/SFCRTreeBulkLoad3d.o
+.PHONY : rtree/SFCRTreeBulkLoad3d.o
+
+# target to preprocess a source file
+rtree/SFCRTreeBulkLoad3d.i:
+	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad3d.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad3d.dir/rtree/SFCRTreeBulkLoad3d.i
+.PHONY : rtree/SFCRTreeBulkLoad3d.i
+
+# target to generate assembly for a file
+rtree/SFCRTreeBulkLoad3d.s:
+	$(MAKE) -f CMakeFiles/test-rtree-SFCRTreeBulkLoad3d.dir/build.make CMakeFiles/test-rtree-SFCRTreeBulkLoad3d.dir/rtree/SFCRTreeBulkLoad3d.s
+.PHONY : rtree/SFCRTreeBulkLoad3d.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... test-learnedindex-LISAQuery"
-	@echo "... test-learnedindex-LISABulkLoad"
-	@echo "... test-learnedindex-ZMQuery"
-	@echo "... test-learnedindex-ZMBulkLoad"
-	@echo "... test-learnedindex-Generator"
-	@echo "... test-learnedindex-Exhaustive"
-	@echo "... test-rtree-Exhaustive"
-	@echo "... test-kdtree-Exhaustive"
-	@echo "... test-kdtree-KDTreeQuery"
-	@echo "... test-rtree-Generator"
-	@echo "... test-rtree-RTreeBulkLoad"
-	@echo "... test-rtree-SFCRTreeBulkLoad"
-	@echo "... test-rtree-RTreeLoad"
+	@echo "... test-learnedindex-LISAQuery3d"
+	@echo "... test-learnedindex-LISABulkLoad3d"
 	@echo "... test-rtree-RTreeQuery"
-	@echo "... test-geometry-Intersection"
-	@echo "... test-rtree-PlatonBulkLoad"
+	@echo "... test-rtree-RTreeLoad"
+	@echo "... test-rtree-RTreeQuery3d"
+	@echo "... test-learnedindex-ZMQuery3d"
 	@echo "... test-kdtree-Generator"
-	@echo "... test-kdtree-QDTreeBulkLoad"
+	@echo "... test-kdtree-Exhaustive"
+	@echo "... test-geometry-Intersection"
+	@echo "... test-rtree-RTreeBulkLoad"
+	@echo "... test-rtree-Generator"
+	@echo "... test-kdtree-KDTreeQuery"
+	@echo "... rebuild_cache"
+	@echo "... test-rtree-SFCRTreeBulkLoad"
+	@echo "... test-rtree-Exhaustive"
+	@echo "... test-kdtree-KDTreeBulkLoad3d"
+	@echo "... test-rtree-RTreeLoad3d"
 	@echo "... test-kdtree-KDTreeBulkLoad"
 	@echo "... test-kdtree-KDTreeLoad"
+	@echo "... test-learnedindex-LISAQuery"
+	@echo "... test-kdtree-QDTreeBulkLoad"
+	@echo "... test-rtree-PlatonBulkLoad"
+	@echo "... test-kdtree-KDTreeLoad3d"
+	@echo "... test-kdtree-QDTreeBulkLoad3d"
+	@echo "... test-learnedindex-Exhaustive"
+	@echo "... test-kdtree-KDTreeQuery3d"
+	@echo "... test-learnedindex-Generator"
+	@echo "... test-learnedindex-ZMBulkLoad"
+	@echo "... test-rtree-SFCRTreeBulkLoad3d"
+	@echo "... test-learnedindex-ZMBulkLoad3d"
+	@echo "... test-learnedindex-ZMQuery"
+	@echo "... test-rtree-PlatonBulkLoad3d"
+	@echo "... test-learnedindex-LISABulkLoad"
 	@echo "... libsidxtest"
 	@echo "... gtest_main"
 	@echo "... gtest"
@@ -752,15 +1100,27 @@ help:
 	@echo "... kdtree/KDTreeBulkLoad.o"
 	@echo "... kdtree/KDTreeBulkLoad.i"
 	@echo "... kdtree/KDTreeBulkLoad.s"
+	@echo "... kdtree/KDTreeBulkLoad3d.o"
+	@echo "... kdtree/KDTreeBulkLoad3d.i"
+	@echo "... kdtree/KDTreeBulkLoad3d.s"
 	@echo "... kdtree/KDTreeLoad.o"
 	@echo "... kdtree/KDTreeLoad.i"
 	@echo "... kdtree/KDTreeLoad.s"
+	@echo "... kdtree/KDTreeLoad3d.o"
+	@echo "... kdtree/KDTreeLoad3d.i"
+	@echo "... kdtree/KDTreeLoad3d.s"
 	@echo "... kdtree/KDTreeQuery.o"
 	@echo "... kdtree/KDTreeQuery.i"
 	@echo "... kdtree/KDTreeQuery.s"
+	@echo "... kdtree/KDTreeQuery3d.o"
+	@echo "... kdtree/KDTreeQuery3d.i"
+	@echo "... kdtree/KDTreeQuery3d.s"
 	@echo "... kdtree/QDTreeBulkLoad.o"
 	@echo "... kdtree/QDTreeBulkLoad.i"
 	@echo "... kdtree/QDTreeBulkLoad.s"
+	@echo "... kdtree/QDTreeBulkLoad3d.o"
+	@echo "... kdtree/QDTreeBulkLoad3d.i"
+	@echo "... kdtree/QDTreeBulkLoad3d.s"
 	@echo "... learnedindex/Exhaustive.o"
 	@echo "... learnedindex/Exhaustive.i"
 	@echo "... learnedindex/Exhaustive.s"
@@ -770,15 +1130,27 @@ help:
 	@echo "... learnedindex/LISABulkLoad.o"
 	@echo "... learnedindex/LISABulkLoad.i"
 	@echo "... learnedindex/LISABulkLoad.s"
+	@echo "... learnedindex/LISABulkLoad3d.o"
+	@echo "... learnedindex/LISABulkLoad3d.i"
+	@echo "... learnedindex/LISABulkLoad3d.s"
 	@echo "... learnedindex/LISAQuery.o"
 	@echo "... learnedindex/LISAQuery.i"
 	@echo "... learnedindex/LISAQuery.s"
+	@echo "... learnedindex/LISAQuery3d.o"
+	@echo "... learnedindex/LISAQuery3d.i"
+	@echo "... learnedindex/LISAQuery3d.s"
 	@echo "... learnedindex/ZMBulkLoad.o"
 	@echo "... learnedindex/ZMBulkLoad.i"
 	@echo "... learnedindex/ZMBulkLoad.s"
+	@echo "... learnedindex/ZMBulkLoad3d.o"
+	@echo "... learnedindex/ZMBulkLoad3d.i"
+	@echo "... learnedindex/ZMBulkLoad3d.s"
 	@echo "... learnedindex/ZMQuery.o"
 	@echo "... learnedindex/ZMQuery.i"
 	@echo "... learnedindex/ZMQuery.s"
+	@echo "... learnedindex/ZMQuery3d.o"
+	@echo "... learnedindex/ZMQuery3d.i"
+	@echo "... learnedindex/ZMQuery3d.s"
 	@echo "... rtree/Exhaustive.o"
 	@echo "... rtree/Exhaustive.i"
 	@echo "... rtree/Exhaustive.s"
@@ -788,18 +1160,30 @@ help:
 	@echo "... rtree/PlatonBulkLoad.o"
 	@echo "... rtree/PlatonBulkLoad.i"
 	@echo "... rtree/PlatonBulkLoad.s"
+	@echo "... rtree/PlatonBulkLoad3d.o"
+	@echo "... rtree/PlatonBulkLoad3d.i"
+	@echo "... rtree/PlatonBulkLoad3d.s"
 	@echo "... rtree/RTreeBulkLoad.o"
 	@echo "... rtree/RTreeBulkLoad.i"
 	@echo "... rtree/RTreeBulkLoad.s"
 	@echo "... rtree/RTreeLoad.o"
 	@echo "... rtree/RTreeLoad.i"
 	@echo "... rtree/RTreeLoad.s"
+	@echo "... rtree/RTreeLoad3d.o"
+	@echo "... rtree/RTreeLoad3d.i"
+	@echo "... rtree/RTreeLoad3d.s"
 	@echo "... rtree/RTreeQuery.o"
 	@echo "... rtree/RTreeQuery.i"
 	@echo "... rtree/RTreeQuery.s"
+	@echo "... rtree/RTreeQuery3d.o"
+	@echo "... rtree/RTreeQuery3d.i"
+	@echo "... rtree/RTreeQuery3d.s"
 	@echo "... rtree/SFCRTreeBulkLoad.o"
 	@echo "... rtree/SFCRTreeBulkLoad.i"
 	@echo "... rtree/SFCRTreeBulkLoad.s"
+	@echo "... rtree/SFCRTreeBulkLoad3d.o"
+	@echo "... rtree/SFCRTreeBulkLoad3d.i"
+	@echo "... rtree/SFCRTreeBulkLoad3d.s"
 .PHONY : help
 
 
